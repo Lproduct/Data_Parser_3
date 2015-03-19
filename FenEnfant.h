@@ -1,7 +1,7 @@
 #ifndef FENENFANT_H
 #define FENENFANT_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 
 class FenEnfant : public QTextEdit

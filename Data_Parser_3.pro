@@ -1,3 +1,4 @@
+QT += widgets
 
 SOURCES += \
     main.cpp \
@@ -11,4 +12,6 @@ HEADERS += \
     FenEnfantTab.h
 
 RESOURCES += \
-    Data_parser_3.qrc
+    data_parser_3.qrc
+
+

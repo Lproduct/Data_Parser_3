@@ -1,9 +1,8 @@
 #ifndef FENENFANTTAB_H
 #define FENENFANTTAB_H
 
-#include <QtGui>
-#include <iostream>
-#include <vector>
+#include <QtWidgets>
+
 
 class FenEnfantTab : public QTableWidget
 {

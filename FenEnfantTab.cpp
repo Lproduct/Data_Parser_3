@@ -135,7 +135,7 @@ void FenEnfantTab::generateInfoWidget(const QStringList& tab)
     // Looking for word position
     QString wordDate("Date :");
     QString wordHeure("Heure :");
-    QString wordNomOperateur("Nom Opérateur :");
+    QString wordNomOperateur(QString::fromLocal8Bit("Nom Opérateur :"));
     QString wordNomSite("Nom du Site :");
     QString wordNomEssai("Nom de l'essai :");
     QString wordCommentaires("Commentaires :");

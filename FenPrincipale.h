@@ -2,7 +2,8 @@
 #define FENPRINCIPALE_H
 
 #include <QMainWindow>
-#include <QtGui>
+#include <QtWidgets>
+
 
 class FenEnfant;
 QT_BEGIN_NAMESPACE
