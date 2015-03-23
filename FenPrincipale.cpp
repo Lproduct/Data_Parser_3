@@ -51,18 +51,6 @@ void FenPrincipale::open()
             return;
         }
 
-        /*FenEnfant *child = createMdiChild();
-
-        if (child->loadFile(fileName))
-        {
-            statusBar()->showMessage(tr("File loaded"), 2000);
-            child->show();            
-        }
-        else
-        {
-            child->close();
-        }*/
-
         FenEnfantTab *childTab = new FenEnfantTab;
         mdiArea->addSubWindow(childTab);
 
@@ -99,7 +87,7 @@ void FenPrincipale::updateMenus()
 void FenPrincipale::updateWindowMenu()
 {
     windowMenu->clear();
-    windowMenu->addAction(closeAct);
+    /*windowMenu->addAction(closeAct);
     windowMenu->addAction(closeAllAct);
     windowMenu->addSeparator();
     windowMenu->addAction(tileAct);
@@ -107,25 +95,25 @@ void FenPrincipale::updateWindowMenu()
     windowMenu->addSeparator();
     windowMenu->addAction(nextAct);
     windowMenu->addAction(previousAct);
-    windowMenu->addAction(separatorAct);
+    windowMenu->addAction(separatorAct);*/
 
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
     separatorAct->setVisible(!windows.isEmpty());
 
     for (int i = 0; i < windows.size(); ++i) {
-        FenEnfant *child = qobject_cast<FenEnfant *>(windows.at(i)->widget());
+        FenEnfantTab *childTab = qobject_cast<FenEnfantTab *>(windows.at(i)->widget());
 
         QString text;
         if (i < 9) {
             text = tr("&%1 %2").arg(i + 1)
-                               .arg(child->userFriendlyCurrentFile());
+                               .arg(childTab->userFriendlyCurrentFile());
         } else {
             text = tr("%1 %2").arg(i + 1)
-                              .arg(child->userFriendlyCurrentFile());
+                              .arg(childTab->userFriendlyCurrentFile());
         }
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
-        action ->setChecked(child == activeMdiChild());
+        action ->setChecked(childTab == activeMdiChild());
         connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
         windowMapper->setMapping(action, windows.at(i));
     }
@@ -241,10 +229,10 @@ void FenPrincipale::writeSettings()
     settings.setValue("size", size());
 }
 
-FenEnfant *FenPrincipale::activeMdiChild()
+FenEnfantTab *FenPrincipale::activeMdiChild()
 {
     if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
-        return qobject_cast<FenEnfant *>(activeSubWindow->widget());
+        return qobject_cast<FenEnfantTab *>(activeSubWindow->widget());
     return 0;
 }
 

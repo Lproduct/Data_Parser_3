@@ -60,14 +60,14 @@ bool FenEnfantTab::loadFileTab(const QString &fileName)
         QMessageBox::warning(this, tr("Data Parser"), tr("Cannot read file %1:\n%2").arg(fileName).arg(file.errorString()));
         return false;
     }
-    QFileInfo fi(fileName);
+
+    setCurrentFile(fileName);
 
     //Read all the data from the file
     QTextStream in(&file);
     QString dataTxt(in.readAll());
-
     //Parsing and display data into a widget
-    parsingDataIntoWidget(dataTxt, fi);
+    parsingDataIntoWidget(dataTxt);
 
     file.close();
 
@@ -117,6 +117,7 @@ void FenEnfantTab::generateTabWidget(const QStringList& tab)
 
 QString FenEnfantTab::fileTxtInfo(const QString& info)
 {
+    //Permit to parse information of the info file header, if there is no information the string is null
     QStringList infoList = info.split(QRegExp("\t"));
     if (infoList.size() == 1)
     {
@@ -157,20 +158,37 @@ void FenEnfantTab::generateInfoWidget(const QStringList& tab)
     commentaires->setText(fileTxtInfo(tab.at(commentairesPosList)));
 }
 
-void FenEnfantTab::genererWidget(const QStringList& tab, const QFileInfo fi)
+void FenEnfantTab::genererWidget(const QStringList& tab)
 {
     //Generate widget with info and tab data
-    setWindowTitle(fi.fileName());
+    //setWindowTitle(fi.fileName());
     generateInfoWidget(tab);
     generateTabWidget(tab);
 }
 
-void FenEnfantTab::parsingDataIntoWidget(const QString dataTxt, const QFileInfo fi)
+void FenEnfantTab::parsingDataIntoWidget(const QString dataTxt)
 {
     // Read the whole txt file and create a list which contain every sentences
-
     QStringList tabData(dataTxt.split(QRegExp("[\r\n]"), QString::SkipEmptyParts));
 
-    genererWidget(tabData,fi);
+    genererWidget(tabData);
+}
 
+void FenEnfantTab::setCurrentFile(const QString &fileName)
+{
+    curFile = QFileInfo(fileName).canonicalFilePath();
+    //isUntitled = false;
+    //document()->setModified(false);
+    //setWindowModified(false);
+    setWindowTitle(userFriendlyCurrentFile() + "[*]");
+}
+
+QString FenEnfantTab::userFriendlyCurrentFile()
+{
+    return strippedName(curFile);
+}
+
+QString FenEnfantTab::strippedName(const QString &fullFileName)
+{
+    return QFileInfo(fullFileName).fileName();
 }

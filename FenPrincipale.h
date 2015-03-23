@@ -6,6 +6,7 @@
 
 
 class FenEnfant;
+class FenEnfantTab;
 QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
@@ -46,7 +47,7 @@ private:
     void createStatusBar();
     void readSettings();
     void writeSettings();
-    FenEnfant *activeMdiChild();
+    FenEnfantTab *activeMdiChild();
     QMdiSubWindow *findMdiChild(const QString &fileName);
 
     QMdiArea *mdiArea;
