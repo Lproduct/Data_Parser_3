@@ -1,6 +1,7 @@
 #include "FenPrincipale.h"
 #include "FenEnfant.h"
 #include "FenEnfantTab.h"
+#include "FenEnfantGraph.h"
 
 FenPrincipale::FenPrincipale()
 {
@@ -64,6 +65,10 @@ void FenPrincipale::open()
         {
             childTab->close();
         }
+
+        FenEnfantGraph *childGraph = new FenEnfantGraph;
+        mdiArea->addSubWindow(childGraph);
+        childGraph->show();
     }
 }
 

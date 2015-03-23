@@ -5,15 +5,20 @@ SOURCES += \
     FenPrincipale.cpp \
     FenEnfant.cpp \
     FenEnfantTab.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    FenEnfantGraph.cpp
 
 HEADERS += \
     FenPrincipale.h \
     FenEnfant.h \
     FenEnfantTab.h \
-    qcustomplot.h
+    qcustomplot.h \
+    FenEnfantGraph.h
 
 RESOURCES += \
     data_parser_3.qrc
+
+FORMS += \
+    FenEnfantGraph.ui
 
 

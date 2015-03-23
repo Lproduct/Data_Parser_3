@@ -49,6 +49,8 @@ FenEnfantTab::FenEnfantTab()
     layoutPrincipal->addLayout(infoLayout);
     layoutPrincipal->addWidget(table);
     setLayout(layoutPrincipal);
+    setMinimumHeight(550);
+    setMinimumWidth(600);
 }
 
 bool FenEnfantTab::loadFileTab(const QString &fileName)
