@@ -60,7 +60,6 @@ void FenPrincipale::open()
             statusBar()->showMessage(tr("File loaded"), 2000);
             childTab->show();
         }
-
         else
         {
             childTab->close();
@@ -68,6 +67,7 @@ void FenPrincipale::open()
 
         FenEnfantGraph *childGraph = new FenEnfantGraph;
         mdiArea->addSubWindow(childGraph);
+        childGraph->LoadTabData(childTab->loadNumericData(fileName));
         childGraph->show();
     }
 }

@@ -16,8 +16,10 @@ public:
     explicit FenEnfantGraph(QWidget *parent = 0);
     ~FenEnfantGraph();
 
+    void LoadTabData(const QVector<double> &tab);
+
 private:
-    void setUpCurve(QCustomPlot *customPlot);
+    void setUpCurve();
     Ui::FenEnfantGraph *ui;
     QString demoName;
 };

@@ -68,12 +68,28 @@ bool FenEnfantTab::loadFileTab(const QString &fileName)
     //Read all the data from the file
     QTextStream in(&file);
     QString dataTxt(in.readAll());
+
     //Parsing and display data into a widget
     parsingDataIntoWidget(dataTxt);
 
     file.close();
 
     return true;
+}
+
+QVector<double> FenEnfantTab::loadNumericData(const QString &fileName)
+{
+    QFile file(fileName);
+    file.open(QFile::ReadOnly | QFile::Text);
+
+    //Read all the data from the file
+    QTextStream in(&file);
+    QString dataTxt(in.readAll());
+
+    file.close();
+
+    //Parsing data into numeric tab
+    return parsingDataIntoTab(dataTxt);
 }
 
 int FenEnfantTab::findWordInTab(const QStringList& tab, const QString& word)
@@ -103,6 +119,7 @@ void FenEnfantTab::generateTabWidget(const QStringList& tab)
     table->setRowCount(tab.size()-tempsPosList-1);
     table->setColumnCount(cellData.size());
 
+    //Header label
     table->setHorizontalHeaderLabels(cellData);
 
     for ( int i(tempsPosList+1); i<=tab.size()-1; i++)
@@ -163,7 +180,6 @@ void FenEnfantTab::generateInfoWidget(const QStringList& tab)
 void FenEnfantTab::genererWidget(const QStringList& tab)
 {
     //Generate widget with info and tab data
-    //setWindowTitle(fi.fileName());
     generateInfoWidget(tab);
     generateTabWidget(tab);
 }
@@ -193,4 +209,39 @@ QString FenEnfantTab::userFriendlyCurrentFile()
 QString FenEnfantTab::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
+}
+
+QVector<double> FenEnfantTab::parsingDataIntoTab(const QString dataTxt)
+{
+    //Parsing data and generate a tab witch contain size, dimension and all numerical values
+    // Read the whole txt file and create a list which contain every sentences
+    QStringList tab(dataTxt.split(QRegExp("[\r\n]"), QString::SkipEmptyParts));
+
+    QString wordTemps("Temps");
+    int tempsPosList = findWordInTab(tab, wordTemps);
+
+    QString cell(tab.at(tempsPosList));
+    QStringList cellData(cell.split(QRegExp("\t")));
+
+    QVector<double> tabNumericData(0);
+    double numericData(0);
+
+    int nbColumn(cellData.size());
+    int nbRow(tab.size() - tempsPosList -2);
+    tabNumericData.push_back(nbColumn);
+    tabNumericData.push_back(nbRow);
+
+    //creat a tab witch contain all numeric tab data stacked
+    for (int k(0); k<=cellData.size()-1; k++)
+    {
+        for ( int i(tempsPosList+1); i<=tab.size()-1; i++)
+        {
+            cell = tab.at(i);
+            cellData = cell.split(QRegExp("\t"));
+            numericData = cellData[k].toDouble();
+            tabNumericData.push_back(numericData);
+        }
+    }
+
+    return tabNumericData;
 }

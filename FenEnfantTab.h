@@ -11,6 +11,7 @@ class FenEnfantTab : public QTableWidget
 public:
     FenEnfantTab();
     bool loadFileTab(const QString &fileName);
+    QVector<double> loadNumericData(const QString &fileName);
     QString userFriendlyCurrentFile();
 
 private:
@@ -22,6 +23,7 @@ private:
     QString fileTxtInfo(const QString& info);
     QString strippedName(const QString &fullFileName);
     void setCurrentFile(const QString &fileName);
+    QVector<double> parsingDataIntoTab(const QString dataTxt);
 
     QTableWidget *table;
     QTableWidgetItem *tableItem;
