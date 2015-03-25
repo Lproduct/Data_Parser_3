@@ -1,16 +1,16 @@
 #include "FenEnfantGraph.h"
 #include "ui_FenEnfantGraph.h"
 
+
 FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FenEnfantGraph)
 {
     ui->setupUi(this);
-    setMinimumHeight(550);
-    setMinimumWidth(600);
+    setGeometry(400, 250, 542, 390);
     setUpCurve();//ui->customPlot
 
-    setWindowTitle("QCustomPlot: "+demoName);
+    //setWindowTitle("QCustomPlot: "+demoName);
     ui->customPlot->replot();
 }
 
@@ -25,8 +25,10 @@ void FenEnfantGraph::setUpCurve()//QCustomPlot *customPlot
 
 }
 
-void FenEnfantGraph::LoadTabData(const QVector<double> &tab)
+void FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QString &fileName)
 {
+    setCurrentFile(fileName);
+
     int nbColumn(tab.at(0));
     int nbRow(tab.at(1));
 
@@ -37,7 +39,8 @@ void FenEnfantGraph::LoadTabData(const QVector<double> &tab)
     case 1:
         break;
 
-    case 2:        for (int i(0); i<=nbRow; i++)
+    case 2:
+        for (int i(0); i<=nbRow; i++)
         {
             x[i] = tab[i+2];
             y1[i] = tab[i+2+nbRow+1];
@@ -354,9 +357,29 @@ void FenEnfantGraph::LoadTabData(const QVector<double> &tab)
     ui->customPlot->graph(0)->rescaleAxes();
 
     // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
-    ui->customPlot->graph(1)->rescaleAxes(true);
+    //ui->customPlot->graph(1)->rescaleAxes(true);
 
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 }
+
+void FenEnfantGraph::setCurrentFile(const QString &fileName)
+{
+    curFile = QFileInfo(fileName).canonicalFilePath();
+    //isUntitled = false;
+    //document()->setModified(false);
+    //setWindowModified(false);
+    setWindowTitle(userFriendlyCurrentFile() + "[*]");
+}
+
+QString FenEnfantGraph::userFriendlyCurrentFile()
+{
+    return strippedName(curFile);
+}
+
+QString FenEnfantGraph::strippedName(const QString &fullFileName)
+{
+    return QFileInfo(fullFileName).fileName();
+}
+

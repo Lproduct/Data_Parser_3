@@ -7,6 +7,7 @@
 
 class FenEnfant;
 class FenEnfantTab;
+class FenEnfantGraph;
 QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
@@ -48,7 +49,9 @@ private:
     void readSettings();
     void writeSettings();
     FenEnfantTab *activeMdiChild();
-    QMdiSubWindow *findMdiChild(const QString &fileName);
+    FenEnfantGraph *activeMdiChildGraph();
+    QMdiSubWindow *findMdiChildTab(const QString &fileName);
+    QMdiSubWindow *findMdiChildGraph(const QString &fileName);
 
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;

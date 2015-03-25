@@ -50,7 +50,7 @@ FenEnfantTab::FenEnfantTab()
     layoutPrincipal->addWidget(table);
     setLayout(layoutPrincipal);
     setMinimumHeight(550);
-    setMinimumWidth(600);
+    setMinimumWidth(600);   
 }
 
 bool FenEnfantTab::loadFileTab(const QString &fileName)
@@ -244,4 +244,10 @@ QVector<double> FenEnfantTab::parsingDataIntoTab(const QString dataTxt)
     }
 
     return tabNumericData;
+}
+
+void FenEnfantTab::closeEvent(QCloseEvent *e)
+{
+    QWidget::closeEvent(e);
+    emit closedSignal();
 }

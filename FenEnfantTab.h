@@ -13,6 +13,10 @@ public:
     bool loadFileTab(const QString &fileName);
     QVector<double> loadNumericData(const QString &fileName);
     QString userFriendlyCurrentFile();
+    QString currentFile() { return curFile; }
+
+signals:
+    closedSignal();
 
 private:
     int findWordInTab(const QStringList& tab, const QString& word);
@@ -24,7 +28,7 @@ private:
     QString strippedName(const QString &fullFileName);
     void setCurrentFile(const QString &fileName);
     QVector<double> parsingDataIntoTab(const QString dataTxt);
-
+    void closeEvent(QCloseEvent *e);
     QTableWidget *table;
     QTableWidgetItem *tableItem;
     QLineEdit *fichier;
@@ -38,6 +42,7 @@ private:
     QVBoxLayout *layoutPrincipal;
     QString FileName;
     QString curFile;
+
 
 };
 
