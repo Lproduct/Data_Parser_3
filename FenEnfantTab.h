@@ -3,15 +3,13 @@
 
 #include <QtWidgets>
 
-
 class FenEnfantTab : public QTableWidget
 {
     Q_OBJECT
 
 public:
     FenEnfantTab();
-    bool loadFileTab(const QString &fileName);
-    QVector<double> loadNumericData(const QString &fileName);
+    bool loadTabData(const QStringList &infoFile, const QStringList &header, const QVector<double> &tab);
     QString userFriendlyCurrentFile();
     QString currentFile() { return curFile; }
 
@@ -19,16 +17,15 @@ signals:
     closedSignal();
 
 private:
-    int findWordInTab(const QStringList& tab, const QString& word);
-    void generateInfoWidget(const QStringList& tab);
-    void generateTabWidget(const QStringList& tab);
-    void genererWidget(const QStringList& tab);
-    void parsingDataIntoWidget(const QString dataTxt);
-    QString fileTxtInfo(const QString& info);
+    void setInfo(const QStringList &info);
+    void setTabParameter(const QStringList &header, const QVector<double> &tab);
+    void setTab(const QVector<double> &tab);
+
     QString strippedName(const QString &fullFileName);
     void setCurrentFile(const QString &fileName);
-    QVector<double> parsingDataIntoTab(const QString dataTxt);
+
     void closeEvent(QCloseEvent *e);
+
     QTableWidget *table;
     QTableWidgetItem *tableItem;
     QLineEdit *fichier;
@@ -38,12 +35,9 @@ private:
     QLineEdit *nomSite;
     QLineEdit *nomEssai;
     QLineEdit *commentaires;
-
     QVBoxLayout *layoutPrincipal;
-    QString FileName;
+
     QString curFile;
-
-
 };
 
 #endif // FENENFANTTAB_H

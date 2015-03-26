@@ -8,9 +8,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 {
     ui->setupUi(this);
     setGeometry(400, 250, 542, 390);
-    setUpCurve();//ui->customPlot
 
-    //setWindowTitle("QCustomPlot: "+demoName);
     ui->customPlot->replot();
 }
 
@@ -19,13 +17,7 @@ FenEnfantGraph::~FenEnfantGraph()
     delete ui;
 }
 
-void FenEnfantGraph::setUpCurve()//QCustomPlot *customPlot
-{
-    demoName = "Data";
-
-}
-
-void FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QString &fileName)
+bool FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QString &fileName)
 {
     setCurrentFile(fileName);
 
@@ -362,6 +354,8 @@ void FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QString &file
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+
+    return true;
 }
 
 void FenEnfantGraph::setCurrentFile(const QString &fileName)

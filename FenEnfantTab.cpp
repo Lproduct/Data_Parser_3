@@ -53,143 +53,49 @@ FenEnfantTab::FenEnfantTab()
     setMinimumWidth(600);   
 }
 
-bool FenEnfantTab::loadFileTab(const QString &fileName)
+bool FenEnfantTab::loadTabData(const QStringList &info,const QStringList &header, const QVector<double> &tab)
 {
-    //Open a file
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text))
-    {
-        QMessageBox::warning(this, tr("Data Parser"), tr("Cannot read file %1:\n%2").arg(fileName).arg(file.errorString()));
-        return false;
-    }
+    setInfo(info);
 
-    setCurrentFile(fileName);
+    setTabParameter(header,tab);
 
-    //Read all the data from the file
-    QTextStream in(&file);
-    QString dataTxt(in.readAll());
-
-    //Parsing and display data into a widget
-    parsingDataIntoWidget(dataTxt);
-
-    file.close();
+    setTab(tab);
 
     return true;
 }
 
-QVector<double> FenEnfantTab::loadNumericData(const QString &fileName)
+void FenEnfantTab::setInfo(const QStringList &info)
 {
-    QFile file(fileName);
-    file.open(QFile::ReadOnly | QFile::Text);
-
-    //Read all the data from the file
-    QTextStream in(&file);
-    QString dataTxt(in.readAll());
-
-    file.close();
-
-    //Parsing data into numeric tab
-    return parsingDataIntoTab(dataTxt);
+    setCurrentFile(info.at(0));
+    fichier->setText(info.at(1));
+    date->setText(info.at(2));
+    heure->setText(info.at(3));
+    nomOperateur->setText(info.at(4));
+    nomSite->setText(info.at(5));
+    nomEssai->setText(info.at(6));
+    commentaires->setText(info.at(7));
 }
 
-int FenEnfantTab::findWordInTab(const QStringList& tab, const QString& word)
+void FenEnfantTab::setTabParameter(const QStringList &header, const QVector<double> &tab)
 {
-    // Return the position of a word in a QStringList
-    bool wordIsFind(false);
-    int wordPosLine = 0;
-    while (wordIsFind == false)
-    {
-        QString cellControl(tab.at(wordPosLine));
-        QStringList CellControlList(cellControl.split(QRegExp("\t")));
-        wordIsFind = CellControlList.contains(word);
-        wordPosLine++;
-    }
-    return wordPosLine-1;
+    table->setColumnCount(tab.at(0));
+    table->setRowCount(tab.at(1)+1);
+
+    table->setHorizontalHeaderLabels(header);
 }
 
-void FenEnfantTab::generateTabWidget(const QStringList& tab)
+void FenEnfantTab::setTab(const QVector<double> &tab)
 {
-    QString wordTemps("Temps");
-    int tempsPosList = findWordInTab(tab, wordTemps);
+    double nbColumn(tab.at(0));
+    double nbRow(tab.at(1));
 
-    //Generate a TabWidget from a tab with a given header position
-    QString cell(tab.at(tempsPosList));
-    QStringList cellData(cell.split(QRegExp("\t")));
-
-    table->setRowCount(tab.size()-tempsPosList-1);
-    table->setColumnCount(cellData.size());
-
-    //Header label
-    table->setHorizontalHeaderLabels(cellData);
-
-    for ( int i(tempsPosList+1); i<=tab.size()-1; i++)
+    for ( int i(0); i<=nbColumn-1; i++)
     {
-        cell = tab.at(i);
-        cellData = cell.split(QRegExp("\t"));
-
-        for (int k(0); k<= cellData.size()-1; k++)
+        for (int k(2+i*(nbRow+1)); k<=(nbRow+2)+i*(nbRow+1); k++)
         {
-            table->setItem(i-tempsPosList-1,k,new QTableWidgetItem(cellData.at(k)));
+            table->setItem(k-2-i*(nbRow+1), i, new QTableWidgetItem(QString::number(tab.at(k))));
         }
     }
-}
-
-QString FenEnfantTab::fileTxtInfo(const QString& info)
-{
-    //Permit to parse information of the info file header, if there is no information the string is null
-    QStringList infoList = info.split(QRegExp("\t"));
-    if (infoList.size() == 1)
-    {
-        QString infoTr(" ");
-        return infoTr;
-    }
-    else
-    {
-        QString infoTr2(infoList.at(1));
-        return infoTr2;
-    }
-}
-
-void FenEnfantTab::generateInfoWidget(const QStringList& tab)
-{
-    // Looking for word position
-    QString wordDate("Date :");
-    QString wordHeure("Heure :");
-    QString wordNomOperateur(QString::fromLocal8Bit("Nom Opérateur :"));
-    QString wordNomSite("Nom du Site :");
-    QString wordNomEssai("Nom de l'essai :");
-    QString wordCommentaires("Commentaires :");
-
-    //int fichierPosList = findWordInTab(tabData, wordFichier);
-    int datePosList = findWordInTab(tab, wordDate);
-    int heurePosList = findWordInTab(tab, wordHeure);
-    int nomOperateurPosList = findWordInTab(tab, wordNomOperateur);
-    int sitePosList = findWordInTab(tab, wordNomSite);
-    int essaiPosList = findWordInTab(tab, wordNomEssai);
-    int commentairesPosList = findWordInTab(tab, wordCommentaires);
-
-    fichier->setText(tab.at(0));
-    date->setText(fileTxtInfo(tab.at(datePosList)));
-    heure->setText(fileTxtInfo(tab.at(heurePosList)));
-    nomOperateur->setText(fileTxtInfo(tab.at(nomOperateurPosList)));
-    nomSite->setText(fileTxtInfo(tab.at(sitePosList)));
-    nomEssai->setText(fileTxtInfo(tab.at(essaiPosList)));
-    commentaires->setText(fileTxtInfo(tab.at(commentairesPosList)));
-}
-
-void FenEnfantTab::genererWidget(const QStringList& tab)
-{
-    //Generate widget with info and tab data
-    generateInfoWidget(tab);
-    generateTabWidget(tab);
-}
-
-void FenEnfantTab::parsingDataIntoWidget(const QString dataTxt)
-{
-    // Read the whole txt file and create a list which contain every sentences
-    QStringList tabData(dataTxt.split(QRegExp("[\r\n]"), QString::SkipEmptyParts));
-
-    genererWidget(tabData);
 }
 
 void FenEnfantTab::setCurrentFile(const QString &fileName)
@@ -211,7 +117,7 @@ QString FenEnfantTab::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 
-QVector<double> FenEnfantTab::parsingDataIntoTab(const QString dataTxt)
+/*QVector<double> FenEnfantTab::parsingDataIntoTab(const QString dataTxt)
 {
     //Parsing data and generate a tab witch contain size, dimension and all numerical values
     // Read the whole txt file and create a list which contain every sentences
@@ -244,10 +150,12 @@ QVector<double> FenEnfantTab::parsingDataIntoTab(const QString dataTxt)
     }
 
     return tabNumericData;
-}
+}*/
 
 void FenEnfantTab::closeEvent(QCloseEvent *e)
 {
     QWidget::closeEvent(e);
     emit closedSignal();
 }
+
+

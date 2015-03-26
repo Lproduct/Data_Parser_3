@@ -53,6 +53,11 @@ private:
     QMdiSubWindow *findMdiChildTab(const QString &fileName);
     QMdiSubWindow *findMdiChildGraph(const QString &fileName);
 
+    //data parser function
+    int findWordInTab(const QStringList& tab, const QString& word);
+    QString fileTxtInfo(const QString& info);
+    //data parser function
+
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;
     QMenu *fileMenu;
@@ -70,6 +75,7 @@ private:
     QAction *separatorAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
+
 };
 
 #endif // FENPRINCIPALE_H
