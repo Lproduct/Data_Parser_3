@@ -16,7 +16,7 @@ public:
     explicit FenEnfantGraph(QWidget *parent = 0);
     ~FenEnfantGraph();
 
-    bool LoadTabData(const QVector<double> &tab, const QString &fileName);
+    bool LoadTabData(const QVector<double> &tab, const QStringList &fileInfo);
     QString userFriendlyCurrentFile();
     QString currentFile() { return curFile; }
 

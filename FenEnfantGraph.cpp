@@ -17,9 +17,9 @@ FenEnfantGraph::~FenEnfantGraph()
     delete ui;
 }
 
-bool FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QString &fileName)
+bool FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QStringList &fileInfo)
 {
-    setCurrentFile(fileName);
+    setCurrentFile(fileInfo.at(0));
 
     int nbColumn(tab.at(0));
     int nbRow(tab.at(1));

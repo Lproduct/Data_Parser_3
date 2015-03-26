@@ -1,7 +1,7 @@
 #include "FenPrincipale.h"
-#include "FenEnfant.h"
 #include "FenEnfantTab.h"
 #include "FenEnfantGraph.h"
+#include "DataParser.h"
 
 FenPrincipale::FenPrincipale()
 {
@@ -55,97 +55,14 @@ void FenPrincipale::open()
             mdiArea->setActiveSubWindow(existingGraph);
             return;
         }
-        /*****************************************
-         * Data parsing
-         * **************************************/
-        QFile file(fileName);
-        if (!file.open(QFile::ReadOnly | QFile::Text))
-        {
-            QMessageBox::warning(this, tr("Data Parser"), tr("Cannot read file %1:\n%2").arg(fileName).arg(file.errorString()));
-            //return false;
-        }
 
-        //Read all the data from the file
-        QTextStream in(&file);
-        QString dataTxt(in.readAll());
+        DataParser *parserData = new DataParser(fileName);
+        QStringList infoFile(parserData->getInfoFile());
+        QStringList header(parserData->getHeader());
+        QVector<double> tab(parserData->getTab());
 
-        // Read the whole txt file and create a list which contain every sentences
-        QStringList tabData(dataTxt.split(QRegExp("[\r\n]"), QString::SkipEmptyParts));
-
-        //file close
-        file.close();
-
-        // Looking for word position
-        QString wordDate("Date :");
-        QString wordHeure("Heure :");
-        QString wordNomOperateur("Nom Opérateur :");
-        QString wordNomSite("Nom du Site :");
-        QString wordNomEssai("Nom de l'essai :");
-        QString wordCommentaires("Commentaires :");
-
-        //int fichierPosList = findWordInTab(tabData, wordFichier);
-        int datePosList = findWordInTab(tabData, wordDate);
-        int heurePosList = findWordInTab(tabData, wordHeure);
-        int nomOperateurPosList = findWordInTab(tabData, wordNomOperateur);
-        int sitePosList = findWordInTab(tabData, wordNomSite);
-        int essaiPosList = findWordInTab(tabData, wordNomEssai);
-        int commentairesPosList = findWordInTab(tabData, wordCommentaires);
-
-        QString fichier(tabData.at(0));
-        QString date(fileTxtInfo(tabData.at(datePosList)));
-        QString heure(fileTxtInfo(tabData.at(heurePosList)));
-        QString nomOperateur(fileTxtInfo(tabData.at(nomOperateurPosList)));
-        QString nomSite(fileTxtInfo(tabData.at(sitePosList)));
-        QString nomEssai(fileTxtInfo(tabData.at(essaiPosList)));
-        QString commentaires(fileTxtInfo(tabData.at(commentairesPosList)));
-
-        QStringList infoFile;
-        infoFile.append(fileName);
-        infoFile.append(fichier);
-        infoFile.append(date);
-        infoFile.append(heure);
-        infoFile.append(nomOperateur);
-        infoFile.append(nomSite);
-        infoFile.append(nomEssai);
-        infoFile.append(commentaires);
-
-        //looking for header(curve name)
-        QString wordTemps("Temps");
-        int tempsPosList = findWordInTab(tabData, wordTemps);
-        QString cell(tabData.at(tempsPosList));
-        QStringList header(cell.split(QRegExp("\t")));
-
-        //transform tab data into numeric tab. Two fisrt row represent the number of column and number
-        //of row the other data organised as tab witch are stacked.
-        QVector<double> tabNumericData(0);
-        double numericData(0);
-        QString cellStrData;
-        QStringList cellStrDataList;
-
-        int nbColumn(header.size());
-        int nbRow(tabData.size() - tempsPosList -2);
-        tabNumericData.push_back(nbColumn);
-        tabNumericData.push_back(nbRow);
-
-        //creat a tab witch contain all numeric tab data stacked
-        for (int k(0); k<=header.size()-1; k++)
-        {
-            for ( int i(tempsPosList+1); i<=tabData.size()-1; i++)
-            {
-                cellStrData = tabData.at(i);
-                cellStrDataList = cellStrData.split(QRegExp("\t"));
-                numericData = cellStrDataList[k].toDouble();
-                tabNumericData.push_back(numericData);
-            }
-        }
-
-        /*****************************************
-         * Data parsing end
-         * **************************************/
-
-        FenEnfantTab *childTab = new FenEnfantTab;
-        mdiArea->addSubWindow(childTab);
-        if (childTab->loadTabData(infoFile, header, tabNumericData))
+        FenEnfantTab *childTab = createTabMdiChild();
+        if (childTab->loadTabData(infoFile, header, tab))
         {
             statusBar()->showMessage(tr("File loaded"), 2000);
             childTab->show();
@@ -155,9 +72,8 @@ void FenPrincipale::open()
             childTab->close();
         }
 
-        FenEnfantGraph *childGraph = new FenEnfantGraph;
-        mdiArea->addSubWindow(childGraph);
-        if (childGraph->LoadTabData(tabNumericData, fileName))
+        FenEnfantGraph *childGraph = createGraphMdiChild();
+        if (childGraph->LoadTabData(tab, infoFile))
         {
             statusBar()->showMessage(tr("File loaded"), 2000);
             childGraph->show();
@@ -168,42 +84,7 @@ void FenPrincipale::open()
         }
     }
 }
-/**********************************
- * Data parser function
- * *******************************/
-int FenPrincipale::findWordInTab(const QStringList& tab, const QString& word)
-{
-    // Return the position of a word in a QStringList
-    bool wordIsFind(false);
-    int wordPosLine = 0;
-    while (wordIsFind == false)
-    {
-        QString cellControl(tab.at(wordPosLine));
-        QStringList CellControlList(cellControl.split(QRegExp("\t")));
-        wordIsFind = CellControlList.contains(word);
-        wordPosLine++;
-    }
-    return wordPosLine-1;
-}
 
-QString FenPrincipale::fileTxtInfo(const QString& info)
-{
-    //Permit to parse information of the info file header, if there is no information the string is null
-    QStringList infoList = info.split(QRegExp("\t"));
-    if (infoList.size() == 1)
-    {
-        QString infoTr(" ");
-        return infoTr;
-    }
-    else
-    {
-        QString infoTr2(infoList.at(1));
-        return infoTr2;
-    }
-}
-/***********************************
- * Data parser function end
- * ********************************/
 
 void FenPrincipale::about()
 {
@@ -279,12 +160,20 @@ void FenPrincipale::updateWindowMenu()
     }
 }
 
-FenEnfant *FenPrincipale::createMdiChild()
+FenEnfantTab *FenPrincipale::createTabMdiChild()
 {
-    FenEnfant *child = new FenEnfant;
-    mdiArea->addSubWindow(child);
+    FenEnfantTab *childTab = new FenEnfantTab;
+    mdiArea->addSubWindow(childTab);
 
-    return child;
+    return childTab;
+}
+
+FenEnfantGraph *FenPrincipale::createGraphMdiChild()
+{
+    FenEnfantGraph *childGraph = new FenEnfantGraph;
+    mdiArea->addSubWindow(childGraph);
+
+    return childGraph;
 }
 
 void FenPrincipale::createActions()

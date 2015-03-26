@@ -5,7 +5,7 @@
 #include <QtWidgets>
 
 
-class FenEnfant;
+//class FenEnfant;
 class FenEnfantTab;
 class FenEnfantGraph;
 QT_BEGIN_NAMESPACE
@@ -37,7 +37,9 @@ private slots:
     void about();
     void updateMenus();
     void updateWindowMenu();
-    FenEnfant *createMdiChild();
+    FenEnfantTab *createTabMdiChild();
+    FenEnfantGraph *createGraphMdiChild();
+
     //void switchLayoutDirection();
     void setActiveSubWindow(QWidget *window);
 
