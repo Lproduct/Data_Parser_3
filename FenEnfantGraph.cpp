@@ -1,5 +1,6 @@
 #include "FenEnfantGraph.h"
 #include "ui_FenEnfantGraph.h"
+#include "time.h"
 
 
 FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
@@ -17,321 +18,20 @@ FenEnfantGraph::~FenEnfantGraph()
     delete ui;
 }
 
-bool FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QStringList &fileInfo)
+bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList &header,const QVector<QVector<double> > &tab )
 {
     setCurrentFile(fileInfo.at(0));
 
-    int nbColumn(tab.at(0));
-    int nbRow(tab.at(1));
-
-    QVector<double> x(nbRow+1), y1(nbRow+1), y2(nbRow+1), y3(nbRow+1), y4(nbRow+1), y5(nbRow+1), y6(nbRow+1), y7(nbRow+1), y8(nbRow+1), y9(nbRow+1);
-
-    switch(nbColumn)
+    for(int i(0); i<tab.size()-1; i++)
     {
-    case 1:
-        break;
-
-    case 2:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-        }
-
-        // create graph and assign data to it:
         ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-        break;
-
-    case 3:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-        break;
-
-    case 4:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-        break;
-
-    case 5:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-            y4[i] = tab[i+2+4*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(3)->setPen(QPen(Qt::green));
-        ui->customPlot->graph(3)->setData(x, y4);
-        break;
-
-    case 6:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-            y4[i] = tab[i+2+4*(nbRow+1)];
-            y5[i] = tab[i+2+5*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(3)->setPen(QPen(Qt::green));
-        ui->customPlot->graph(3)->setData(x, y4);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(4)->setPen(QPen(Qt::black));
-        ui->customPlot->graph(4)->setData(x, y5);
-        break;
-
-    case 7:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-            y4[i] = tab[i+2+4*(nbRow+1)];
-            y5[i] = tab[i+2+5*(nbRow+1)];
-            y6[i] = tab[i+2+6*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(3)->setPen(QPen(Qt::green));
-        ui->customPlot->graph(3)->setData(x, y4);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(4)->setPen(QPen(Qt::black));
-        ui->customPlot->graph(4)->setData(x, y5);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(5)->setPen(QPen(Qt::gray));
-        ui->customPlot->graph(5)->setData(x, y6);
-        break;
-
-    case 8:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-            y4[i] = tab[i+2+4*(nbRow+1)];
-            y5[i] = tab[i+2+5*(nbRow+1)];
-            y6[i] = tab[i+2+6*(nbRow+1)];
-            y7[i] = tab[i+2+7*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(3)->setPen(QPen(Qt::green));
-        ui->customPlot->graph(3)->setData(x, y4);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(4)->setPen(QPen(Qt::black));
-        ui->customPlot->graph(4)->setData(x, y5);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(5)->setPen(QPen(Qt::gray));
-        ui->customPlot->graph(5)->setData(x, y6);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(6)->setPen(QPen(Qt::cyan));
-        ui->customPlot->graph(6)->setData(x, y7);
-        break;
-
-    case 9:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-            y4[i] = tab[i+2+4*(nbRow+1)];
-            y5[i] = tab[i+2+5*(nbRow+1)];
-            y6[i] = tab[i+2+6*(nbRow+1)];
-            y7[i] = tab[i+2+7*(nbRow+1)];
-            y8[i] = tab[i+2+8*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(3)->setPen(QPen(Qt::green));
-        ui->customPlot->graph(3)->setData(x, y4);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(4)->setPen(QPen(Qt::black));
-        ui->customPlot->graph(4)->setData(x, y5);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(5)->setPen(QPen(Qt::gray));
-        ui->customPlot->graph(5)->setData(x, y6);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(6)->setPen(QPen(Qt::cyan));
-        ui->customPlot->graph(6)->setData(x, y7);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(7)->setPen(QPen(Qt::magenta));
-        ui->customPlot->graph(7)->setData(x, y8);
-        break;
-
-    case 10:
-        for (int i(0); i<=nbRow; i++)
-        {
-            x[i] = tab[i+2];
-            y1[i] = tab[i+2+nbRow+1];
-            y2[i] = tab[i+2+2*(nbRow+1)];
-            y3[i] = tab[i+2+3*(nbRow+1)];
-            y4[i] = tab[i+2+4*(nbRow+1)];
-            y5[i] = tab[i+2+5*(nbRow+1)];
-            y6[i] = tab[i+2+6*(nbRow+1)];
-            y7[i] = tab[i+2+7*(nbRow+1)];
-            y8[i] = tab[i+2+8*(nbRow+1)];
-            y9[i] = tab[i+2+9*(nbRow+1)];
-        }
-
-        // create graph and assign data to it:
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(0)->setPen(QPen(Qt::blue));
-        ui->customPlot->graph(0)->setData(x, y1);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(1)->setPen(QPen(Qt::red));
-        ui->customPlot->graph(1)->setData(x, y2);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(2)->setPen(QPen(Qt::yellow));
-        ui->customPlot->graph(2)->setData(x, y3);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(3)->setPen(QPen(Qt::green));
-        ui->customPlot->graph(3)->setData(x, y4);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(4)->setPen(QPen(Qt::black));
-        ui->customPlot->graph(4)->setData(x, y5);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(5)->setPen(QPen(Qt::gray));
-        ui->customPlot->graph(5)->setData(x, y6);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(6)->setPen(QPen(Qt::cyan));
-        ui->customPlot->graph(6)->setData(x, y7);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(7)->setPen(QPen(Qt::magenta));
-        ui->customPlot->graph(7)->setData(x, y8);
-
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(8)->setPen(QPen(Qt::magenta));
-        ui->customPlot->graph(8)->setData(x, y9);
-        break;
-
+        ui->customPlot->graph(i)->setPen(QPen(randomColor()));
+        ui->customPlot->graph(i)->setName(header.at(i+1));
+        ui->customPlot->graph(i)->setData(tab.at(0), tab.at(i+1));
     }
 
-    // give the axes some labels:
-    ui->customPlot->xAxis->setLabel("x");
+   // give the axes some labels:
+    ui->customPlot->xAxis->setLabel(header.at(0));
     ui->customPlot->yAxis->setLabel("y");
 
     // configure right and top axis to show ticks but no labels:
@@ -355,7 +55,136 @@ bool FenEnfantGraph::LoadTabData(const QVector<double> &tab, const QStringList &
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
+    //Set legend on the graph
+    ui->customPlot->legend->setVisible(true);
+    ui->customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
     return true;
+}
+
+QColor FenEnfantGraph::randomColor()
+{
+    int randNum(-1);
+    QColor *color =new QColor;
+    randNum = rand()%16;
+
+    switch(randNum)
+    {
+    case 0:
+        {
+            color->setNamedColor("#000000");//black
+            break;
+        }
+
+    case 1:
+        {
+            color->setNamedColor("#ff0000");//red
+            break;
+        }
+    case 2:
+        {
+            color->setNamedColor("#00ff00");//green
+            break;
+        }
+    case 3:
+        {
+            color->setNamedColor("#0000ff");//blue
+            break;
+        }
+    case 4:
+        {
+            color->setNamedColor("#00ffff");//cyan
+            break;
+        }
+    case 5:
+        {
+            color->setNamedColor("#ff00ff");//magenta
+            break;
+        }
+    case 6:
+        {
+            color->setNamedColor("#ffff00");//yellow
+            break;
+        }
+    case 7:
+        {
+            color->setNamedColor("#a0a0a4");//grey
+            break;
+        }
+    case 8:
+        {
+            color->setNamedColor("#800000");//darkRed
+            break;
+        }
+    case 9:
+        {
+            color->setNamedColor("#008000");//darkGreen
+            break;
+        }
+    case 10:
+        {
+            color->setNamedColor("#000080");//darkBlue
+            break;
+        }
+    case 11:
+        {
+            color->setNamedColor("#008080");//darkCyan
+            break;
+        }
+    case 12:
+        {
+            color->setNamedColor("#800080");//darkMagenta
+            break;
+        }
+    case 13:
+        {
+            color->setNamedColor("#808000");//darkYellow
+            break;
+        }
+    case 14:
+        {
+            color->setNamedColor("#808000");//darkGray
+            break;
+        }
+    case 15:
+        {
+            color->setNamedColor("#808000");//lightGray
+            break;
+        }
+
+    }
+
+    return *color;
+
+}
+
+
+
+void FenEnfantGraph::dataAverage(const QVector<double> &tab)
+{
+    /*int samplingTime(10);
+    int nbColumn(tab.at(0));
+    int nbRow(tab.at(1));
+
+    int reste(nbRow%samplingTime);
+    int nbLoop(0);
+    if (reste == 0)
+    {
+        nbloop =nbRow/samplingTime;
+    }
+    else
+    {
+        nbLoop = (nbRow-reste)/samplingTime;
+    }
+    QVector<double> averageTab;
+    for(int i(0); i<=nbLoop-1; i++)
+    {
+        int average(0);
+        for(int k(0+i*(samplingTime)); k<=samplingTime-1+i*samplingTime; k++)
+        {
+            average += tab.at(k);
+        }
+        averageTab.push_back(average/samplingTime);
+    }*/
 }
 
 void FenEnfantGraph::setCurrentFile(const QString &fileName)

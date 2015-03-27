@@ -53,7 +53,7 @@ FenEnfantTab::FenEnfantTab()
     setMinimumWidth(600);   
 }
 
-bool FenEnfantTab::loadTabData(const QStringList &info,const QStringList &header, const QVector<double> &tab)
+bool FenEnfantTab::loadTabData(const QStringList &info,const QStringList &header, const QVector<QVector<double> > &tab)
 {
     setInfo(info);
 
@@ -76,24 +76,26 @@ void FenEnfantTab::setInfo(const QStringList &info)
     commentaires->setText(info.at(7));
 }
 
-void FenEnfantTab::setTabParameter(const QStringList &header, const QVector<double> &tab)
+void FenEnfantTab::setTabParameter(const QStringList &header, const QVector<QVector<double> > &tab)
 {
-    table->setColumnCount(tab.at(0));
-    table->setRowCount(tab.at(1)+1);
+    QVector<double> subtab(tab.at(0));
+    table->setColumnCount(tab.size());
+    table->setRowCount(subtab.size());
 
     table->setHorizontalHeaderLabels(header);
 }
 
-void FenEnfantTab::setTab(const QVector<double> &tab)
+void FenEnfantTab::setTab(const QVector<QVector<double> > &tab)
 {
-    double nbColumn(tab.at(0));
-    double nbRow(tab.at(1));
+    QVector<double> subTab(tab.at(0));
+    int nbColumn(tab.size());
+    long int nbRow(subTab.size());
 
-    for ( int i(0); i<=nbColumn-1; i++)
+    for(int i(0); i<=nbColumn-1; i++)
     {
-        for (int k(2+i*(nbRow+1)); k<=(nbRow+2)+i*(nbRow+1); k++)
+        for(long int k(0); k<=nbRow-1; k++)
         {
-            table->setItem(k-2-i*(nbRow+1), i, new QTableWidgetItem(QString::number(tab.at(k))));
+            table->setItem(k, i, new QTableWidgetItem(QString::number(subTab.at(k))));
         }
     }
 }

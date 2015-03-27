@@ -59,7 +59,7 @@ void FenPrincipale::open()
         DataParser *parserData = new DataParser(fileName);
         QStringList infoFile(parserData->getInfoFile());
         QStringList header(parserData->getHeader());
-        QVector<double> tab(parserData->getTab());
+        QVector<QVector<double> > tab(parserData->getTab());
 
         FenEnfantTab *childTab = createTabMdiChild();
         if (childTab->loadTabData(infoFile, header, tab))
@@ -73,7 +73,7 @@ void FenPrincipale::open()
         }
 
         FenEnfantGraph *childGraph = createGraphMdiChild();
-        if (childGraph->LoadTabData(tab, infoFile))
+        if (childGraph->LoadTabData(infoFile, header, tab))
         {
             statusBar()->showMessage(tr("File loaded"), 2000);
             childGraph->show();

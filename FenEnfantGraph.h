@@ -16,12 +16,14 @@ public:
     explicit FenEnfantGraph(QWidget *parent = 0);
     ~FenEnfantGraph();
 
-    bool LoadTabData(const QVector<double> &tab, const QStringList &fileInfo);
+    bool LoadTabData(const QStringList &fileInfo, const QStringList &header, const QVector<QVector<double> > &tab);
     QString userFriendlyCurrentFile();
+    void dataAverage(const QVector<double> &tab);
     QString currentFile() { return curFile; }
 
 private:
     void setCurrentFile(const QString &fileName);
+    QColor randomColor();
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;
     QString curFile;

@@ -9,7 +9,7 @@ class FenEnfantTab : public QTableWidget
 
 public:
     FenEnfantTab();
-    bool loadTabData(const QStringList &infoFile, const QStringList &header, const QVector<double> &tab);
+    bool loadTabData(const QStringList &infoFile, const QStringList &header, const QVector<QVector<double> > &tab);
     QString userFriendlyCurrentFile();
     QString currentFile() { return curFile; }
 
@@ -18,8 +18,8 @@ signals:
 
 private:
     void setInfo(const QStringList &info);
-    void setTabParameter(const QStringList &header, const QVector<double> &tab);
-    void setTab(const QVector<double> &tab);
+    void setTabParameter(const QStringList &header, const QVector<QVector<double> > &tab);
+    void setTab(const QVector<QVector<double> > &tab);
 
     QString strippedName(const QString &fullFileName);
     void setCurrentFile(const QString &fileName);

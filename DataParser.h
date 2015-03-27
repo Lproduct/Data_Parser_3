@@ -11,7 +11,7 @@ public:
 
     QStringList getInfoFile();
     QStringList getHeader();
-    QVector<double> getTab();
+    QVector<QVector<double> > getTab();
 
 private:
     int findWordInTab(const QStringList& tab, const QString& word);
@@ -21,7 +21,8 @@ private:
     QStringList tabData;
     QStringList infoFile;
     QStringList header;
-    QVector<double> tabNumericData;
+    //QVector<double> tabNumericData;
+    QVector<QVector<double> > tabNumericData;
 
 
 };

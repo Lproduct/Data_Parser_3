@@ -75,7 +75,7 @@ QStringList DataParser::getHeader()
     return header;
 }
 
-QVector<double> DataParser::getTab()
+QVector<QVector<double> > DataParser::getTab()
 {
     QString wordTemps("Temps");
     int tempsPosList = findWordInTab(tabData, wordTemps);
@@ -87,22 +87,20 @@ QVector<double> DataParser::getTab()
     QStringList cellStrDataList;
 
     int nbColumn(header.size());
-    int nbRow(tabData.size() - tempsPosList -2);
-    tabNumericData.push_back(nbColumn);
-    tabNumericData.push_back(nbRow);
+    long int nbRow(tabData.size());//- tempsPosList -2
 
-    //creat a tab witch contain all numeric tab data stacked
-    for (int k(0); k<=header.size()-1; k++)
+    for(int i(0); i<=nbColumn-1; i++)
     {
-        for ( int i(tempsPosList+1); i<=tabData.size()-1; i++)
+        QVector<double> subTab;
+        for(long int k(tempsPosList+1); k<=nbRow-1; k++)
         {
-            cellStrData = tabData.at(i);
+            cellStrData = tabData.at(k);
             cellStrDataList = cellStrData.split(QRegExp("\t"));
-            numericData = cellStrDataList[k].toDouble();
-            tabNumericData.push_back(numericData);
+            numericData = cellStrDataList[i].toDouble();
+            subTab.push_back(numericData);
         }
+        tabNumericData.push_back(subTab);
     }
-
     return tabNumericData;
 }
 
