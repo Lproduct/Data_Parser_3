@@ -1,6 +1,7 @@
 #include "FenEnfantGraph.h"
 #include "ui_FenEnfantGraph.h"
 #include "time.h"
+#include <algorithm>
 
 
 FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
@@ -20,20 +21,20 @@ FenEnfantGraph::~FenEnfantGraph()
 
 bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList &header,const QVector<QVector<double> > &tab )
 {
-    setCurrentFile(fileInfo.at(0));
+    setCurrentFile(fileInfo.at(0));    
 
-    for(int i(0); i<tab.size()-1; i++)
-    {
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(i)->setPen(QPen(randomColor()));
-        ui->customPlot->graph(i)->setName(header.at(i+1));
-        ui->customPlot->graph(i)->setData(tab.at(0), tab.at(i+1));
-    }
+    setGraphParameter();
+    setGraph(header, tab);
+    averageCurve(1, 30, tab);
+    middleCurve(1, 30, tab);
+    defineAxis(header);
 
-   // give the axes some labels:
-    ui->customPlot->xAxis->setLabel(header.at(0));
-    ui->customPlot->yAxis->setLabel("y");
 
+    return true;
+}
+
+void FenEnfantGraph::setGraphParameter()
+{
     // configure right and top axis to show ticks but no labels:
     // (see QCPAxisRect::setupFullAxesBox for a quicker method to do this)
     ui->customPlot->xAxis2->setVisible(true);
@@ -45,9 +46,6 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->xAxis2, SLOT(setRange(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->yAxis2, SLOT(setRange(QCPRange)));
 
-    // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
-    ui->customPlot->graph(0)->rescaleAxes();
-
     // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
     //ui->customPlot->graph(1)->rescaleAxes(true);
 
@@ -58,14 +56,44 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
     //Set legend on the graph
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
-    return true;
 }
 
-QColor FenEnfantGraph::randomColor()
+void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<double> > &tab)
 {
+    for(int i(0); i<tab.size()-1; i++)
+    {
+        ui->customPlot->addGraph();
+        ui->customPlot->graph(i)->setPen(QPen(randomColor("normal")));
+        ui->customPlot->graph(i)->setName(header.at(i+1));
+        ui->customPlot->graph(i)->setData(tab.at(0), tab.at(i+1));
+    }
+}
+
+void FenEnfantGraph::defineAxis(const QStringList &header)
+{
+    // give the axes some labels:
+     ui->customPlot->xAxis->setLabel(header.at(0));
+     ui->customPlot->yAxis->setLabel("Comptage");
+
+     // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
+     ui->customPlot->graph(0)->rescaleAxes();
+}
+
+QColor FenEnfantGraph::randomColor(const QString &colorType)
+{
+    int modulo(0);
+    if (colorType == "normal")
+    {
+        modulo = 8;
+    }
+    if (colorType == "all")
+    {
+        modulo = 16;
+    }
+
     int randNum(-1);
     QColor *color =new QColor;
-    randNum = rand()%16;
+    randNum = rand()%modulo;
 
     switch(randNum)
     {
@@ -154,37 +182,107 @@ QColor FenEnfantGraph::randomColor()
     }
 
     return *color;
-
 }
 
-
-
-void FenEnfantGraph::dataAverage(const QVector<double> &tab)
+void FenEnfantGraph::averageCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab)
 {
-    /*int samplingTime(10);
-    int nbColumn(tab.at(0));
-    int nbRow(tab.at(1));
+    //Create a average curve
+    QVector<double> subTab(tab.at(0));
 
-    int reste(nbRow%samplingTime);
+    //int nbColumn(tab.size());
+    int nbRow(subTab.size());
+
+    int reste(nbRow%sampleTime);
     int nbLoop(0);
     if (reste == 0)
     {
-        nbloop =nbRow/samplingTime;
+        nbLoop =nbRow/sampleTime;
     }
     else
     {
-        nbLoop = (nbRow-reste)/samplingTime;
+        nbLoop = (nbRow-reste)/sampleTime;
     }
-    QVector<double> averageTab;
+
+    QVector<double> axisTab;
+    double sampleTimeModif = (double) sampleTime;
     for(int i(0); i<=nbLoop-1; i++)
     {
-        int average(0);
-        for(int k(0+i*(samplingTime)); k<=samplingTime-1+i*samplingTime; k++)
+        axisTab.push_back(sampleTimeModif/2+i*sampleTimeModif);
+    }
+
+    QVector<double> ordTab;
+    QVector<double> subtab2(tab.at(nbTab));
+    for(int i(0); i<=nbLoop-1; i++)
+    {
+        double average(0);
+        for(int k(0+i*(sampleTime)); k<=sampleTime-1+i*(sampleTime); k++)
         {
-            average += tab.at(k);
+            average += subtab2.at(k);
         }
-        averageTab.push_back(average/samplingTime);
-    }*/
+        ordTab.push_back(average/sampleTime);
+    }
+
+    ui->customPlot->addGraph();
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setPen(QPen(randomColor("normal")));
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setName("average");
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setData(axisTab, ordTab);
+}
+
+void FenEnfantGraph::middleCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab)
+{
+    //Create a value middle curve
+    int sampleTimeModif;
+    if (sampleTime%2 == 0)
+    {
+        sampleTimeModif = sampleTime +1;
+    }
+    else
+    {
+        sampleTimeModif = sampleTime;
+    }
+
+    QVector<double> subTab(tab.at(0));
+
+    //int nbColumn(tab.size());
+    int nbRow(subTab.size());
+
+    int reste(nbRow%sampleTimeModif);
+    int nbLoop(0);
+    if (reste == 0)
+    {
+        nbLoop =nbRow/sampleTimeModif;
+    }
+    else
+    {
+        nbLoop = (nbRow-reste)/sampleTimeModif;
+    }
+
+    QVector<double> axisTab;
+    double sampleTimeModifDouble = (double) sampleTimeModif;
+    for(int i(0); i<=nbLoop-1; i++)
+    {
+        axisTab.push_back(sampleTimeModifDouble/2+i*sampleTimeModifDouble);
+    }
+
+    QVector<double> ordTab;
+    QVector<double> subtab2(tab.at(nbTab));
+    for(int i(0); i<=nbLoop-1; i++)
+    {
+        QVector<double> middleTab(0);
+
+        for(int k(0+i*(sampleTimeModif)); k<=sampleTimeModif-1+i*(sampleTimeModif); k++)
+        {
+            middleTab.push_back(subtab2.at(k));
+        }
+        std::sort(middleTab.begin(), middleTab.end());
+        ordTab.push_back(middleTab.at(sampleTimeModif/2));
+    }
+
+    ui->customPlot->addGraph();
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setPen(QPen(randomColor("normal")));
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setName("middle");
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setData(axisTab, ordTab);
+
 }
 
 void FenEnfantGraph::setCurrentFile(const QString &fileName)

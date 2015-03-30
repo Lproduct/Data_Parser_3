@@ -18,12 +18,17 @@ public:
 
     bool LoadTabData(const QStringList &fileInfo, const QStringList &header, const QVector<QVector<double> > &tab);
     QString userFriendlyCurrentFile();
-    void dataAverage(const QVector<double> &tab);
+    void averageCurve(const int &nbTab, const int &sampleTime, const QVector<QVector<double> > &tab);
+    void middleCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab);
     QString currentFile() { return curFile; }
 
 private:
     void setCurrentFile(const QString &fileName);
-    QColor randomColor();
+    void setGraph(const QStringList &header, const QVector<QVector<double> > &tab);
+    void setGraphParameter();
+    void defineAxis(const QStringList &header);
+
+    QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;
     QString curFile;
