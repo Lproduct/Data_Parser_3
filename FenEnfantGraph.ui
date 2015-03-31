@@ -272,10 +272,30 @@
         <number>6</number>
        </property>
        <item>
-        <widget class="QDoubleSpinBox" name="curseur1"/>
+        <widget class="QDoubleSpinBox" name="curseur1">
+         <property name="minimum">
+          <double>-100000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1000000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+        </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="curseur2"/>
+        <widget class="QDoubleSpinBox" name="curseur2">
+         <property name="minimum">
+          <double>-1000000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1000000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <qcustomplot.h>
 #include <map>
+#include <QTimer>
 
 namespace Ui {
 class FenEnfantGraph;
@@ -26,6 +27,9 @@ public:
 public slots:
     void cursor1(const double &posCursor);
     void cursor2(const double &posCursor);
+    void cursorHeightScroll(QWheelEvent *event);
+    void cursorHeightMouved(QMouseEvent* event );
+    void cursorHeightPressed(QMouseEvent* event);
 
 signals:
     void cursor1Update();
@@ -38,14 +42,15 @@ private:
     void setGraphParameter();
     void defineAxis(const QStringList &header);
     void setTabCurve(const QString &nameCurve);
-    void setCursorCurveV1(const double &posCursor, const int &nbGraph);
-    void setCursorCurveV2(const int &posCursor, const int &nbGraph);
+    void setCursorCurveV1(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
+    void setCursorCurveV2(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
 
     QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;
     QString curFile;
+    QTimer dataTimer;
 };
 
 #endif // FENENFANTGRAPH_H

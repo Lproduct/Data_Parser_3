@@ -11,10 +11,14 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->setupUi(this);
 
     ui->customPlot->replot();
+    dataTimer.start(0);
     connect(ui->curseur1, SIGNAL(valueChanged(double)), this, SLOT(cursor1(double)) );
     connect(ui->curseur2, SIGNAL(valueChanged(double)), this, SLOT(cursor2(double)) );
     connect(this, SIGNAL(cursor1Update()), ui->customPlot, SLOT(replot()) );
     connect(this, SIGNAL(cursor2Update()), ui->customPlot, SLOT(replot()) );
+    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(cursorHeightScroll(QWheelEvent*)));
+    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(cursorHeightMouved(QMouseEvent*)));
+    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(cursorHeightPressed(QMouseEvent*)));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -32,8 +36,8 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
 
     averageCurve(1, 9, tab);
     middleCurve(1, 9, tab);
-    setCursorCurveV1(0, ui->customPlot->graphCount());
-    setCursorCurveV2(0, ui->customPlot->graphCount());
+    setCursorCurveV1(0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
+    setCursorCurveV2(0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
 
     defineAxis(header);
 
@@ -70,7 +74,6 @@ void FenEnfantGraph::setGraphParameter()
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
     //Set legend on the graph
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
@@ -308,7 +311,7 @@ void FenEnfantGraph::middleCurve(const int &nbTab, const int &sampleTime,const Q
     indexGraph["middle"] = (ui->customPlot->graphCount()-1);
 }
 
-void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGraph)
+void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight)
 {
     QVector<double> absTab;
     for(int i(0); i <= 1; i++)
@@ -316,16 +319,18 @@ void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGrap
         absTab.push_back(posCursor);
     }
 
+    double cursorHeightMin(cursorHeight.lower);
+    double cursorHeightMax(cursorHeight.upper);
     QVector<double> ordTab;
-    for(int i(0); i <= 1; i++)
-    {
-        ordTab.push_back(0+i*200000);
-    }
+    ordTab.push_back(cursorHeightMin);
+    ordTab.push_back(cursorHeightMax);
+
+
     QString name("cursor 1");
     QPen pen;
     pen.setColor(QColor(255,170,100));
     pen.setWidth(2);
-    pen.setStyle(Qt::SolidLine);
+    pen.setStyle(Qt::DotLine);
 
     if(indexGraph[name] == 0)
     {
@@ -341,8 +346,7 @@ void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGrap
         ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
     }
 }
-
-void FenEnfantGraph::setCursorCurveV2(const int &posCursor, const int &nbGraph)
+void FenEnfantGraph::setCursorCurveV2(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight)
 {
     QVector<double> absTab;
     for(int i(0); i <= 1; i++)
@@ -350,16 +354,18 @@ void FenEnfantGraph::setCursorCurveV2(const int &posCursor, const int &nbGraph)
         absTab.push_back(posCursor);
     }
 
+    double cursorHeightMin(cursorHeight.lower);
+    double cursorHeightMax(cursorHeight.upper);
     QVector<double> ordTab;
-    for(int i(0); i <= 1; i++)
-    {
-        ordTab.push_back(0+i*200000);
-    }
+    ordTab.push_back(cursorHeightMin);
+    ordTab.push_back(cursorHeightMax);
+
+
     QString name("cursor 2");
     QPen pen;
     pen.setColor(QColor(255,170,100));
     pen.setWidth(2);
-    pen.setStyle(Qt::SolidLine);
+    pen.setStyle(Qt::DotLine);
 
     if(indexGraph[name] == 0)
     {
@@ -379,14 +385,50 @@ void FenEnfantGraph::setCursorCurveV2(const int &posCursor, const int &nbGraph)
 void FenEnfantGraph::cursor1(const double &posCursor)
 {
     ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
-    setCursorCurveV1(posCursor, indexGraph["cursor 1"]);
+    setCursorCurveV1(posCursor, indexGraph["cursor 1"], ui->customPlot->yAxis->range());
     emit cursor1Update();
 }
 
 void FenEnfantGraph::cursor2(const double &posCursor)
 {
     ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
-    setCursorCurveV2(posCursor, indexGraph["cursor 2"]);
+    setCursorCurveV2(posCursor, indexGraph["cursor 2"],ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+
+void FenEnfantGraph::cursorHeightScroll(QWheelEvent* event )
+{
+    event->accept();
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV1(ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV2(ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+
+void FenEnfantGraph::cursorHeightMouved(QMouseEvent* event )
+{
+    event->accept();
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV1(ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV2(ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+
+void FenEnfantGraph::cursorHeightPressed(QMouseEvent* event )
+{
+    event->accept();
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV1(ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV2(ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
     emit cursor2Update();
 }
 
