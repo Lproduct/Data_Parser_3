@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <qcustomplot.h>
+#include <map>
 
 namespace Ui {
 class FenEnfantGraph;
@@ -22,15 +23,28 @@ public:
     void middleCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab);
     QString currentFile() { return curFile; }
 
+public slots:
+    void cursor1(const double &posCursor);
+    void cursor2(const double &posCursor);
+
+signals:
+    void cursor1Update();
+    void cursor2Update();
+
 private:
     void setCurrentFile(const QString &fileName);
+    void setInfoData(const QStringList &fileInfo);
     void setGraph(const QStringList &header, const QVector<QVector<double> > &tab);
     void setGraphParameter();
     void defineAxis(const QStringList &header);
+    void setTabCurve(const QString &nameCurve);
+    void setCursorCurveV1(const double &posCursor, const int &nbGraph);
+    void setCursorCurveV2(const int &posCursor, const int &nbGraph);
 
     QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;
+    std::map<QString,int>  indexGraph;
     QString curFile;
 };
 
