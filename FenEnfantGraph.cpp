@@ -3,18 +3,18 @@
 #include "time.h"
 #include <algorithm>
 
-
 FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FenEnfantGraph)
 {
     ui->setupUi(this);
+    createCurveIntialisation();
 
     ui->customPlot->replot();
     dataTimer.start(0);
 
     ui->curseurEnable->setChecked(true);
-
+    //Cusor handle
     connect(ui->curseurEnable, SIGNAL(stateChanged(int)), this, SLOT(cursorEnable(int)));
     connect(ui->curseur1, SIGNAL(valueChanged(double)), this, SLOT(cursor1(double)) );
     connect(ui->curseur2, SIGNAL(valueChanged(double)), this, SLOT(cursor2(double)) );
@@ -24,8 +24,17 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(cursorHeightMouved(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(cursorHeightPressed(QMouseEvent*)));
 
+    //Tab curve list
     signalMapper = new QSignalMapper(this);
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(curveDisplay(int)));
+
+    //Zoom function
+    connect(ui->checkBoxZoomV, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
+    connect(ui->checkBoxZoomH, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
+
+    //Create Curve
+    connect(ui->checkBoxCreateCurve, SIGNAL(clicked()), this, SLOT(createCurvechecked()));
+    connect(ui->pushButtoncreateCurve, SIGNAL(clicked()), this,SLOT(createCurve()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -41,8 +50,10 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
     setGraphParameter();
     setGraph(header, tab);
 
-    averageCurve(1, 9, tab);
-    middleCurve(1, 9, tab);
+    tabData = tab;
+    //averageCurve(1, 9, tab);
+    //middleCurve(1, 9, tab);
+
     setCursorCurveV1(0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
     setCursorCurveV2(0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
 
@@ -80,7 +91,7 @@ void FenEnfantGraph::setGraphParameter()
 
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
-    ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
     //Set legend on the graph
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
@@ -345,7 +356,7 @@ void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGrap
         ui->customPlot->graph(nbGraph)->setPen(pen);
         ui->customPlot->graph(nbGraph)->setName(name);
         ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
-        setTabCurve(name);
+        //setTabCurve(name);
         indexGraph[name] = (nbGraph);
     }
     else
@@ -381,7 +392,7 @@ void FenEnfantGraph::setCursorCurveV2(const double &posCursor, const int &nbGrap
         ui->customPlot->graph(nbGraph)->setPen(pen);
         ui->customPlot->graph(nbGraph)->setName(name);
         ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
-        setTabCurve(name);
+        //setTabCurve(name);
         indexGraph[name] = (nbGraph);
     }
     else
@@ -448,6 +459,8 @@ void FenEnfantGraph::cursorEnable(const int& state)
         ui->curseur2->setEnabled(false);
         ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(false);
         ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(false);
+        ui->customPlot->graph(indexGraph["cursor 1"])->removeFromLegend();
+        ui->customPlot->graph(indexGraph["cursor 2"])->removeFromLegend();
         emit cursor1Update();
         emit cursor2Update();
     }
@@ -457,6 +470,8 @@ void FenEnfantGraph::cursorEnable(const int& state)
         ui->curseur2->setEnabled(true);
         ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(true);
         ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(true);
+        ui->customPlot->graph(indexGraph["cursor 1"])->addToLegend();
+        ui->customPlot->graph(indexGraph["cursor 2"])->addToLegend();
         emit cursor1Update();
         emit cursor2Update();
     }
@@ -485,12 +500,181 @@ void FenEnfantGraph::curveDisplay(const int &nbCurve)
     if (graphState == true)
     {
         ui->customPlot->graph(nbCurve)->setVisible(false);
+        ui->customPlot->graph(nbCurve)->removeFromLegend();
         ui->customPlot->replot();
     }
     else
     {
         ui->customPlot->graph(nbCurve)->setVisible(true);
+        ui->customPlot->graph(nbCurve)->addToLegend();
         ui->customPlot->replot();
+    }
+}
+
+void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Plus)
+    {
+        if(ui->customPlot->graph(indexGraph["cursor 1"])->selected() == true)
+        {
+           ui->curseur1->setValue(ui->curseur1->value()+1);
+        }
+        else
+        {
+            event->ignore();
+        }
+
+        if(ui->customPlot->graph(indexGraph["cursor 2"])->selected() == true)
+        {
+           ui->curseur2->setValue(ui->curseur2->value()+1);
+        }
+        else
+        {
+            event->ignore();
+        }
+    }
+
+    if(event->key() == Qt::Key_Minus)
+    {
+        if(ui->customPlot->graph(indexGraph["cursor 1"])->selected() == true)
+        {
+           ui->curseur1->setValue(ui->curseur1->value()-1);
+        }
+        else
+        {
+            event->ignore();
+        }
+
+        if(ui->customPlot->graph(indexGraph["cursor 2"])->selected() == true)
+        {
+           ui->curseur2->setValue(ui->curseur2->value()-1);
+        }
+        else
+        {
+            event->ignore();
+        }
+    }
+
+    else
+    {
+        event->ignore();
+    }
+}
+
+void FenEnfantGraph::zoom()
+{
+    int stateZoomV(ui->checkBoxZoomV->checkState());
+    int stateZoomH(ui->checkBoxZoomH->checkState());
+
+    if(stateZoomV == 2 && stateZoomH == 2)
+    {
+        ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
+        //ui->customPlot->axisRect(QCP::iRangeZoom);
+        ui->customPlot->axisRect()->setRangeZoomFactor(1.25, 1.25);
+    }
+
+    else if(stateZoomV == 0 && stateZoomH == 2)
+    {
+        //ui->customPlot->setInteraction(QCP::iRangeDrag | QCP::iSelectPlottables);
+        ui->customPlot->axisRect()->setRangeZoomFactor(1.25, 0);
+    }
+
+    else if(stateZoomV == 2 && stateZoomH == 0)
+    {
+        //ui->customPlot->setInteraction(QCP::iRangeDrag | QCP::iSelectPlottables);
+        ui->customPlot->axisRect()->setRangeZoomFactor(0, 1.25);
+    }
+
+    else if(stateZoomV == 0 && stateZoomH == 0)
+    {
+        //ui->customPlot->setInteraction(QCP::iRangeDrag | QCP::iSelectPlottables);
+        ui->customPlot->axisRect()->setRangeZoomFactor(0, 0);
+    }
+
+}
+
+void FenEnfantGraph::createCurveIntialisation()
+{
+    ui->checkBoxCreateCurve->setEnabled(true);
+    ui->checkBoxCreateCurve->setChecked(false);
+
+    ui->comboBoxCurveType->setEnabled(false);
+    ui->comboBoxCurveType->addItem("Moyenne");
+    ui->comboBoxCurveType->addItem("Filtre mileu");
+
+    ui->ComboBoxCurveName->setEnabled(false);
+    ui->ComboBoxCurveName->setEditable(false);
+
+    ui->spinBoxSampleTime->setEnabled(false);
+
+    ui->pushButtoncreateCurve->setEnabled(false);
+}
+
+void FenEnfantGraph::createCurvechecked()
+{
+    int checkBoxCreateCurveState(ui->checkBoxCreateCurve->checkState());
+
+    if (checkBoxCreateCurveState == 0)
+    {
+        ui->checkBoxCreateCurve->setEnabled(true);
+        ui->checkBoxCreateCurve->setChecked(false);
+
+        ui->comboBoxCurveType->setEnabled(false);
+        ui->comboBoxCurveType->addItem("Moyenne");
+        ui->comboBoxCurveType->addItem("Filtre mileu");
+
+        ui->ComboBoxCurveName->setEnabled(false);
+        ui->ComboBoxCurveName->setEditable(false);
+
+        ui->spinBoxSampleTime->setEnabled(false);
+
+        ui->pushButtoncreateCurve->setEnabled(false);
+    }
+
+    else if (checkBoxCreateCurveState == 2)
+    {
+        ui->comboBoxCurveType->setEnabled(true);
+        ui->comboBoxCurveType->setEditable(false);
+        ui->comboBoxCurveType->clear();
+        ui->comboBoxCurveType->addItem("Moyenne");
+        ui->comboBoxCurveType->addItem("Filtre mileu");
+
+        ui->ComboBoxCurveName->setEnabled(true);
+        ui->ComboBoxCurveName->clear();
+        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+        {
+            QString nameCurve(it->first);
+            if (nameCurve == "cursor 1" || nameCurve == "cursor 2")
+            {
+
+            }
+            else
+            {
+              ui->ComboBoxCurveName->addItem(nameCurve);
+            }
+        }
+
+        ui->spinBoxSampleTime->setEnabled(true);
+
+        ui->pushButtoncreateCurve->setEnabled(true);
+    }
+}
+
+void FenEnfantGraph::createCurve()
+{
+    QString curveType(ui->comboBoxCurveType->currentText());
+    QString curveselected(ui->ComboBoxCurveName->currentText());
+    double sampleTime(ui->spinBoxSampleTime->value());
+
+    if(curveType == "Moyenne")
+    {
+        averageCurve(indexGraph[curveselected], sampleTime, tabData);
+
+    }
+
+    else if(curveType == "Filtre mileu")
+    {
+        middleCurve(indexGraph[curveselected], sampleTime, tabData);
     }
 }
 

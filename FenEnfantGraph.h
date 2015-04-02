@@ -32,6 +32,9 @@ public slots:
     void cursorHeightPressed(QMouseEvent* event);
     void cursorEnable(const int& state);
     void curveDisplay(const int &nbCurve);
+    void zoom();
+    void createCurvechecked();
+    void createCurve();
 
 signals:
     void cursor1Update();
@@ -46,12 +49,14 @@ private:
     void setTabCurve(const QString &nameCurve);
     void setCursorCurveV1(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
     void setCursorCurveV2(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
+    void keyPressEvent(QKeyEvent *event);
+    void createCurveIntialisation();
 
+    QVector<QVector<double> > tabData;
     QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;
-
     QSignalMapper *signalMapper;
     QString curFile;
     QTimer dataTimer;
