@@ -249,6 +249,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="curseurEnable">
+       <property name="text">
+        <string>Curseurs</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLabel" name="label_9">
@@ -298,6 +305,13 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

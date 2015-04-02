@@ -30,6 +30,8 @@ public slots:
     void cursorHeightScroll(QWheelEvent *event);
     void cursorHeightMouved(QMouseEvent* event );
     void cursorHeightPressed(QMouseEvent* event);
+    void cursorEnable(const int& state);
+    void curveDisplay(const int &nbCurve);
 
 signals:
     void cursor1Update();
@@ -49,6 +51,8 @@ private:
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;
+
+    QSignalMapper *signalMapper;
     QString curFile;
     QTimer dataTimer;
 };

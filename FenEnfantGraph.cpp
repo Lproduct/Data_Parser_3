@@ -12,6 +12,10 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     ui->customPlot->replot();
     dataTimer.start(0);
+
+    ui->curseurEnable->setChecked(true);
+
+    connect(ui->curseurEnable, SIGNAL(stateChanged(int)), this, SLOT(cursorEnable(int)));
     connect(ui->curseur1, SIGNAL(valueChanged(double)), this, SLOT(cursor1(double)) );
     connect(ui->curseur2, SIGNAL(valueChanged(double)), this, SLOT(cursor2(double)) );
     connect(this, SIGNAL(cursor1Update()), ui->customPlot, SLOT(replot()) );
@@ -19,6 +23,9 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(cursorHeightScroll(QWheelEvent*)));
     connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(cursorHeightMouved(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(cursorHeightPressed(QMouseEvent*)));
+
+    signalMapper = new QSignalMapper(this);
+    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(curveDisplay(int)));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -346,6 +353,7 @@ void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGrap
         ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
     }
 }
+
 void FenEnfantGraph::setCursorCurveV2(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight)
 {
     QVector<double> absTab;
@@ -432,6 +440,27 @@ void FenEnfantGraph::cursorHeightPressed(QMouseEvent* event )
     emit cursor2Update();
 }
 
+void FenEnfantGraph::cursorEnable(const int& state)
+{
+    if(state == 0)
+    {
+        ui->curseur1->setEnabled(false);
+        ui->curseur2->setEnabled(false);
+        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(false);
+        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(false);
+        emit cursor1Update();
+        emit cursor2Update();
+    }
+    if(state == 2)
+    {
+        ui->curseur1->setEnabled(true);
+        ui->curseur2->setEnabled(true);
+        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(true);
+        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(true);
+        emit cursor1Update();
+        emit cursor2Update();
+    }
+}
 
 void FenEnfantGraph::setTabCurve(const QString &nameCurve)
 {
@@ -439,16 +468,30 @@ void FenEnfantGraph::setTabCurve(const QString &nameCurve)
     ui->table->setColumnCount(1);
     int nbRow(ui->table->rowCount());
     ui->table->setRowCount(nbRow+1);
+
     QCheckBox *checkCurve = new QCheckBox;
     checkCurve->setChecked(true);
     checkCurve->setText(nameCurve);
     ui->table->setCellWidget(nbRow, 0, checkCurve);
+    connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(checkCurve, nbRow);
 
-    /*QSignalMapper *mapper_checkBox = new QSignalMapper(this);
-    connect(checkCurve, SIGNAL(clicked()), mapper_checkBox, SLOT(map()));
-    mapper_checkBox->setMapping(mapper_checkBox, checkBox);//ici, je n'ai pas mis la ligne au cas où tu devrais faire des insertions de ligne ...
-    connect(mapper_checkBox, SIGNAL(mapped(QObject *)), this, SLOT(effectuerRemboursement(QObject *)));
-    */
+}
+
+void FenEnfantGraph::curveDisplay(const int &nbCurve)
+{
+    bool graphState(ui->customPlot->graph(nbCurve)->visible());
+
+    if (graphState == true)
+    {
+        ui->customPlot->graph(nbCurve)->setVisible(false);
+        ui->customPlot->replot();
+    }
+    else
+    {
+        ui->customPlot->graph(nbCurve)->setVisible(true);
+        ui->customPlot->replot();
+    }
 }
 
 void FenEnfantGraph::setCurrentFile(const QString &fileName)
