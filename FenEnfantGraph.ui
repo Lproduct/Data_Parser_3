@@ -297,14 +297,29 @@
           <property name="autoScrollMargin">
            <number>16</number>
           </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="showGrid">
            <bool>false</bool>
           </property>
           <attribute name="horizontalHeaderVisible">
            <bool>false</bool>
           </attribute>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>150</number>
+          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
+          </attribute>
+          <attribute name="verticalHeaderDefaultSectionSize">
+           <number>23</number>
           </attribute>
          </widget>
         </item>
@@ -409,7 +424,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBoxSampleTime"/>
+         <widget class="QSpinBox" name="spinBoxSampleTime">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_12">

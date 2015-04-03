@@ -21,7 +21,6 @@ private:
     QStringList tabData;
     QStringList infoFile;
     QStringList header;
-    //QVector<double> tabNumericData;
     QVector<QVector<double> > tabNumericData;
 
 

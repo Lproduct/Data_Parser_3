@@ -6,6 +6,8 @@
 #include <map>
 #include <QTimer>
 
+class MathFunction;
+
 namespace Ui {
 class FenEnfantGraph;
 }
@@ -47,12 +49,14 @@ private:
     void setGraphParameter();
     void defineAxis(const QStringList &header);
     void setTabCurve(const QString &nameCurve);
-    void setCursorCurveV1(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
-    void setCursorCurveV2(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
+    void initCursor();
+    void setCursorCurveV(const int cursorId, const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
     void keyPressEvent(QKeyEvent *event);
     void createCurveIntialisation();
+    void displayMathFunctionCurve(const QVector<QVector<double> > &tab);
+    QString curveName(const QVector<double> &tabId);
 
-    QVector<QVector<double> > tabData;
+    MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
     Ui::FenEnfantGraph *ui;

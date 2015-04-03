@@ -1,4 +1,5 @@
 #include "FenEnfantGraph.h"
+#include "MathFunction.h"
 #include "ui_FenEnfantGraph.h"
 #include "time.h"
 #include <algorithm>
@@ -13,8 +14,11 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->customPlot->replot();
     dataTimer.start(0);
 
-    ui->curseurEnable->setChecked(true);
     //Cusor handle
+    ui->curseurEnable->setChecked(false);
+    ui->curseur1->setEnabled(false);
+    ui->curseur2->setEnabled(false);
+
     connect(ui->curseurEnable, SIGNAL(stateChanged(int)), this, SLOT(cursorEnable(int)));
     connect(ui->curseur1, SIGNAL(valueChanged(double)), this, SLOT(cursor1(double)) );
     connect(ui->curseur2, SIGNAL(valueChanged(double)), this, SLOT(cursor2(double)) );
@@ -28,7 +32,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     signalMapper = new QSignalMapper(this);
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(curveDisplay(int)));
 
-    //Zoom function
+    //Zoom manager
     connect(ui->checkBoxZoomV, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
     connect(ui->checkBoxZoomH, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
 
@@ -50,12 +54,9 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
     setGraphParameter();
     setGraph(header, tab);
 
-    tabData = tab;
-    //averageCurve(1, 9, tab);
-    //middleCurve(1, 9, tab);
+    mathMethod = new MathFunction(tab);
 
-    setCursorCurveV1(0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
-    setCursorCurveV2(0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
+    initCursor();
 
     defineAxis(header);
 
@@ -225,111 +226,15 @@ QColor FenEnfantGraph::randomColor(const QString &colorType)
     return *color;
 }
 
-void FenEnfantGraph::averageCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab)
+//Cursor
+    //Function
+void FenEnfantGraph::initCursor()
 {
-    //Create a average curve
-    QVector<double> subTab(tab.at(0));
-
-    //int nbColumn(tab.size());
-    int nbRow(subTab.size());
-
-    int reste(nbRow%sampleTime);
-    int nbLoop(0);
-    if (reste == 0)
-    {
-        nbLoop =nbRow/sampleTime;
-    }
-    else
-    {
-        nbLoop = (nbRow-reste)/sampleTime;
-    }
-
-    QVector<double> axisTab;
-    double sampleTimeModif = (double) sampleTime;
-    for(int i(0); i<=nbLoop-1; i++)
-    {
-        axisTab.push_back(sampleTimeModif/2+i*sampleTimeModif);
-    }
-
-    QVector<double> ordTab;
-    QVector<double> subtab2(tab.at(nbTab));
-    for(int i(0); i<=nbLoop-1; i++)
-    {
-        double average(0);
-        for(int k(0+i*(sampleTime)); k<=sampleTime-1+i*(sampleTime); k++)
-        {
-            average += subtab2.at(k);
-        }
-        ordTab.push_back(average/sampleTime);
-    }
-
-    ui->customPlot->addGraph();
-    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setPen(QPen(randomColor("normal")));
-    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setName("average");
-    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setData(axisTab, ordTab);
-    setTabCurve("average");
-    indexGraph["average"] = (ui->customPlot->graphCount()-1);
+    setCursorCurveV(1, 0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
+    setCursorCurveV(2, 0, ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
 }
 
-void FenEnfantGraph::middleCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab)
-{
-    //Create a value middle curve
-    int sampleTimeModif;
-    if (sampleTime%2 == 0)
-    {
-        sampleTimeModif = sampleTime +1;
-    }
-    else
-    {
-        sampleTimeModif = sampleTime;
-    }
-
-    QVector<double> subTab(tab.at(0));
-
-    //int nbColumn(tab.size());
-    int nbRow(subTab.size());
-
-    int reste(nbRow%sampleTimeModif);
-    int nbLoop(0);
-    if (reste == 0)
-    {
-        nbLoop =nbRow/sampleTimeModif;
-    }
-    else
-    {
-        nbLoop = (nbRow-reste)/sampleTimeModif;
-    }
-
-    QVector<double> axisTab;
-    double sampleTimeModifDouble = (double) sampleTimeModif;
-    for(int i(0); i<=nbLoop-1; i++)
-    {
-        axisTab.push_back(sampleTimeModifDouble/2+i*sampleTimeModifDouble);
-    }
-
-    QVector<double> ordTab;
-    QVector<double> subtab2(tab.at(nbTab));
-    for(int i(0); i<=nbLoop-1; i++)
-    {
-        QVector<double> middleTab(0);
-
-        for(int k(0+i*(sampleTimeModif)); k<=sampleTimeModif-1+i*(sampleTimeModif); k++)
-        {
-            middleTab.push_back(subtab2.at(k));
-        }
-        std::sort(middleTab.begin(), middleTab.end());
-        ordTab.push_back(middleTab.at(sampleTimeModif/2));
-    }
-
-    ui->customPlot->addGraph();
-    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setPen(QPen(randomColor("normal")));
-    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setName("middle");
-    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setData(axisTab, ordTab);
-    setTabCurve("middle");
-    indexGraph["middle"] = (ui->customPlot->graphCount()-1);
-}
-
-void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight)
+void FenEnfantGraph::setCursorCurveV(const int cursorId, const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight)
 {
     QVector<double> absTab;
     for(int i(0); i <= 1; i++)
@@ -344,170 +249,36 @@ void FenEnfantGraph::setCursorCurveV1(const double &posCursor, const int &nbGrap
     ordTab.push_back(cursorHeightMax);
 
 
-    QString name("cursor 1");
+    QString name(tr("cursor %1").arg(cursorId));
     QPen pen;
     pen.setColor(QColor(255,170,100));
     pen.setWidth(2);
     pen.setStyle(Qt::DotLine);
 
-    if(indexGraph[name] == 0)
+    int occur(0);
+    for(std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if(it->first == name)
+        {
+            occur++;
+        }
+    }
+
+    if(occur == 0)
     {
         ui->customPlot->addGraph();
         ui->customPlot->graph(nbGraph)->setPen(pen);
         ui->customPlot->graph(nbGraph)->setName(name);
         ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
+        ui->customPlot->graph(nbGraph)->setVisible(false);
+        ui->customPlot->graph(nbGraph)->removeFromLegend();
+
         //setTabCurve(name);
         indexGraph[name] = (nbGraph);
     }
     else
     {
         ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
-    }
-}
-
-void FenEnfantGraph::setCursorCurveV2(const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight)
-{
-    QVector<double> absTab;
-    for(int i(0); i <= 1; i++)
-    {
-        absTab.push_back(posCursor);
-    }
-
-    double cursorHeightMin(cursorHeight.lower);
-    double cursorHeightMax(cursorHeight.upper);
-    QVector<double> ordTab;
-    ordTab.push_back(cursorHeightMin);
-    ordTab.push_back(cursorHeightMax);
-
-
-    QString name("cursor 2");
-    QPen pen;
-    pen.setColor(QColor(255,170,100));
-    pen.setWidth(2);
-    pen.setStyle(Qt::DotLine);
-
-    if(indexGraph[name] == 0)
-    {
-        ui->customPlot->addGraph();
-        ui->customPlot->graph(nbGraph)->setPen(pen);
-        ui->customPlot->graph(nbGraph)->setName(name);
-        ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
-        //setTabCurve(name);
-        indexGraph[name] = (nbGraph);
-    }
-    else
-    {
-        ui->customPlot->graph(nbGraph)->setData(absTab, ordTab);
-    }
-}
-
-void FenEnfantGraph::cursor1(const double &posCursor)
-{
-    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
-    setCursorCurveV1(posCursor, indexGraph["cursor 1"], ui->customPlot->yAxis->range());
-    emit cursor1Update();
-}
-
-void FenEnfantGraph::cursor2(const double &posCursor)
-{
-    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
-    setCursorCurveV2(posCursor, indexGraph["cursor 2"],ui->customPlot->yAxis->range());
-    emit cursor2Update();
-}
-
-void FenEnfantGraph::cursorHeightScroll(QWheelEvent* event )
-{
-    event->accept();
-    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
-    setCursorCurveV1(ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
-    emit cursor1Update();
-
-    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
-    setCursorCurveV2(ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
-    emit cursor2Update();
-}
-
-void FenEnfantGraph::cursorHeightMouved(QMouseEvent* event )
-{
-    event->accept();
-    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
-    setCursorCurveV1(ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
-    emit cursor1Update();
-
-    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
-    setCursorCurveV2(ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
-    emit cursor2Update();
-}
-
-void FenEnfantGraph::cursorHeightPressed(QMouseEvent* event )
-{
-    event->accept();
-    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
-    setCursorCurveV1(ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
-    emit cursor1Update();
-
-    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
-    setCursorCurveV2(ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
-    emit cursor2Update();
-}
-
-void FenEnfantGraph::cursorEnable(const int& state)
-{
-    if(state == 0)
-    {
-        ui->curseur1->setEnabled(false);
-        ui->curseur2->setEnabled(false);
-        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(false);
-        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(false);
-        ui->customPlot->graph(indexGraph["cursor 1"])->removeFromLegend();
-        ui->customPlot->graph(indexGraph["cursor 2"])->removeFromLegend();
-        emit cursor1Update();
-        emit cursor2Update();
-    }
-    if(state == 2)
-    {
-        ui->curseur1->setEnabled(true);
-        ui->curseur2->setEnabled(true);
-        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(true);
-        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(true);
-        ui->customPlot->graph(indexGraph["cursor 1"])->addToLegend();
-        ui->customPlot->graph(indexGraph["cursor 2"])->addToLegend();
-        emit cursor1Update();
-        emit cursor2Update();
-    }
-}
-
-void FenEnfantGraph::setTabCurve(const QString &nameCurve)
-{
-    //Create a list of curve name that can be checked
-    ui->table->setColumnCount(1);
-    int nbRow(ui->table->rowCount());
-    ui->table->setRowCount(nbRow+1);
-
-    QCheckBox *checkCurve = new QCheckBox;
-    checkCurve->setChecked(true);
-    checkCurve->setText(nameCurve);
-    ui->table->setCellWidget(nbRow, 0, checkCurve);
-    connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(checkCurve, nbRow);
-
-}
-
-void FenEnfantGraph::curveDisplay(const int &nbCurve)
-{
-    bool graphState(ui->customPlot->graph(nbCurve)->visible());
-
-    if (graphState == true)
-    {
-        ui->customPlot->graph(nbCurve)->setVisible(false);
-        ui->customPlot->graph(nbCurve)->removeFromLegend();
-        ui->customPlot->replot();
-    }
-    else
-    {
-        ui->customPlot->graph(nbCurve)->setVisible(true);
-        ui->customPlot->graph(nbCurve)->addToLegend();
-        ui->customPlot->replot();
     }
 }
 
@@ -560,7 +331,123 @@ void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
         event->ignore();
     }
 }
+    //SLOT
+void FenEnfantGraph::cursorEnable(const int& state)
+{
+    if(state == 0)
+    {
+        ui->curseur1->setEnabled(false);
+        ui->curseur2->setEnabled(false);
+        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(false);
+        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(false);
+        ui->customPlot->graph(indexGraph["cursor 1"])->removeFromLegend();
+        ui->customPlot->graph(indexGraph["cursor 2"])->removeFromLegend();
+        emit cursor1Update();
+        emit cursor2Update();
+    }
+    if(state == 2)
+    {
+        ui->curseur1->setEnabled(true);
+        ui->curseur2->setEnabled(true);
+        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(true);
+        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(true);
+        ui->customPlot->graph(indexGraph["cursor 1"])->addToLegend();
+        ui->customPlot->graph(indexGraph["cursor 2"])->addToLegend();
+        emit cursor1Update();
+        emit cursor2Update();
+    }
+}
 
+void FenEnfantGraph::cursor1(const double &posCursor)
+{
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV(1, posCursor, indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+}
+
+void FenEnfantGraph::cursor2(const double &posCursor)
+{
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV(2, posCursor, indexGraph["cursor 2"],ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+
+void FenEnfantGraph::cursorHeightScroll(QWheelEvent* event )
+{
+    event->accept();
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV(1, ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV(2, ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+
+void FenEnfantGraph::cursorHeightMouved(QMouseEvent* event )
+{
+    event->accept();
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV(1, ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV(1, ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+
+void FenEnfantGraph::cursorHeightPressed(QMouseEvent* event )
+{
+    event->accept();
+    ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
+    setCursorCurveV(1, ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
+    emit cursor1Update();
+
+    ui->customPlot->graph(indexGraph["cursor 2"])->clearData();
+    setCursorCurveV(1, ui->curseur2->value(), indexGraph["cursor 2"], ui->customPlot->yAxis->range());
+    emit cursor2Update();
+}
+//Cursor end
+
+//Tab Curve display
+    //function
+void FenEnfantGraph::setTabCurve(const QString &nameCurve)
+{
+    //Create a list of curve name that can be checked
+    ui->table->setColumnCount(1);
+    int nbRow(ui->table->rowCount());
+    ui->table->setRowCount(nbRow+1);
+
+    QCheckBox *checkCurve = new QCheckBox;
+    checkCurve->setChecked(true);
+    checkCurve->setText(nameCurve);
+    ui->table->setCellWidget(nbRow, 0, checkCurve);
+    connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(checkCurve, nbRow);
+
+}
+    //SLOT
+void FenEnfantGraph::curveDisplay(const int &nbCurve)
+{
+    bool graphState(ui->customPlot->graph(nbCurve)->visible());
+
+    if (graphState == true)
+    {
+        ui->customPlot->graph(nbCurve)->setVisible(false);
+        ui->customPlot->graph(nbCurve)->removeFromLegend();
+        ui->customPlot->replot();
+    }
+    else
+    {
+        ui->customPlot->graph(nbCurve)->setVisible(true);
+        ui->customPlot->graph(nbCurve)->addToLegend();
+        ui->customPlot->replot();
+    }
+}
+//Tab Curve display end
+
+//Zoom manager
+    //SLOT
 void FenEnfantGraph::zoom()
 {
     int stateZoomV(ui->checkBoxZoomV->checkState());
@@ -592,7 +479,10 @@ void FenEnfantGraph::zoom()
     }
 
 }
+//Zoom manager end
 
+//Math curve display
+    //function
 void FenEnfantGraph::createCurveIntialisation()
 {
     ui->checkBoxCreateCurve->setEnabled(true);
@@ -610,6 +500,26 @@ void FenEnfantGraph::createCurveIntialisation()
     ui->pushButtoncreateCurve->setEnabled(false);
 }
 
+QString FenEnfantGraph::curveName(const QVector<double> &tabId)
+{
+    double opId(tabId.at(0));
+    QString name;
+
+    if(opId == 0)
+    {
+        name = tr("middle_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
+                                 .arg(ui->spinBoxSampleTime->value());
+    }
+
+    if(opId == 1)
+    {
+        name = tr("average_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
+                            .arg(ui->spinBoxSampleTime->value());
+    }
+
+    return name;
+}
+    //SLOT
 void FenEnfantGraph::createCurvechecked()
 {
     int checkBoxCreateCurveState(ui->checkBoxCreateCurve->checkState());
@@ -668,16 +578,70 @@ void FenEnfantGraph::createCurve()
 
     if(curveType == "Moyenne")
     {
-        averageCurve(indexGraph[curveselected], sampleTime, tabData);
-
+       displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime));
     }
 
     else if(curveType == "Filtre mileu")
     {
-        middleCurve(indexGraph[curveselected], sampleTime, tabData);
+       displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime));
     }
 }
 
+void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &tab)
+{
+    //Kill cursor
+    ui->customPlot->removeGraph(indexGraph["cursor 2"]);
+    ui->customPlot->removeGraph(indexGraph["cursor 1"]);
+    for(std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->first == "cursor 1")
+        {
+              indexGraph.erase(it);
+              break;
+        }
+
+    }
+
+    for(std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->first == "cursor 2")
+        {
+              indexGraph.erase(it);
+              break;
+        }
+    }
+    //insert curve
+    ui->customPlot->addGraph();
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setPen(QPen(randomColor("normal")));
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setName(curveName(tab.at(2)));
+    QVector<double> test(tab.at(0));
+    QVector<double> test2(tab.at(1));
+    ui->customPlot->graph(ui->customPlot->graphCount()-1)->setData(tab.at(0), tab.at(1));
+
+    setTabCurve(curveName(tab.at(2)));
+    indexGraph[curveName(tab.at(2))] = ui->customPlot->graphCount()-1;
+
+    //set Cursor
+    setCursorCurveV(1, ui->curseur1->value(), ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
+    setCursorCurveV(2, ui->curseur2->value(), ui->customPlot->graphCount(), ui->customPlot->yAxis->range());
+
+    if(ui->curseurEnable->checkState() == 2)
+    {
+        ui->customPlot->graph(indexGraph["cursor 1"])->setVisible(true);
+        ui->customPlot->graph(indexGraph["cursor 2"])->setVisible(true);
+        ui->customPlot->graph(indexGraph["cursor 1"])->addToLegend();
+        ui->customPlot->graph(indexGraph["cursor 2"])->addToLegend();
+    }
+    else
+    {
+    }
+
+    ui->customPlot->replot();
+}
+//Math curve display end
+
+//FenPrincipal Widget manager
+    //Function
 void FenEnfantGraph::setCurrentFile(const QString &fileName)
 {
     curFile = QFileInfo(fileName).canonicalFilePath();
@@ -696,4 +660,4 @@ QString FenEnfantGraph::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }
-
+//FenPrincipal Widget manager end
