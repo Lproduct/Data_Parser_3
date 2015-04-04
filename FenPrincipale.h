@@ -37,7 +37,6 @@ private slots:
     void about();
     void updateMenus();
     void updateWindowMenu();
-    FenEnfantTab *createTabMdiChild();
     FenEnfantGraph *createGraphMdiChild();
 
     //void switchLayoutDirection();
@@ -50,9 +49,8 @@ private:
     void createStatusBar();
     void readSettings();
     void writeSettings();
-    FenEnfantTab *activeMdiChild();
+    FenEnfantGraph *activeMdiChild();
     FenEnfantGraph *activeMdiChildGraph();
-    QMdiSubWindow *findMdiChildTab(const QString &fileName);
     QMdiSubWindow *findMdiChildGraph(const QString &fileName);
 
     //data parser function

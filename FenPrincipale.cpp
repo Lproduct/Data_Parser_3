@@ -46,31 +46,19 @@ void FenPrincipale::open()
     if (!fileName.isEmpty())
     {
         //Check if the file is already open
-        QMdiSubWindow *existingTab = findMdiChildTab(fileName);
         QMdiSubWindow *existingGraph = findMdiChildGraph(fileName);
 
-        if (existingTab)
+        if (existingGraph)
         {
-            mdiArea->setActiveSubWindow(existingTab);
             mdiArea->setActiveSubWindow(existingGraph);
             return;
         }
 
+        //Parsing data
         DataParser *parserData = new DataParser(fileName);
         QStringList infoFile(parserData->getInfoFile());
         QStringList header(parserData->getHeader());
         QVector<QVector<double> > tab(parserData->getTab());
-
-        FenEnfantTab *childTab = createTabMdiChild();
-        if (childTab->loadTabData(infoFile, header, tab))
-        {
-            statusBar()->showMessage(tr("File loaded"), 2000);
-            childTab->show();
-        }
-        else
-        {
-            childTab->close();
-        }
 
         FenEnfantGraph *childGraph = createGraphMdiChild();
         if (childGraph->LoadTabData(infoFile, header, tab))
@@ -80,7 +68,7 @@ void FenPrincipale::open()
         }
         else
         {
-            childTab->close();
+            childGraph->close();
         }
     }
 }
@@ -119,53 +107,28 @@ void FenPrincipale::updateWindowMenu()
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
     separatorAct->setVisible(!windows.isEmpty());
 
-    for (int i = 0; i < windows.size(); i+=2)
+    for (int i = 0; i < windows.size(); i++)
     {
-        FenEnfantTab *childTab = qobject_cast<FenEnfantTab *>(windows.at(i)->widget());
+        FenEnfantGraph *childGraph = qobject_cast<FenEnfantGraph *>(windows.at(i)->widget());
 
         QString text;
         if (i < 9)
         {
-            text = tr("&%1 %2").arg(i/2 + 1)
-                               .arg(childTab->userFriendlyCurrentFile());
+            text = tr("&%1 %2").arg(i + 1)
+                               .arg(childGraph->userFriendlyCurrentFile());
         }
         else
         {
-            text = tr("%1 %2").arg(i/2 + 1)
-                              .arg(childTab->userFriendlyCurrentFile());
+            text = tr("%1 %2").arg(i + 1)
+                              .arg(childGraph->userFriendlyCurrentFile());
         }
 
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
-        action ->setChecked(childTab == activeMdiChild());
+        action ->setChecked(childGraph == activeMdiChild());
         connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
         windowMapper->setMapping(action, windows.at(i));
-
-        FenEnfantGraph *childGraph = qobject_cast<FenEnfantGraph *>(windows.at(i+1)->widget());
-        QString text2;
-        if (i < 9)
-        {
-            text2 = tr("   &%1").arg(childGraph->userFriendlyCurrentFile());//.arg(i/2 + 1)
-        }
-        else
-        {
-            text2 = tr("   %1").arg(childGraph->userFriendlyCurrentFile());//.arg(i/2 + 1)
-        }
-
-        QAction *action2  = windowMenu->addAction(text2);
-        action->setCheckable(true);
-        action ->setChecked(childGraph == activeMdiChildGraph());
-        connect(action2, SIGNAL(triggered()), windowMapper, SLOT(map()));
-        windowMapper->setMapping(action2, windows.at(i+1));
     }
-}
-
-FenEnfantTab *FenPrincipale::createTabMdiChild()
-{
-    FenEnfantTab *childTab = new FenEnfantTab;
-    mdiArea->addSubWindow(childTab);
-
-    return childTab;
 }
 
 FenEnfantGraph *FenPrincipale::createGraphMdiChild()
@@ -278,33 +241,10 @@ void FenPrincipale::writeSettings()
     settings.setValue("size", size());
 }
 
-FenEnfantTab *FenPrincipale::activeMdiChild()
-{
-    if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
-        return qobject_cast<FenEnfantTab *>(activeSubWindow->widget());        
-    return 0;
-}
-
-FenEnfantGraph *FenPrincipale::activeMdiChildGraph()
+FenEnfantGraph *FenPrincipale::activeMdiChild()
 {
     if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
         return qobject_cast<FenEnfantGraph *>(activeSubWindow->widget());
-    return 0;
-}
-
-QMdiSubWindow *FenPrincipale::findMdiChildTab(const QString &fileName)
-{
-    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-
-    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-
-    for (int i = 0; i < windows.size(); i+=2)
-    {
-        FenEnfantTab *mdiChildTab = qobject_cast<FenEnfantTab *>(windows.at(i)->widget());
-        if (mdiChildTab->currentFile() == canonicalFilePath)
-            return windows.at(i);
-    }
-
     return 0;
 }
 
@@ -314,11 +254,11 @@ QMdiSubWindow *FenPrincipale::findMdiChildGraph(const QString &fileName)
 
     QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
 
-    for (int i = 0; i < windows.size(); i+=2)
+    for (int i = 0; i < windows.size(); i++)
     {
-        FenEnfantGraph *mdiChildGraph = qobject_cast<FenEnfantGraph *>(windows.at(i+1)->widget());
+        FenEnfantGraph *mdiChildGraph = qobject_cast<FenEnfantGraph *>(windows.at(i)->widget());
         if (mdiChildGraph->currentFile() == canonicalFilePath)
-            return windows.at(i+1);
+            return windows.at(i);
     }
 
     return 0;

@@ -393,45 +393,77 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBoxCreateCurve">
+         <widget class="QLabel" name="label_15">
           <property name="text">
-           <string>Créer courbe</string>
+           <string>Création de courbe:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>Opération :</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_11">
+            <property name="maximumSize">
+             <size>
+              <width>120</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Opération :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_14">
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Echantillonnage :</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBoxCurveType">
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-          <property name="currentText">
-           <string>Type de courbe</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_14">
-          <property name="text">
-           <string>Echantillonnage</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="spinBoxSampleTime">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>100</number>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QComboBox" name="comboBoxCurveType">
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="editable">
+             <bool>false</bool>
+            </property>
+            <property name="currentText">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBoxSampleTime">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QLabel" name="label_12">
@@ -443,10 +475,10 @@
         <item>
          <widget class="QComboBox" name="ComboBoxCurveName">
           <property name="editable">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="currentText">
-           <string>Selectionner une courbe</string>
+           <string/>
           </property>
          </widget>
         </item>

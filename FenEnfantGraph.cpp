@@ -9,7 +9,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui(new Ui::FenEnfantGraph)
 {
     ui->setupUi(this);
-    createCurveIntialisation();
+
 
     ui->customPlot->replot();
     dataTimer.start(0);
@@ -37,7 +37,6 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->checkBoxZoomH, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
 
     //Create Curve
-    connect(ui->checkBoxCreateCurve, SIGNAL(clicked()), this, SLOT(createCurvechecked()));
     connect(ui->pushButtoncreateCurve, SIGNAL(clicked()), this,SLOT(createCurve()));
 }
 
@@ -107,8 +106,9 @@ void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<d
         ui->customPlot->graph(i)->setName(header.at(i+1));
         ui->customPlot->graph(i)->setData(tab.at(0), tab.at(i+1));
         setTabCurve(header.at(i+1));
-        indexGraph[header.at(i+1)] = i;
+        indexGraph[header.at(i+1)] = i;        
     }
+    createCurveIntialisation();
 }
 
 void FenEnfantGraph::defineAxis(const QStringList &header)
@@ -485,19 +485,29 @@ void FenEnfantGraph::zoom()
     //function
 void FenEnfantGraph::createCurveIntialisation()
 {
-    ui->checkBoxCreateCurve->setEnabled(true);
-    ui->checkBoxCreateCurve->setChecked(false);
-
-    ui->comboBoxCurveType->setEnabled(false);
+    ui->comboBoxCurveType->setEnabled(true);
+    ui->comboBoxCurveType->setEditable(false);
+    ui->comboBoxCurveType->clear();
     ui->comboBoxCurveType->addItem("Moyenne");
     ui->comboBoxCurveType->addItem("Filtre mileu");
 
-    ui->ComboBoxCurveName->setEnabled(false);
-    ui->ComboBoxCurveName->setEditable(false);
+    ui->ComboBoxCurveName->setEnabled(true);
+    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    {
+        QString nameCurve(it->first);
+        if (nameCurve == "cursor 1" || nameCurve == "cursor 2")
+        {
 
-    ui->spinBoxSampleTime->setEnabled(false);
+        }
+        else
+        {
+          ui->ComboBoxCurveName->addItem(nameCurve);
+        }
+    }
 
-    ui->pushButtoncreateCurve->setEnabled(false);
+    ui->spinBoxSampleTime->setEnabled(true);
+
+    ui->pushButtoncreateCurve->setEnabled(true);
 }
 
 QString FenEnfantGraph::curveName(const QVector<double> &tabId)
@@ -520,56 +530,6 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     return name;
 }
     //SLOT
-void FenEnfantGraph::createCurvechecked()
-{
-    int checkBoxCreateCurveState(ui->checkBoxCreateCurve->checkState());
-
-    if (checkBoxCreateCurveState == 0)
-    {
-        ui->checkBoxCreateCurve->setEnabled(true);
-        ui->checkBoxCreateCurve->setChecked(false);
-
-        ui->comboBoxCurveType->setEnabled(false);
-        ui->comboBoxCurveType->addItem("Moyenne");
-        ui->comboBoxCurveType->addItem("Filtre mileu");
-
-        ui->ComboBoxCurveName->setEnabled(false);
-        ui->ComboBoxCurveName->setEditable(false);
-
-        ui->spinBoxSampleTime->setEnabled(false);
-
-        ui->pushButtoncreateCurve->setEnabled(false);
-    }
-
-    else if (checkBoxCreateCurveState == 2)
-    {
-        ui->comboBoxCurveType->setEnabled(true);
-        ui->comboBoxCurveType->setEditable(false);
-        ui->comboBoxCurveType->clear();
-        ui->comboBoxCurveType->addItem("Moyenne");
-        ui->comboBoxCurveType->addItem("Filtre mileu");
-
-        ui->ComboBoxCurveName->setEnabled(true);
-        ui->ComboBoxCurveName->clear();
-        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
-        {
-            QString nameCurve(it->first);
-            if (nameCurve == "cursor 1" || nameCurve == "cursor 2")
-            {
-
-            }
-            else
-            {
-              ui->ComboBoxCurveName->addItem(nameCurve);
-            }
-        }
-
-        ui->spinBoxSampleTime->setEnabled(true);
-
-        ui->pushButtoncreateCurve->setEnabled(true);
-    }
-}
-
 void FenEnfantGraph::createCurve()
 {
     QString curveType(ui->comboBoxCurveType->currentText());

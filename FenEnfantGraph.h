@@ -35,7 +35,6 @@ public slots:
     void cursorEnable(const int& state);
     void curveDisplay(const int &nbCurve);
     void zoom();
-    void createCurvechecked();
     void createCurve();
 
 signals:
