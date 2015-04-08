@@ -483,6 +483,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="checkBoxDrawBetweenCursor">
+          <property name="text">
+           <string>Tracer entre les curseurs</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushButtoncreateCurve">
           <property name="text">
            <string>Créer</string>

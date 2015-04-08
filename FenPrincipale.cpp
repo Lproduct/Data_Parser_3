@@ -9,11 +9,11 @@ FenPrincipale::FenPrincipale()
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
-    connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
-            this, SLOT(updateMenus()));
+
+    connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(updateMenus()));
+
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, SIGNAL(mapped(QWidget*)),
-            this, SLOT(setActiveSubWindow(QWidget*)));
+    connect(windowMapper, SIGNAL(mapped(QWidget*)), this, SLOT(setActiveSubWindow(QWidget*)));
 
     createActions();
     createMenus();
@@ -32,9 +32,12 @@ FenPrincipale::FenPrincipale()
 void FenPrincipale::closeEvent(QCloseEvent *event)
 {
     mdiArea->closeAllSubWindows();
-    if (mdiArea->currentSubWindow()) {
+    if (mdiArea->currentSubWindow())
+    {
         event->ignore();
-    } else {
+    }
+    else
+    {
         writeSettings();
         event->accept();
     }
@@ -236,7 +239,7 @@ void FenPrincipale::readSettings()
 
 void FenPrincipale::writeSettings()
 {
-    QSettings settings("Trolltech", "MDI Example");
+    QSettings settings("Lproduct", "Data_Parser");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 }

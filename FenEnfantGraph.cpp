@@ -38,6 +38,17 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     //Create Curve
     connect(ui->pushButtoncreateCurve, SIGNAL(clicked()), this,SLOT(createCurve()));
+
+    // setup policy and connect slot for context menu popup:
+    ui->customPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->customPlot, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));
+
+    // connect some interaction slots:
+    connect(ui->customPlot, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClick(QCPAxis*,QCPAxis::SelectablePart)));
+    connect(ui->customPlot, SIGNAL(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)), this, SLOT(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)));
+
+    // connect slot that ties some axis selections together:
+    //connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -45,6 +56,7 @@ FenEnfantGraph::~FenEnfantGraph()
     delete ui;
 }
 
+//FenEnfantGraph parameters
 bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList &header,const QVector<QVector<double> > &tab )
 {
     setCurrentFile(fileInfo.at(0));    
@@ -89,12 +101,22 @@ void FenEnfantGraph::setGraphParameter()
     // same thing for graph 1, but only enlarge ranges (in case graph 1 is smaller than graph 0):
     //ui->customPlot->graph(1)->rescaleAxes(true);
 
+    ui->customPlot->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+    ui->customPlot->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
     //Set legend on the graph
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setBrush(QBrush(QColor(255,255,255,150)));
+
+    //Set title
+    ui->customPlot->plotLayout()->insertRow(0);
+    graphTitle = "Untitle";
+    ui->customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->customPlot, graphTitle));
+    //Set background default style
+    changeColorBGW();
 }
 
 void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<double> > &tab)
@@ -119,6 +141,163 @@ void FenEnfantGraph::defineAxis(const QStringList &header)
 
      // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
      ui->customPlot->graph(0)->rescaleAxes();
+}
+
+void FenEnfantGraph::contextMenuRequest(QPoint pos)
+{
+    QMenu *contextMenu = new QMenu(this);
+    contextMenu->setAttribute(Qt::WA_DeleteOnClose);
+
+    if (ui->customPlot->legend->selectTest(pos, false) >= 0) // context menu on legend requested
+    {
+      contextMenu->addAction("Move to top left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
+      contextMenu->addAction("Move to top center", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
+      contextMenu->addAction("Move to top right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
+      contextMenu->addAction("Move to bottom right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
+      contextMenu->addAction("Move to bottom left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
+    }
+    else  // general context menu on graphs requested
+    {
+        if(blackTheme == false)
+        {
+            QAction *actionChangeBGB = contextMenu->addAction("Black theme");
+            connect(actionChangeBGB, SIGNAL(triggered()), this, SLOT(changeColorBGB()));
+        }
+        else if(blackTheme == true)
+        {
+            QAction *actionChangeBGW = contextMenu->addAction("White theme");
+            connect(actionChangeBGW, SIGNAL(triggered()), this, SLOT(changeColorBGW()));
+        }
+
+        if (ui->customPlot->selectedGraphs().size() > 0)
+        {
+          contextMenu->addAction("Change selected curve color", this, SLOT(changeSelectedGraphColor()));
+        }
+    }
+
+    contextMenu->popup(ui->customPlot->mapToGlobal(pos));
+}
+
+void FenEnfantGraph::moveLegend()
+{
+  if (QAction* contextAction = qobject_cast<QAction*>(sender())) // make sure this slot is really called by a context menu action, so it carries the data we need
+  {
+    bool ok;
+    int dataInt = contextAction->data().toInt(&ok);
+    if (ok)
+    {
+      ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
+      ui->customPlot->replot();
+    }
+  }
+}
+
+void FenEnfantGraph::changeSelectedGraphColor()
+{
+    QColor couleur = QColorDialog::getColor(Qt::black, this);
+    ui->customPlot->selectedGraphs().first()->setPen(QPen(couleur));
+    ui->customPlot->replot();
+}
+
+void FenEnfantGraph::changeColorBGB()
+{
+    ui->customPlot->xAxis->setBasePen(QPen(Qt::white, 1));
+    ui->customPlot->yAxis->setBasePen(QPen(Qt::white, 1));
+
+    ui->customPlot->xAxis->setTickPen(QPen(Qt::white, 1));
+    ui->customPlot->yAxis->setTickPen(QPen(Qt::white, 1));
+
+    ui->customPlot->xAxis->setSubTickPen(QPen(Qt::white, 1));
+    ui->customPlot->yAxis->setSubTickPen(QPen(Qt::white, 1));
+
+    ui->customPlot->xAxis->setTickLabelColor(Qt::white);
+    ui->customPlot->yAxis->setTickLabelColor(Qt::white);
+
+    ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
+    ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
+    ui->customPlot->xAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
+    ui->customPlot->yAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
+    ui->customPlot->xAxis->grid()->setSubGridVisible(true);
+    ui->customPlot->yAxis->grid()->setSubGridVisible(true);
+    ui->customPlot->xAxis->grid()->setZeroLinePen(QPen(QColor(140, 140, 140), 1, Qt::SolidLine));
+    ui->customPlot->yAxis->grid()->setZeroLinePen(QPen(QColor(140, 140, 140), 1, Qt::SolidLine));
+
+    ui->customPlot->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+    ui->customPlot->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+
+    QLinearGradient plotGradient;
+    plotGradient.setColorAt(0, QColor(80, 80, 80));
+    plotGradient.setColorAt(1, QColor(50, 50, 50));
+    ui->customPlot->setBackground(plotGradient);
+
+    QLinearGradient axisRectGradient;
+    axisRectGradient.setColorAt(0, QColor(80, 80, 80));
+    axisRectGradient.setColorAt(1, QColor(30, 30, 30));
+    ui->customPlot->axisRect()->setBackground(axisRectGradient);
+
+    ui->customPlot->xAxis->setLabelColor(Qt::white);
+    ui->customPlot->yAxis->setLabelColor(Qt::white);
+
+    ui->customPlot->plotLayout()->remove(ui->customPlot->plotLayout()->element(0,0));
+    QCPPlotTitle *plotTitle = new QCPPlotTitle(ui->customPlot, graphTitle);
+    plotTitle->setTextColor(Qt::white);
+    ui->customPlot->plotLayout()->addElement(0, 0, plotTitle);
+
+    ui->customPlot->replot();
+
+    blackTheme = true;
+}
+
+void FenEnfantGraph::changeColorBGW()
+{
+    ui->customPlot->xAxis->setBasePen(QPen(Qt::black, 1));
+    ui->customPlot->yAxis->setBasePen(QPen(Qt::black, 1));
+
+    ui->customPlot->xAxis->setTickPen(QPen(Qt::black, 1));
+    ui->customPlot->yAxis->setTickPen(QPen(Qt::black, 1));
+
+    ui->customPlot->xAxis->setSubTickPen(QPen(Qt::black, 1));
+    ui->customPlot->yAxis->setSubTickPen(QPen(Qt::black, 1));
+
+    ui->customPlot->xAxis->setTickLabelColor(Qt::black);
+    ui->customPlot->yAxis->setTickLabelColor(Qt::black);
+
+    ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
+    ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
+
+    ui->customPlot->xAxis->grid()->setSubGridPen(QPen(QColor(220, 220, 220), 1, Qt::DotLine));
+    ui->customPlot->yAxis->grid()->setSubGridPen(QPen(QColor(220, 220, 220), 1, Qt::DotLine));
+
+    ui->customPlot->xAxis->grid()->setSubGridVisible(true);
+    ui->customPlot->yAxis->grid()->setSubGridVisible(true);
+
+    ui->customPlot->xAxis->grid()->setZeroLinePen(QPen(QColor(140, 140, 140), 1, Qt::SolidLine));
+    ui->customPlot->yAxis->grid()->setZeroLinePen(QPen(QColor(140, 140, 140), 1, Qt::SolidLine));
+
+    ui->customPlot->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+    ui->customPlot->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+
+    QLinearGradient plotGradient;
+    plotGradient.setColorAt(0, QColor(255, 255, 255));
+    plotGradient.setColorAt(1, QColor(255, 255, 255));
+    ui->customPlot->setBackground(plotGradient);
+
+    QLinearGradient axisRectGradient;
+    axisRectGradient.setColorAt(0, QColor(255, 255, 255));
+    axisRectGradient.setColorAt(1, QColor(255, 255, 255));
+    ui->customPlot->axisRect()->setBackground(axisRectGradient);
+
+    ui->customPlot->xAxis->setLabelColor(Qt::black);
+    ui->customPlot->yAxis->setLabelColor(Qt::black);
+
+    ui->customPlot->plotLayout()->remove(ui->customPlot->plotLayout()->element(0,0));
+    QCPPlotTitle *plotTitle = new QCPPlotTitle(ui->customPlot, graphTitle);
+    plotTitle->setTextColor(Qt::black);
+    ui->customPlot->plotLayout()->addElement(0, 0, plotTitle);
+
+    ui->customPlot->replot();
+
+    blackTheme = false;
 }
 
 QColor FenEnfantGraph::randomColor(const QString &colorType)
@@ -225,6 +404,51 @@ QColor FenEnfantGraph::randomColor(const QString &colorType)
 
     return *color;
 }
+
+void FenEnfantGraph::axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part)
+{
+  // Set an axis label by double clicking on it
+  if (part == QCPAxis::spAxisLabel) // only react when the actual axis label is clicked, not tick label or axis backbone
+  {
+    bool ok;
+    QString newLabel = QInputDialog::getText(this, "Data Parser", "New axis label:", QLineEdit::Normal, axis->label(), &ok);
+    if (ok)
+    {
+      axis->setLabel(newLabel);
+      ui->customPlot->replot();
+    }
+  }
+}
+
+void FenEnfantGraph::titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title)
+{
+  Q_UNUSED(event)
+  // Set the plot title by double clicking on it
+  bool ok;
+  QString newTitle = QInputDialog::getText(this, "QCustomPlot example", "New plot title:", QLineEdit::Normal, title->text(), &ok);
+  if (ok)
+  {     
+    title->setText(newTitle);
+    graphTitle = newTitle;
+    ui->customPlot->replot();
+  }
+}
+
+/*void FenEnfantGraph::selectionChanged()
+{
+  // synchronize selection of graphs with selection of corresponding legend items:
+  for (int i=0; i<ui->customPlot->graphCount(); ++i)
+  {
+    QCPGraph *graph = ui->customPlot->graph(i);
+    QCPPlottableLegendItem *item = ui->customPlot->legend->itemWithPlottable(graph);
+    if (item->selected() || graph->selected())
+    {
+      item->setSelected(true);
+      graph->setSelected(true);
+    }
+  }
+}*/
+//FenEnfantGraph parameters end
 
 //Cursor
     //Function
@@ -374,7 +598,7 @@ void FenEnfantGraph::cursor2(const double &posCursor)
 
 void FenEnfantGraph::cursorHeightScroll(QWheelEvent* event )
 {
-    event->accept();
+    Q_UNUSED(event)
     ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
     setCursorCurveV(1, ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
     emit cursor1Update();
@@ -386,7 +610,7 @@ void FenEnfantGraph::cursorHeightScroll(QWheelEvent* event )
 
 void FenEnfantGraph::cursorHeightMouved(QMouseEvent* event )
 {
-    event->accept();
+    Q_UNUSED(event)
     ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
     setCursorCurveV(1, ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
     emit cursor1Update();
@@ -398,7 +622,7 @@ void FenEnfantGraph::cursorHeightMouved(QMouseEvent* event )
 
 void FenEnfantGraph::cursorHeightPressed(QMouseEvent* event )
 {
-    event->accept();
+    Q_UNUSED(event)
     ui->customPlot->graph(indexGraph["cursor 1"])->clearData();
     setCursorCurveV(1, ui->curseur1->value(), indexGraph["cursor 1"], ui->customPlot->yAxis->range());
     emit cursor1Update();
@@ -455,27 +679,22 @@ void FenEnfantGraph::zoom()
 
     if(stateZoomV == 2 && stateZoomH == 2)
     {
-        ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
-        //ui->customPlot->axisRect(QCP::iRangeZoom);
-        ui->customPlot->axisRect()->setRangeZoomFactor(1.25, 1.25);
+        ui->customPlot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
     }
 
     else if(stateZoomV == 0 && stateZoomH == 2)
     {
-        //ui->customPlot->setInteraction(QCP::iRangeDrag | QCP::iSelectPlottables);
-        ui->customPlot->axisRect()->setRangeZoomFactor(1.25, 0);
+        ui->customPlot->axisRect()->setRangeZoom(ui->customPlot->xAxis->orientation());
     }
 
     else if(stateZoomV == 2 && stateZoomH == 0)
     {
-        //ui->customPlot->setInteraction(QCP::iRangeDrag | QCP::iSelectPlottables);
-        ui->customPlot->axisRect()->setRangeZoomFactor(0, 1.25);
+        ui->customPlot->axisRect()->setRangeZoom(ui->customPlot->yAxis->orientation());
     }
 
     else if(stateZoomV == 0 && stateZoomH == 0)
     {
-        //ui->customPlot->setInteraction(QCP::iRangeDrag | QCP::iSelectPlottables);
-        ui->customPlot->axisRect()->setRangeZoomFactor(0, 0);
+        ui->customPlot->axisRect()->setRangeZoom(0);
     }
 
 }
@@ -508,6 +727,10 @@ void FenEnfantGraph::createCurveIntialisation()
     ui->spinBoxSampleTime->setEnabled(true);
 
     ui->pushButtoncreateCurve->setEnabled(true);
+
+    ui->checkBoxDrawBetweenCursor->setCheckable(true);
+    ui->checkBoxDrawBetweenCursor->setEnabled(false);
+    ui->checkBoxDrawBetweenCursor->setChecked(false);
 }
 
 QString FenEnfantGraph::curveName(const QVector<double> &tabId)

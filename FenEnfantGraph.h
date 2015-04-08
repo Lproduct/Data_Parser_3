@@ -36,6 +36,15 @@ public slots:
     void curveDisplay(const int &nbCurve);
     void zoom();
     void createCurve();
+    void contextMenuRequest(QPoint pos);
+    void moveLegend();
+    void changeSelectedGraphColor();
+    void changeColorBGB();
+    void changeColorBGW();
+    void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
+    void titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title);
+    //void selectionChanged();
+
 
 signals:
     void cursor1Update();
@@ -55,6 +64,7 @@ private:
     void displayMathFunctionCurve(const QVector<QVector<double> > &tab);
     QString curveName(const QVector<double> &tabId);
 
+
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
@@ -63,6 +73,8 @@ private:
     QSignalMapper *signalMapper;
     QString curFile;
     QTimer dataTimer;
+    bool blackTheme;
+    QString graphTitle;
 };
 
 #endif // FENENFANTGRAPH_H
