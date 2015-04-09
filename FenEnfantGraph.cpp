@@ -49,6 +49,11 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     // connect slot that ties some axis selections together:
     //connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
+
+    //Connect export graph as PNG to interface
+    connect(ui->pushButtonSavAsPng, SIGNAL(clicked()), this, SLOT(exportGraphAsPng()));
+    connect(ui->pushButtonSaveAsPdf, SIGNAL(clicked()), this, SLOT(exportGraphAsPdf()));
+    connect(ui->pushButtonSaveAsJpeg, SIGNAL(clicked()), this, SLOT(exportGraphAsJpeg()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -60,7 +65,7 @@ FenEnfantGraph::~FenEnfantGraph()
 bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList &header,const QVector<QVector<double> > &tab )
 {
     setCurrentFile(fileInfo.at(0));    
-    setInfoData(fileInfo);
+    setInfoData(fileInfo);    
 
     setGraphParameter();
     setGraph(header, tab);
@@ -83,6 +88,7 @@ void FenEnfantGraph::setInfoData(const QStringList &fileInfo)
     ui->nomSite->setText(fileInfo.at(5));
     ui->nomEssai->setText(fileInfo.at(6));
     ui->commentaire->setText(fileInfo.at(7));
+    graphTitle = ((QFileInfo(fileInfo.at(0)).fileName()).split(".")).at(0);
 }
 
 void FenEnfantGraph::setGraphParameter()
@@ -113,7 +119,7 @@ void FenEnfantGraph::setGraphParameter()
 
     //Set title
     ui->customPlot->plotLayout()->insertRow(0);
-    graphTitle = "Untitle";
+    //graphTitle = "Untitle";
     ui->customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->customPlot, graphTitle));
     //Set background default style
     changeColorBGW();
@@ -425,7 +431,7 @@ void FenEnfantGraph::titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title)
   Q_UNUSED(event)
   // Set the plot title by double clicking on it
   bool ok;
-  QString newTitle = QInputDialog::getText(this, "QCustomPlot example", "New plot title:", QLineEdit::Normal, title->text(), &ok);
+  QString newTitle = QInputDialog::getText(this, "Data Parser", "New plot title:", QLineEdit::Normal, title->text(), &ok);
   if (ok)
   {     
     title->setText(newTitle);
@@ -568,6 +574,8 @@ void FenEnfantGraph::cursorEnable(const int& state)
         ui->customPlot->graph(indexGraph["cursor 2"])->removeFromLegend();
         emit cursor1Update();
         emit cursor2Update();
+
+        ui->checkBoxDrawBetweenCursor->setEnabled(false);
     }
     if(state == 2)
     {
@@ -579,6 +587,8 @@ void FenEnfantGraph::cursorEnable(const int& state)
         ui->customPlot->graph(indexGraph["cursor 2"])->addToLegend();
         emit cursor1Update();
         emit cursor2Update();
+
+        ui->checkBoxDrawBetweenCursor->setEnabled(true);
     }
 }
 
@@ -708,7 +718,7 @@ void FenEnfantGraph::createCurveIntialisation()
     ui->comboBoxCurveType->setEditable(false);
     ui->comboBoxCurveType->clear();
     ui->comboBoxCurveType->addItem("Moyenne");
-    ui->comboBoxCurveType->addItem("Filtre mileu");
+    ui->comboBoxCurveType->addItem("Filtre médian");
 
     ui->ComboBoxCurveName->setEnabled(true);
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
@@ -740,14 +750,35 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
 
     if(opId == 0)
     {
-        name = tr("middle_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
-                                 .arg(ui->spinBoxSampleTime->value());
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("middle_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
+                                        .arg(ui->spinBoxSampleTime->value());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
+                                               .arg(ui->spinBoxSampleTime->value())
+                                               .arg(ui->curseur1->value())
+                                               .arg(ui->curseur2->value());
+        }
+
     }
 
     if(opId == 1)
     {
-        name = tr("average_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
-                            .arg(ui->spinBoxSampleTime->value());
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("average_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
+                                .arg(ui->spinBoxSampleTime->value());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
+                                               .arg(ui->spinBoxSampleTime->value())
+                                               .arg(ui->curseur1->value())
+                                               .arg(ui->curseur2->value());
+        }
     }
 
     return name;
@@ -761,12 +792,26 @@ void FenEnfantGraph::createCurve()
 
     if(curveType == "Moyenne")
     {
-       displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime));
+       if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+       {
+           displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime));
+       }
+       else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+       {
+           displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime, ui->curseur1->value(), ui->curseur2->value()));
+       }
     }
 
-    else if(curveType == "Filtre mileu")
+    else if(curveType == "Filtre médian")
     {
-       displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime));
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime));
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime, ui->curseur1->value(), ui->curseur2->value()));
+        }
     }
 }
 
@@ -822,6 +867,50 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
     ui->customPlot->replot();
 }
 //Math curve display end
+
+//Export picture of graph
+void FenEnfantGraph::exportGraphAsPng()
+{
+    QString outputDir = QFileDialog::getSaveFileName(this, "Enregistrer un fichier", QString(), "Images (*.png)");
+             QFile file(outputDir);
+
+             if (!file.open(QIODevice::WriteOnly|QFile::WriteOnly))
+                  {
+                      QMessageBox::warning(0,"Could not create Project File",
+                                                 QObject::tr( "\n Could not create Project File on disk"));
+                  }
+
+     ui->customPlot->savePng(outputDir, ui->spinBoxXSizePng->value(), ui->spinBoxYSizePng->value(), 1.0, -1);
+}
+
+void FenEnfantGraph::exportGraphAsPdf()
+{
+    QString outputDir = QFileDialog::getSaveFileName(this, "Enregistrer un fichier", QString(), "Images (*.pdf)");
+             QFile file(outputDir);
+
+             if (!file.open(QIODevice::WriteOnly|QFile::WriteOnly))
+                  {
+                      QMessageBox::warning(0,"Could not create Project File",
+                                                 QObject::tr( "\n Could not create Project File on disk"));
+                  }
+
+     ui->customPlot->savePdf(outputDir);
+}
+
+void FenEnfantGraph::exportGraphAsJpeg()
+{
+    QString outputDir = QFileDialog::getSaveFileName(this, "Enregistrer un fichier", QString(), "Images (*.jpg)");
+             QFile file(outputDir);
+
+             if (!file.open(QIODevice::WriteOnly|QFile::WriteOnly))
+                  {
+                      QMessageBox::warning(0,"Could not create Project File",
+                                                 QObject::tr( "\n Could not create Project File on disk"));
+                  }
+
+     ui->customPlot->saveJpg(outputDir, ui->spinBoxXSizeJpeg->value(), ui->spinBoxYSizeJpeg->value());
+}
+//Export picture of graph end
 
 //FenPrincipal Widget manager
     //Function

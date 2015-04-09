@@ -44,6 +44,9 @@ public slots:
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
     void titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title);
     //void selectionChanged();
+    void exportGraphAsPng();
+    void exportGraphAsPdf();
+    void exportGraphAsJpeg();
 
 
 signals:
