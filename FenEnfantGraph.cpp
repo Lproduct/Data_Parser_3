@@ -50,7 +50,18 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     // connect slot that ties some axis selections together:
     //connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
 
-    //Connect export graph as PNG to interface
+    //Connect export graph as PNG, JPEG, PDF to interface
+    ui->pushButtonLinkPng->setCheckable(true);
+    ui->pushButtonLinkPng->setChecked(true);
+    ui->pushButtonLinkJpeg->setCheckable(true);
+    ui->pushButtonLinkJpeg->setChecked(true);
+
+    connect(ui->spinBoxXSizePng, SIGNAL(valueChanged(int)), this, SLOT(linkPngValueY(int)));
+    connect(ui->spinBoxYSizePng, SIGNAL(valueChanged(int)), this, SLOT(linkPngValueX(int)));
+
+    connect(ui->spinBoxXSizeJpeg, SIGNAL(valueChanged(int)), this, SLOT(linkJpegValueY(int)));
+    connect(ui->spinBoxYSizeJpeg, SIGNAL(valueChanged(int)), this, SLOT(linkJpegValueX(int)));
+
     connect(ui->pushButtonSavAsPng, SIGNAL(clicked()), this, SLOT(exportGraphAsPng()));
     connect(ui->pushButtonSaveAsPdf, SIGNAL(clicked()), this, SLOT(exportGraphAsPdf()));
     connect(ui->pushButtonSaveAsJpeg, SIGNAL(clicked()), this, SLOT(exportGraphAsJpeg()));
@@ -164,20 +175,24 @@ void FenEnfantGraph::contextMenuRequest(QPoint pos)
     }
     else  // general context menu on graphs requested
     {
-        if(blackTheme == false)
-        {
-            QAction *actionChangeBGB = contextMenu->addAction("Black theme");
-            connect(actionChangeBGB, SIGNAL(triggered()), this, SLOT(changeColorBGB()));
-        }
-        else if(blackTheme == true)
-        {
-            QAction *actionChangeBGW = contextMenu->addAction("White theme");
-            connect(actionChangeBGW, SIGNAL(triggered()), this, SLOT(changeColorBGW()));
-        }
-
         if (ui->customPlot->selectedGraphs().size() > 0)
         {
-          contextMenu->addAction("Change selected curve color", this, SLOT(changeSelectedGraphColor()));
+          contextMenu->addAction("Change curve color", this, SLOT(changeSelectedGraphColor()));
+          contextMenu->addAction("Change curve thickness", this, SLOT(changeSelectedGraphThickness()));
+          contextMenu->addAction("Change curve scatter", this, SLOT(changeSelectedGraphScatter()));
+        }
+        else
+        {
+            if(blackTheme == false)
+            {
+                QAction *actionChangeBGB = contextMenu->addAction("Black theme");
+                connect(actionChangeBGB, SIGNAL(triggered()), this, SLOT(changeColorBGB()));
+            }
+            else if(blackTheme == true)
+            {
+                QAction *actionChangeBGW = contextMenu->addAction("White theme");
+                connect(actionChangeBGW, SIGNAL(triggered()), this, SLOT(changeColorBGW()));
+            }
         }
     }
 
@@ -200,8 +215,15 @@ void FenEnfantGraph::moveLegend()
 
 void FenEnfantGraph::changeSelectedGraphColor()
 {
-    QColor couleur = QColorDialog::getColor(Qt::black, this);
-    ui->customPlot->selectedGraphs().first()->setPen(QPen(couleur));
+    QPen *pen = new QPen(ui->customPlot->selectedGraphs().first()->pen());
+    int width(pen->width());
+
+    QColor newColor = QColorDialog::getColor(Qt::black, this);
+
+    QPen newPen;
+    newPen.setWidth(width);
+    newPen.setColor(newColor);
+    ui->customPlot->selectedGraphs().first()->setPen(newPen);
     ui->customPlot->replot();
 }
 
@@ -304,6 +326,49 @@ void FenEnfantGraph::changeColorBGW()
     ui->customPlot->replot();
 
     blackTheme = false;
+}
+
+void FenEnfantGraph::changeSelectedGraphThickness()
+{
+    QPen *pen = new QPen(ui->customPlot->selectedGraphs().first()->pen());
+    QColor color(pen->color());
+
+    int newValue = QInputDialog::getInt(this, "Data Parser", "New curve thickness:", 0, 0, 100);
+
+    QPen newPen;
+    newPen.setColor(color);
+    newPen.setWidth(newValue);
+
+    ui->customPlot->selectedGraphs().first()->setPen(newPen);
+    ui->customPlot->replot();
+}
+
+void FenEnfantGraph::changeSelectedGraphScatter()
+{
+    QStringList item;
+    item.push_back("None");
+    item.push_back("Cross");
+    item.push_back("Circle");
+    item.push_back("Disc");
+    QString newItem = QInputDialog::getItem(this, "Data Parser", "New curve scatter:",item, 0, false);
+
+    if (newItem == "None")
+    {
+        ui->customPlot->selectedGraphs().first()->setScatterStyle(QCPScatterStyle::ssNone);
+    }
+    else if (newItem == "Cross")
+    {
+        ui->customPlot->selectedGraphs().first()->setScatterStyle(QCPScatterStyle::ssCross);
+    }
+    else if (newItem == "Circle")
+    {
+        ui->customPlot->selectedGraphs().first()->setScatterStyle(QCPScatterStyle::ssCircle);
+    }
+    else if (newItem == "Disc")
+    {
+        ui->customPlot->selectedGraphs().first()->setScatterStyle(QCPScatterStyle::ssDisc);
+    }
+    ui->customPlot->replot();
 }
 
 QColor FenEnfantGraph::randomColor(const QString &colorType)
@@ -880,7 +945,7 @@ void FenEnfantGraph::exportGraphAsPng()
                                                  QObject::tr( "\n Could not create Project File on disk"));
                   }
 
-     ui->customPlot->savePng(outputDir, ui->spinBoxXSizePng->value(), ui->spinBoxYSizePng->value(), 1.0, -1);
+     ui->customPlot->savePng(outputDir, ui->spinBoxYSizePng->value(), ui->spinBoxXSizePng->value(), 1.0, -1);
 }
 
 void FenEnfantGraph::exportGraphAsPdf()
@@ -908,7 +973,39 @@ void FenEnfantGraph::exportGraphAsJpeg()
                                                  QObject::tr( "\n Could not create Project File on disk"));
                   }
 
-     ui->customPlot->saveJpg(outputDir, ui->spinBoxXSizeJpeg->value(), ui->spinBoxYSizeJpeg->value());
+     ui->customPlot->saveJpg(outputDir, ui->spinBoxYSizeJpeg->value(), ui->spinBoxXSizeJpeg->value());
+}
+
+void FenEnfantGraph::linkPngValueX(const int &value)
+{
+    if (ui->pushButtonLinkPng->isChecked() == true && ui->spinBoxYSizePng->value() != ui->spinBoxXSizePng->value()*2)
+    {
+        ui->spinBoxXSizePng->setValue(value/2);
+    }
+}
+
+void FenEnfantGraph::linkPngValueY(const int &value)
+{
+    if (ui->pushButtonLinkJpeg->isChecked() == true && ui->spinBoxXSizePng->value() != ui->spinBoxYSizePng->value()/2)
+    {
+        ui->spinBoxYSizePng->setValue(value*2);
+    }
+}
+
+void FenEnfantGraph::linkJpegValueX(const int &value)
+{
+    if (ui->pushButtonLinkPng->isChecked() == true && ui->spinBoxYSizeJpeg->value() != ui->spinBoxXSizeJpeg->value()*2)
+    {
+        ui->spinBoxXSizeJpeg->setValue(value/2);
+    }
+}
+
+void FenEnfantGraph::linkJpegValueY(const int &value)
+{
+    if (ui->pushButtonLinkJpeg->isChecked() == true && ui->spinBoxXSizeJpeg->value() != ui->spinBoxYSizeJpeg->value()/2)
+    {
+        ui->spinBoxYSizeJpeg->setValue(value*2);
+    }
 }
 //Export picture of graph end
 

@@ -39,6 +39,8 @@ public slots:
     void contextMenuRequest(QPoint pos);
     void moveLegend();
     void changeSelectedGraphColor();
+    void changeSelectedGraphThickness();
+    void changeSelectedGraphScatter();
     void changeColorBGB();
     void changeColorBGW();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -47,6 +49,11 @@ public slots:
     void exportGraphAsPng();
     void exportGraphAsPdf();
     void exportGraphAsJpeg();
+    void linkPngValueX(const int &value);
+    void linkJpegValueX(const int &value);
+    void linkPngValueY(const int &value);
+    void linkJpegValueY(const int &value);
+
 
 
 signals:
