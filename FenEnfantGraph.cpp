@@ -65,6 +65,9 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->pushButtonSavAsPng, SIGNAL(clicked()), this, SLOT(exportGraphAsPng()));
     connect(ui->pushButtonSaveAsPdf, SIGNAL(clicked()), this, SLOT(exportGraphAsPdf()));
     connect(ui->pushButtonSaveAsJpeg, SIGNAL(clicked()), this, SLOT(exportGraphAsJpeg()));
+
+    //Connect time management
+    connect(ui->checkBoxTimeAbsis, SIGNAL(clicked()), this, SLOT(setGraphAbsisTime()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -76,7 +79,8 @@ FenEnfantGraph::~FenEnfantGraph()
 bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList &header,const QVector<QVector<double> > &tab )
 {
     setCurrentFile(fileInfo.at(0));    
-    setInfoData(fileInfo);    
+    setInfoData(fileInfo);
+    calculateOffsetTime(fileInfo);
 
     setGraphParameter();
     setGraph(header, tab);
@@ -1030,3 +1034,86 @@ QString FenEnfantGraph::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 //FenPrincipal Widget manager end
+
+//Time absis management
+void FenEnfantGraph::setGraphAbsisTime()
+{
+    if(ui->checkBoxTimeAbsis->checkState() == 2)
+    {
+        ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
+        ui->customPlot->xAxis->setDateTimeSpec(Qt::UTC);
+        ui->customPlot->xAxis->setDateTimeFormat("hh:mm:ss \n dd.MM.yyyy");
+        addTimeOffsetToGraph();
+        ui->customPlot->graph(0)->rescaleAxes();
+        ui->customPlot->replot();
+    }
+    else if(ui->checkBoxTimeAbsis->checkState() == 0)
+    {
+        ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltNumber);
+        subTimeOffsetToGraph();
+        ui->customPlot->graph(0)->rescaleAxes();
+        ui->customPlot->replot();
+    }
+}
+
+void FenEnfantGraph::calculateOffsetTime(const QStringList &fileInfo)
+{
+    //Convert date in second since 01/01/1970 00:00:00
+    QDate startDate(1970, 1, 1);
+    QDate date = QDate::fromString(fileInfo.at(2), "dd/MM/yyyy");
+
+    QTime time = QTime::fromString(fileInfo.at(3), "hh:mm:ss");
+
+    offsetTime = startDate.daysTo(date)*24*3600 + time.msecsSinceStartOfDay()/1000;
+}
+
+void FenEnfantGraph::addTimeOffsetToGraph()
+{
+    for(int j(0); j<= ui->customPlot->graphCount()-1; j++)
+    {
+        //Change value of keys
+        QList<double> keysList(ui->customPlot->graph(j)->data()->keys());
+        QVector<double> KeysVector;
+
+        for (int i(0); i <= keysList.size()-1; i++)
+        {
+            KeysVector.push_back(keysList.at(i)+offsetTime);
+        }
+
+        // extract values from QCPData and create a QVector of values
+        QList<QCPData> valuesList(ui->customPlot->graph(j)->data()->values());
+        QVector<double> valuesVector;
+        for (int i(0); i <= valuesList.size()-1; i++)
+    {
+        valuesVector.push_back(valuesList.at(i).value);
+    }
+
+    ui->customPlot->graph(j)->setData(KeysVector, valuesVector);
+    }
+}
+
+void FenEnfantGraph::subTimeOffsetToGraph()
+{
+    for(int j(0); j<= ui->customPlot->graphCount()-1; j++)
+    {
+        //Change value of keys
+        QList<double> keysList(ui->customPlot->graph(j)->data()->keys());
+        QVector<double> KeysVector;
+
+        for (int i(0); i <= keysList.size()-1; i++)
+        {
+            KeysVector.push_back(keysList.at(i)-offsetTime);
+        }
+
+        // extract values from QCPData and create a QVector of values
+        QList<QCPData> valuesList(ui->customPlot->graph(j)->data()->values());
+        QVector<double> valuesVector;
+        for (int i(0); i <= valuesList.size()-1; i++)
+    {
+        valuesVector.push_back(valuesList.at(i).value);
+    }
+
+    ui->customPlot->graph(j)->setData(KeysVector, valuesVector);
+    }
+}
+//Time absis management end

@@ -53,6 +53,7 @@ public slots:
     void linkJpegValueX(const int &value);
     void linkPngValueY(const int &value);
     void linkJpegValueY(const int &value);
+    void setGraphAbsisTime();
 
 
 
@@ -73,7 +74,9 @@ private:
     void createCurveIntialisation();
     void displayMathFunctionCurve(const QVector<QVector<double> > &tab);
     QString curveName(const QVector<double> &tabId);
-
+    void calculateOffsetTime(const QStringList &fileInfo);
+    void addTimeOffsetToGraph();
+    void subTimeOffsetToGraph();
 
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
@@ -85,6 +88,7 @@ private:
     QTimer dataTimer;
     bool blackTheme;
     QString graphTitle;
+    long int offsetTime;
 };
 
 #endif // FENENFANTGRAPH_H
