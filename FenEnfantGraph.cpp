@@ -68,6 +68,8 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     //Connect time management
     connect(ui->checkBoxTimeAbsis, SIGNAL(clicked()), this, SLOT(setGraphAbsisTime()));
+    connect(ui->spinBoxTimeUnit, SIGNAL(valueChanged(int)), this, SLOT(changeAbsisName()));
+    connect(ui->comboBoxTimeUnit, SIGNAL(currentTextChanged(QString)), this, SLOT(changeAbsisName()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -157,7 +159,8 @@ void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<d
 void FenEnfantGraph::defineAxis(const QStringList &header)
 {
     // give the axes some labels:
-     ui->customPlot->xAxis->setLabel(header.at(0));
+     ui->customPlot->xAxis->setLabel(header.at(0) + "(s)");
+     m_header = header;
      ui->customPlot->yAxis->setLabel("Comptage");
 
      // let the ranges scale themselves so graph 0 fits perfectly in the visible area:
@@ -1042,10 +1045,13 @@ void FenEnfantGraph::setGraphAbsisTime()
     {
         ui->customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
         ui->customPlot->xAxis->setDateTimeSpec(Qt::UTC);
-        ui->customPlot->xAxis->setDateTimeFormat("hh:mm:ss \n dd.MM.yyyy");
+        ui->customPlot->xAxis->setDateTimeFormat("hh:mm:ss:zzz \n dd.MM.yyyy");
         addTimeOffsetToGraph();
         ui->customPlot->graph(0)->rescaleAxes();
         ui->customPlot->replot();
+
+        ui->spinBoxTimeUnit->setEnabled(false);
+        ui->comboBoxTimeUnit->setEnabled(false);
     }
     else if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
@@ -1053,6 +1059,9 @@ void FenEnfantGraph::setGraphAbsisTime()
         subTimeOffsetToGraph();
         ui->customPlot->graph(0)->rescaleAxes();
         ui->customPlot->replot();
+
+        ui->spinBoxTimeUnit->setEnabled(true);
+        ui->comboBoxTimeUnit->setEnabled(true);
     }
 }
 
@@ -1069,15 +1078,18 @@ void FenEnfantGraph::calculateOffsetTime(const QStringList &fileInfo)
 
 void FenEnfantGraph::addTimeOffsetToGraph()
 {
+    //Check time unit
+    double unit(timeUnit());
+
     for(int j(0); j<= ui->customPlot->graphCount()-1; j++)
     {
         //Change value of keys
         QList<double> keysList(ui->customPlot->graph(j)->data()->keys());
-        QVector<double> KeysVector;
+        QVector<double> keysVector;
 
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            KeysVector.push_back(keysList.at(i)+offsetTime);
+            keysVector.push_back(keysList.at(i)*unit + offsetTime);
         }
 
         // extract values from QCPData and create a QVector of values
@@ -1088,21 +1100,24 @@ void FenEnfantGraph::addTimeOffsetToGraph()
         valuesVector.push_back(valuesList.at(i).value);
     }
 
-    ui->customPlot->graph(j)->setData(KeysVector, valuesVector);
+    ui->customPlot->graph(j)->setData(keysVector, valuesVector);
     }
 }
 
 void FenEnfantGraph::subTimeOffsetToGraph()
 {
+    //Check time unit
+    double unit(timeUnit());
+
     for(int j(0); j<= ui->customPlot->graphCount()-1; j++)
     {
         //Change value of keys
         QList<double> keysList(ui->customPlot->graph(j)->data()->keys());
-        QVector<double> KeysVector;
+        QVector<double> keysVector;
 
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            KeysVector.push_back(keysList.at(i)-offsetTime);
+            keysVector.push_back((keysList.at(i) - offsetTime)/unit);
         }
 
         // extract values from QCPData and create a QVector of values
@@ -1113,7 +1128,30 @@ void FenEnfantGraph::subTimeOffsetToGraph()
         valuesVector.push_back(valuesList.at(i).value);
     }
 
-    ui->customPlot->graph(j)->setData(KeysVector, valuesVector);
+    ui->customPlot->graph(j)->setData(keysVector, valuesVector);
     }
 }
+
+double FenEnfantGraph::timeUnit()
+{
+    double timeUnit;
+    if (ui->comboBoxTimeUnit->currentText() == "s")
+    {
+        timeUnit = ui->spinBoxTimeUnit->value();
+    }
+    else if (ui->comboBoxTimeUnit->currentText() == "ms")
+    {        
+        timeUnit = (double) ui->spinBoxTimeUnit->value()/1000;
+    }
+
+    return timeUnit;
+}
+
+void FenEnfantGraph::changeAbsisName()
+{
+    QString timeAbsisLabel(m_header.at(0) + "(" + QString::number(ui->spinBoxTimeUnit->value()) + ui->comboBoxTimeUnit->currentText() + ")");
+    ui->customPlot->xAxis->setLabel(timeAbsisLabel);
+    ui->customPlot->replot();
+}
+
 //Time absis management end

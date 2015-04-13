@@ -63,7 +63,7 @@
         <rect>
          <x>10</x>
          <y>0</y>
-         <width>218</width>
+         <width>219</width>
          <height>377</height>
         </rect>
        </property>
@@ -230,19 +230,22 @@
           <item>
            <widget class="QLabel" name="label_25">
             <property name="text">
-             <string>unité de temps en absis :</string>
+             <string>Unité de temps en absis :</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox">
+           <widget class="QSpinBox" name="spinBoxTimeUnit">
+            <property name="minimum">
+             <number>1</number>
+            </property>
             <property name="maximum">
              <number>999</number>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox">
+           <widget class="QComboBox" name="comboBoxTimeUnit">
             <item>
              <property name="text">
               <string>s</string>

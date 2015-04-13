@@ -54,6 +54,8 @@ public slots:
     void linkPngValueY(const int &value);
     void linkJpegValueY(const int &value);
     void setGraphAbsisTime();
+    void changeAbsisName();
+
 
 
 
@@ -77,6 +79,7 @@ private:
     void calculateOffsetTime(const QStringList &fileInfo);
     void addTimeOffsetToGraph();
     void subTimeOffsetToGraph();
+    double timeUnit();
 
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
@@ -88,7 +91,8 @@ private:
     QTimer dataTimer;
     bool blackTheme;
     QString graphTitle;
-    long int offsetTime;
+    double offsetTime;
+    QStringList m_header;
 };
 
 #endif // FENENFANTGRAPH_H
