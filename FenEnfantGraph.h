@@ -55,6 +55,14 @@ public slots:
     void linkJpegValueY(const int &value);
     void setGraphAbsisTime();
     void changeAbsisName();
+    //NewCursor
+    void cursorMangement(const int &state);
+    void moveCursor1(const int &value);
+    void moveCursor2(const int &value);
+    void resizeCursorScroll(const QWheelEvent* &event);
+    void resizeCursorMove(const QMouseEvent* &event);
+    void resizeCursorRelease(const QMouseEvent *&event);
+    //NewCursor end
 
 
 
@@ -70,9 +78,21 @@ private:
     void setGraphParameter();
     void defineAxis(const QStringList &header);
     void setTabCurve(const QString &nameCurve);
+    //Cursor
     void initCursor();
     void setCursorCurveV(const int cursorId, const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
     void keyPressEvent(QKeyEvent *event);
+    //Cursor end
+    //new Cursor
+    void createCursorNew();
+    void setCursorVNew(const int cursorId, const double &posCursor);
+    void displayCursor(const QString &name, const QVector<double> &absTab, const QVector<double> &ordTab);
+    void killCursorNew();
+    void eraseGraphNameFromIndex(const QString &name);
+    void sizeCursor1();
+    void sizeCursor2();
+    //new cursor end
+
     void createCurveIntialisation();
     void displayMathFunctionCurve(const QVector<QVector<double> > &tab);
     QString curveName(const QVector<double> &tabId);
