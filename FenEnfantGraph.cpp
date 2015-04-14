@@ -577,55 +577,7 @@ void FenEnfantGraph::setCursorCurveV(const int cursorId, const double &posCursor
     }
 }
 
-void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
-{
-    if(event->key() == Qt::Key_Plus)
-    {
-        if(ui->customPlot->graph(indexGraph["cursor 1"])->selected() == true)
-        {
-           ui->curseur1->setValue(ui->curseur1->value()+1);
-        }
-        else
-        {
-            event->ignore();
-        }
 
-        if(ui->customPlot->graph(indexGraph["cursor 2"])->selected() == true)
-        {
-           ui->curseur2->setValue(ui->curseur2->value()+1);
-        }
-        else
-        {
-            event->ignore();
-        }
-    }
-
-    if(event->key() == Qt::Key_Minus)
-    {
-        if(ui->customPlot->graph(indexGraph["cursor 1"])->selected() == true)
-        {
-           ui->curseur1->setValue(ui->curseur1->value()-1);
-        }
-        else
-        {
-            event->ignore();
-        }
-
-        if(ui->customPlot->graph(indexGraph["cursor 2"])->selected() == true)
-        {
-           ui->curseur2->setValue(ui->curseur2->value()-1);
-        }
-        else
-        {
-            event->ignore();
-        }
-    }
-
-    else
-    {
-        event->ignore();
-    }
-}
     //SLOT
 void FenEnfantGraph::cursorEnable(const int& state)
 {
@@ -713,27 +665,36 @@ void FenEnfantGraph::cursorMangement(const int &state)
 {
     if(state == 2)
     {
+        controlPressed = false;
         createCursorNew();
         ui->spinBoxCurseur1->setEnabled(true);
         ui->spinBoxCurseur2->setEnabled(true);
         connect(ui->spinBoxCurseur1, SIGNAL(valueChanged(int)), this, SLOT(moveCursor1(int)));
         connect(ui->spinBoxCurseur2, SIGNAL(valueChanged(int)), this, SLOT(moveCursor2(int)));
         connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScroll(QWheelEvent*)));
-        connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMove(QMouseEvent*)));
-        connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorRelease(QMouseEvent*)));
+        connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
+        connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
+        connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
     }
     else if (state == 0)
     {
         killCursorNew();
         ui->spinBoxCurseur1->setEnabled(false);
         ui->spinBoxCurseur2->setEnabled(false);
+        disconnect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScroll(QWheelEvent*)));
+        disconnect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
+        disconnect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
+        disconnect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
     }
 }
 
 void FenEnfantGraph::createCursorNew()
 {
-    setCursorVNew(1, 30);
-    setCursorVNew(2, 60);
+    double viewCenter (ui->customPlot->xAxis->range().center());
+    ui->spinBoxCurseur1->setValue(viewCenter - 10.0);
+    ui->spinBoxCurseur2->setValue(viewCenter + 10.0);
+    setCursorVNew(1, viewCenter - 10.0);
+    setCursorVNew(2, viewCenter + 10.0);
 }
 
 void FenEnfantGraph::killCursorNew()
@@ -849,14 +810,7 @@ void FenEnfantGraph::resizeCursorScroll(const QWheelEvent* &event)
     sizeCursor2();
 }
 
-void FenEnfantGraph::resizeCursorMove(const QMouseEvent* &event)
-{
-    Q_UNUSED(event)
-    sizeCursor1();
-    sizeCursor2();
-}
-
-void FenEnfantGraph::resizeCursorRelease(const QMouseEvent* &event)
+void FenEnfantGraph::resizeCursorMouse(const QMouseEvent* &event)
 {
     Q_UNUSED(event)
     sizeCursor1();
@@ -919,6 +873,82 @@ void FenEnfantGraph::sizeCursor2()
     }
 }
 
+void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
+{
+    if(ui->checkBoxCurseurNew->checkState() == 2)
+    {
+        if(event->key() ==  Qt::Key_Control)
+        {
+            controlPressed = true;
+        }
+        if (controlPressed == false)
+        {
+            if(event->key() == Qt::Key_Plus)
+            {
+                if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
+                {
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()+1);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
+                {
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()+1);
+                }
+            }
+            else if(event->key() == Qt::Key_Minus)
+            {
+                if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
+                {
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()-1);
+                }
+
+                if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
+                {
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()-1);
+                }
+            }
+        }
+
+        else if(controlPressed == true)
+        {
+            if(event->key() == (Qt::Key_Minus))
+            {
+                if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
+                {
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()-10);
+                }
+
+                if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
+                {
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()-10);
+                }
+            }
+            else if(event->key() == (Qt::Key_Plus))
+            {
+                if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
+                {
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()+10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
+                {
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()+10);
+                }
+            }
+        }
+    }
+}
+
+void FenEnfantGraph::keyReleaseEvent(QKeyEvent *event)
+{
+    if(ui->checkBoxCurseurNew->checkState() == 2)
+    {
+        if(event->key() ==  Qt::Key_Control)
+        {
+            controlPressed = false;
+        }
+    }
+}
 //New Cursor end
 
 //Tab Curve display
@@ -1054,8 +1084,8 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
         {
             name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
                                                .arg(ui->spinBoxSampleTime->value())
-                                               .arg(ui->curseur1->value())
-                                               .arg(ui->curseur2->value());
+                                               .arg(ui->spinBoxCurseur1->value())
+                                               .arg(ui->spinBoxCurseur2->value());
         }
     }
 
@@ -1076,7 +1106,7 @@ void FenEnfantGraph::createCurve()
        }
        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
        {
-           displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime, ui->curseur1->value(), ui->curseur2->value()));
+           displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
        }
     }
 
@@ -1088,7 +1118,7 @@ void FenEnfantGraph::createCurve()
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime, ui->curseur1->value(), ui->curseur2->value()));
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
         }
     }
 }

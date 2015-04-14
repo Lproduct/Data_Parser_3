@@ -60,12 +60,8 @@ public slots:
     void moveCursor1(const int &value);
     void moveCursor2(const int &value);
     void resizeCursorScroll(const QWheelEvent* &event);
-    void resizeCursorMove(const QMouseEvent* &event);
-    void resizeCursorRelease(const QMouseEvent *&event);
+    void resizeCursorMouse(const QMouseEvent* &event);
     //NewCursor end
-
-
-
 
 signals:
     void cursor1Update();
@@ -80,8 +76,7 @@ private:
     void setTabCurve(const QString &nameCurve);
     //Cursor
     void initCursor();
-    void setCursorCurveV(const int cursorId, const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);
-    void keyPressEvent(QKeyEvent *event);
+    void setCursorCurveV(const int cursorId, const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);    
     //Cursor end
     //new Cursor
     void createCursorNew();
@@ -91,6 +86,8 @@ private:
     void eraseGraphNameFromIndex(const QString &name);
     void sizeCursor1();
     void sizeCursor2();
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
     //new cursor end
 
     void createCurveIntialisation();
@@ -113,6 +110,7 @@ private:
     QString graphTitle;
     double offsetTime;
     QStringList m_header;
+    bool controlPressed;
 };
 
 #endif // FENENFANTGRAPH_H
