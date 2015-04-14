@@ -26,6 +26,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     //Zoom manager
     connect(ui->checkBoxZoomV, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
     connect(ui->checkBoxZoomH, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
+    connect(ui->pushButtonAjustToScreen, SIGNAL(clicked()), this, SLOT(ajustToscreen()));
 
     //Create Curve
     connect(ui->pushButtoncreateCurve, SIGNAL(clicked()), this,SLOT(createCurve()));
@@ -923,6 +924,13 @@ void FenEnfantGraph::zoom()
     }
 
 }
+
+void FenEnfantGraph::ajustToscreen()
+{
+    ui->customPlot->graph(0)->rescaleAxes();
+    ui->customPlot->replot();
+}
+
 //Zoom manager end
 
 //Math curve display
@@ -976,7 +984,7 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
 
     }
 
-    if(opId == 1)
+    else if(opId == 1)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
@@ -990,6 +998,13 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
         }
+    }
+
+    else if(opId == 2)
+    {
+        QString nameGraph(ui->customPlot->selectedGraphs().first()->name());
+            name = nameGraph + tr("_G:%1_Off:%2").arg(ui->spinBoxCustomGain->value())
+                                                 .arg(ui->spinBoxCustomOffset->value());
     }
 
     return name;
@@ -1331,35 +1346,46 @@ void FenEnfantGraph::customCurveManagement()
 
 void FenEnfantGraph::customCurve()
 {
-    int gain(ui->spinBoxCustomGain->value());
+    double gain(ui->spinBoxCustomGain->value());
     int offset(ui->spinBoxCustomOffset->value());
-    QString name(ui->customPlot->selectedGraphs().first()->name());
 
     //Change value of keys
-    QList<double> keysList(ui->customPlot->graph(j)->data()->keys());
+    QList<double> keysList(ui->customPlot->selectedGraphs().first()->data()->keys());
     QVector<double> keysVector;
 
     if(ui->checkBoxTimeAbsis->checkState() == 2)
     {
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            keysVector.push_back(keysList.at(i)*timeUnit() + offsetTime);
+            keysVector.push_back(keysList.at(i)*timeUnit() + offset*timeUnit() - offsetTime);
         }
     }
     else if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
-
+        for (int i(0); i <= keysList.size()-1; i++)
+        {
+            keysVector.push_back(keysList.at(i) + offset);
+        }
     }
 
     // extract values from QCPData and create a QVector of values
-    QList<QCPData> valuesList(ui->customPlot->graph(j)->data()->values());
+    QList<QCPData> valuesList(ui->customPlot->selectedGraphs().first()->data()->values());
     QVector<double> valuesVector;
     for (int i(0); i <= valuesList.size()-1; i++)
     {
-        valuesVector.push_back(valuesList.at(i).value);
+        valuesVector.push_back(valuesList.at(i).value*gain);
     }
 
-    ui->customPlot->graph(j)->setData(keysVector, valuesVector);
+    QVector<double> tabId;
+    tabId.push_back(2);
+    QVector<QVector<double> > tab;
+    tab.push_back(keysVector);
+    tab.push_back(valuesVector);
+    tab.push_back(tabId);
+
+    displayMathFunctionCurve(tab);
+
+    ui->customPlot->replot();
 }
 
 //Custom Curve end

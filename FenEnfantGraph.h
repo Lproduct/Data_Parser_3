@@ -29,6 +29,7 @@ public slots:
     void curveDisplay(const int &nbCurve);
     //Zoom management
     void zoom();
+    void ajustToscreen();
     //Math curve
     void createCurve();
     //graph skin
@@ -62,6 +63,7 @@ public slots:
     void drawBetweenCursorState();
     //Custom Curve
     void customCurveManagement();
+    void customCurve();
 
 private:
     void setCurrentFile(const QString &fileName);

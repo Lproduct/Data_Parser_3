@@ -287,7 +287,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButtonAjustToScreen">
             <property name="text">
              <string>Ajust to screen</string>
             </property>
@@ -554,14 +554,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QSpinBox" name="spinBoxCustomGain">
-            <property name="minimum">
-             <number>-1000000</number>
-            </property>
-            <property name="maximum">
-             <number>1000000</number>
-            </property>
-           </widget>
+           <widget class="QDoubleSpinBox" name="spinBoxCustomGain"/>
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonCustomCurve">
