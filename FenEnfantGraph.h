@@ -22,21 +22,17 @@ public:
 
     bool LoadTabData(const QStringList &fileInfo, const QStringList &header, const QVector<QVector<double> > &tab);
     QString userFriendlyCurrentFile();
-    void averageCurve(const int &nbTab, const int &sampleTime, const QVector<QVector<double> > &tab);
-    void middleCurve(const int &nbTab, const int &sampleTime,const QVector<QVector<double> > &tab);
     QString currentFile() { return curFile; }
 
 public slots:
-    void cursor1(const double &posCursor);
-    void cursor2(const double &posCursor);
-    void cursorHeightScroll(QWheelEvent *event);
-    void cursorHeightMouved(QMouseEvent* event );
-    void cursorHeightPressed(QMouseEvent* event);
-    void cursorEnable(const int& state);
+    //Tab curve
     void curveDisplay(const int &nbCurve);
+    //Zoom management
     void zoom();
+    //Math curve
     void createCurve();
-    void contextMenuRequest(QPoint pos);
+    //graph skin
+    void contextMenuRequest(QPoint pos);    
     void moveLegend();
     void changeSelectedGraphColor();
     void changeSelectedGraphThickness();
@@ -45,7 +41,7 @@ public slots:
     void changeColorBGW();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
     void titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title);
-    //void selectionChanged();
+    //Export graph
     void exportGraphAsPng();
     void exportGraphAsPdf();
     void exportGraphAsJpeg();
@@ -53,6 +49,7 @@ public slots:
     void linkJpegValueX(const int &value);
     void linkPngValueY(const int &value);
     void linkJpegValueY(const int &value);
+    //Time absis
     void setGraphAbsisTime();
     void changeAbsisName();
     //NewCursor
@@ -62,10 +59,9 @@ public slots:
     void resizeCursorScroll(const QWheelEvent* &event);
     void resizeCursorMouse(const QMouseEvent* &event);
     //NewCursor end
-
-signals:
-    void cursor1Update();
-    void cursor2Update();
+    void drawBetweenCursorState();
+    //Custom Curve
+    void customCurveManagement();
 
 private:
     void setCurrentFile(const QString &fileName);
@@ -74,22 +70,19 @@ private:
     void setGraphParameter();
     void defineAxis(const QStringList &header);
     void setTabCurve(const QString &nameCurve);
-    //Cursor
-    void initCursor();
-    void setCursorCurveV(const int cursorId, const double &posCursor, const int &nbGraph, const QCPRange &cursorHeight);    
-    //Cursor end
     //new Cursor
     void createCursorNew();
-    void setCursorVNew(const int cursorId, const double &posCursor);
+    void createCursorNewConnection();
+    void setCursorVNew(const int cursorId, const double &posCursor, const double &offset = 0);
     void displayCursor(const QString &name, const QVector<double> &absTab, const QVector<double> &ordTab);
     void killCursorNew();
+    void killCursorNewConnection();
     void eraseGraphNameFromIndex(const QString &name);
     void sizeCursor1();
     void sizeCursor2();
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     //new cursor end
-
     void createCurveIntialisation();
     void displayMathFunctionCurve(const QVector<QVector<double> > &tab);
     QString curveName(const QVector<double> &tabId);
