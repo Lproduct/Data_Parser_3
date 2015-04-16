@@ -9,212 +9,150 @@ MathFunction::~MathFunction()
 {
 
 }
-
-QVector<QVector<double> > MathFunction::middleValueCurveFilter(const int &nbTab, const int &sampleTime , int startValue, int endValue)
+QVector<double> MathFunction::dataInfo()
 {
-    QVector<double> absTab;
-    QVector<double> ordTab;
+    double dataMinX(m_tabData.at(0).at(0));
+    double dataMaxX(m_tabData.at(0).at(m_tabData.at(0).size()-1));
+    double dataRange(m_tabData.at(0).at(0) - m_tabData.at(0).at(1));
 
-    if (startValue == -1 && endValue == -1)
+    QVector<double> dataInfoReturn;
+    dataInfoReturn.push_back(dataMinX);
+    dataInfoReturn.push_back(dataMaxX);
+    dataInfoReturn.push_back(dataRange);
+
+    return dataInfoReturn;
+}
+
+QVector<QVector<double> > MathFunction::averageValueCurveNew(const int &nbTab, const int &sampleTime , int startValue, int endValue)
+{
+    QVector<double> absTab(0);
+    QVector<double> ordTab(0);
+
+    double sumAbs(0);
+    double sumOrd(0);
+
+    if(startValue == -1 && endValue ==-1)
     {
-        //Create a value middle curve
-        int sampleTimeModif;
-        if (sampleTime%2 == 0)
+        for(long int i(1); i<= m_tabData.at(0).size() ; i++)
         {
-            sampleTimeModif = sampleTime +1;
-        }
-        else
-        {
-            sampleTimeModif = sampleTime;
-        }
+            sumAbs += m_tabData.at(0)[i-1];
+            sumOrd += m_tabData.at(nbTab)[i-1];
 
-        QVector<double> subTab(m_tabData.at(0));
-
-        //int nbColumn(tab.size());
-        int nbRow(subTab.size());
-
-        int reste(nbRow%sampleTimeModif);
-        int nbLoop(0);
-        if (reste == 0)
-        {
-            nbLoop =nbRow/sampleTimeModif;
-        }
-        else
-        {
-            nbLoop = (nbRow-reste)/sampleTimeModif;
-        }
-
-        //QVector<double> absTab;
-        double sampleTimeModifDouble = (double) sampleTimeModif;
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            absTab.push_back(sampleTimeModifDouble/2+i*sampleTimeModifDouble);
-        }
-
-        //QVector<double> ordTab;
-        QVector<double> subtab2(m_tabData.at(nbTab));
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            QVector<double> middleTab(0);
-
-            for(int k(0+i*(sampleTimeModif)); k<=sampleTimeModif-1+i*(sampleTimeModif); k++)
+            if ( i % sampleTime   == 0)
             {
-                middleTab.push_back(subtab2.at(k));
+                absTab.push_back(sumAbs/sampleTime);
+                ordTab.push_back(sumOrd/sampleTime);
+                sumAbs = 0;
+                sumOrd = 0;
             }
-            std::sort(middleTab.begin(), middleTab.end());
-            ordTab.push_back(middleTab.at(sampleTimeModif/2));
         }
-
-        //return createTabReturn(0, absTab, ordTab);
     }
-
-    else if (startValue != -1 && endValue != -1)
+    else
     {
-        //Create a value middle curve
-        int sampleTimeModif;
-        if (sampleTime%2 == 0)
-        {
-            sampleTimeModif = sampleTime +1;
-        }
-        else
-        {
-            sampleTimeModif = sampleTime;
-        }
+        long int startValueInd(returnIndOfValueAbs(startValue, sampleTime, 0));
+        long int endValueInd(returnIndOfValueAbs(endValue, sampleTime, 1));
 
-        int valueRange(endValue - startValue);
-
-        //QVector<double> subTab(m_tabData.at(0));
-
-        //int nbColumn(tab.size());
-        //int nbRow(subTab.size());
-
-        int reste(valueRange%sampleTimeModif);
-        int nbLoop(0);
-        if (reste == 0)
+        for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
         {
-            nbLoop =valueRange/sampleTimeModif;
-        }
-        else
-        {
-            nbLoop = (valueRange-reste)/sampleTimeModif;
-        }
-        //create absis Tab
-        //QVector<double> absTab;
-        double sampleTimeModifDouble = (double) sampleTimeModif;
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            absTab.push_back(startValue + sampleTimeModifDouble/2 + i*sampleTimeModifDouble);
-        }
+            sumAbs += m_tabData.at(0)[i-1];
+            sumOrd += m_tabData.at(nbTab)[i-1];
 
-        //Create ordonate tab
-        //QVector<double> ordTab;
-        QVector<double> subtab2(m_tabData.at(nbTab));
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            QVector<double> middleTab(0);
-
-            for(int k(0+i*(sampleTimeModif)); k<=sampleTimeModif-1+i*(sampleTimeModif); k++)
+            if ( i % sampleTime   == 0)
             {
-                middleTab.push_back(subtab2.at(k+startValue));
+                absTab.push_back(sumAbs/sampleTime);
+                ordTab.push_back(sumOrd/sampleTime);
+                sumAbs = 0;
+                sumOrd = 0;
             }
-            std::sort(middleTab.begin(), middleTab.end());
-            ordTab.push_back(middleTab.at(sampleTimeModif/2));
         }
-
-        //return createTabReturn(0, absTab, ordTab);
     }
 
     return createTabReturn(0, absTab, ordTab);
 }
 
-QVector<QVector<double> > MathFunction::averageValueCurve(const int &nbTab, const int &sampleTime, int startValue, int endValue)
+QVector<QVector<double> > MathFunction::middleValueCurveFilterNew(const int &nbTab, const int &sampleTime , int startValue, int endValue)
 {
+    int sampleTimeModif(sampleTime);
+    if(sampleTime % 2 == 0)
+    {
+        sampleTimeModif++;
+    }
+
     QVector<double> absTab;
     QVector<double> ordTab;
 
-    if (startValue == -1 && endValue == -1)
+    QVector<double> midAbs(0);
+    QVector<double> midOrd(0);
+
+    if(startValue == -1 && endValue ==-1)
     {
-        //Create a average curve
-        QVector<double> subTab(m_tabData.at(0));
-
-        //int nbColumn(tab.size());
-        int nbRow(subTab.size());
-
-        int reste(nbRow%sampleTime);
-        int nbLoop(0);
-        if (reste == 0)
+        for(long int i(1); i<= m_tabData.at(0).size() ; i++)
         {
-            nbLoop =nbRow/sampleTime;
-        }
-        else
-        {
-            nbLoop = (nbRow-reste)/sampleTime;
-        }
+            midAbs.push_back(m_tabData.at(0)[i-1]);
+            midOrd.push_back(m_tabData.at(nbTab)[i-1]);
 
-        //QVector<double> absTab;
-        double sampleTimeModif = (double) sampleTime;
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            absTab.push_back(sampleTimeModif/2+i*sampleTimeModif);
-        }
-
-        //QVector<double> ordTab;
-        QVector<double> subtab2(m_tabData.at(nbTab));
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            double average(0);
-            for(int k(0+i*(sampleTime)); k<=sampleTime-1+i*(sampleTime); k++)
+            if ( i % sampleTimeModif   == 0)
             {
-                average += subtab2.at(k);
-            }
-            ordTab.push_back(average/sampleTime);
-        }
+                std::sort(midAbs.begin(), midAbs.end());
+                std::sort(midOrd.begin(), midOrd.end());
 
-        //return createTabReturn(1, absTab, ordTab);
+                absTab.push_back(midAbs.at(sampleTimeModif/2));
+                ordTab.push_back(midOrd.at(sampleTimeModif/2));
+
+                midAbs.clear();
+                midOrd.clear();
+            }
+        }
     }
-    else if (startValue != -1 && endValue != -1)
+    else
     {
-        int valueRange(endValue - startValue);
-        //Create a average curve
-        //QVector<double> subTab(m_tabData.at(0));
+        long int startValueInd(returnIndOfValueAbs(startValue, sampleTime, 0));
+        long int endValueInd(returnIndOfValueAbs(endValue, sampleTime, 1));
 
-        //int nbColumn(tab.size());
-        //int nbRow(subTab.size());
+        for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
+        {
+            midAbs.push_back(m_tabData.at(0)[i-1]);
+            midOrd.push_back(m_tabData.at(nbTab)[i-1]);
 
-        int reste(valueRange%sampleTime);
-        int nbLoop(0);
-        if (reste == 0)
-        {
-            nbLoop =valueRange/sampleTime;
-        }
-        else
-        {
-            nbLoop = (valueRange-reste)/sampleTime;
-        }
-
-        //QVector<double> absTab;
-        double sampleTimeModif = (double) sampleTime;
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            absTab.push_back(startValue + sampleTimeModif/2+i*sampleTimeModif);
-        }
-
-        //QVector<double> ordTab;
-        QVector<double> subtab2(m_tabData.at(nbTab));
-        for(int i(0); i<=nbLoop-1; i++)
-        {
-            double average(0);
-            for(int k(0+i*(sampleTime)); k<=sampleTime-1+i*(sampleTime); k++)
+            if ( i % sampleTimeModif   == 0)
             {
-                average += subtab2.at(k+startValue);
-            }
-            ordTab.push_back(average/sampleTime);
-        }
+                std::sort(midAbs.begin(), midAbs.end());
+                std::sort(midOrd.begin(), midOrd.end());
 
-        //return createTabReturn(1, absTab, ordTab);
+                absTab.push_back(midAbs.at(sampleTimeModif/2));
+                ordTab.push_back(midOrd.at(sampleTimeModif/2));
+
+                midAbs.clear();
+                midOrd.clear();
+            }
+        }
     }
 
     return createTabReturn(1, absTab, ordTab);
+}
+
+long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type)
+{
+    long int indice(0);
+    for(long int i(0); i<= m_tabData.at(0).size()-1; i++)
+    {
+        if(m_tabData.at(0).at(i) == (double) value)
+        {
+            indice = i;
+            break;
+        }
+    }
+
+    if (type == 0)
+    {
+        if(indice %  sampleTime !=0 )
+        {
+            double test((int)(indice/sampleTime) + 1);
+            indice = sampleTime*test;
+        }
+    }
+
+    return indice;
 }
 
 QVector<QVector<double> > MathFunction::createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab)
@@ -229,4 +167,3 @@ QVector<QVector<double> > MathFunction::createTabReturn(const int &OpId, const Q
 
     return dataReturn;
 }
-

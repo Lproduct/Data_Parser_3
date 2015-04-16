@@ -516,8 +516,20 @@ void FenEnfantGraph::cursorMangement(const int &state)
 {
     if(state == 2)
     {
+
         controlPressed = false;
+
+        QVector<double> dataInfo = mathMethod->dataInfo();
+        ui->spinBoxCurseur1->setMinimum(dataInfo.at(0));
+        ui->spinBoxCurseur1->setMaximum(dataInfo.at(1));
+        ui->spinBoxCurseur1->setSingleStep(dataInfo.at(2));
+
+        ui->spinBoxCurseur2->setMinimum(dataInfo.at(0));
+        ui->spinBoxCurseur2->setMaximum(dataInfo.at(1));
+        ui->spinBoxCurseur2->setSingleStep(dataInfo.at(2));
+
         createCursorNew();
+
     }
     else if (state == 0)
     {
@@ -551,8 +563,8 @@ void FenEnfantGraph::createCursorNew()
 
 void FenEnfantGraph::createCursorNewConnection()
 {
-    connect(ui->spinBoxCurseur1, SIGNAL(valueChanged(int)), this, SLOT(moveCursor1(int)));
-    connect(ui->spinBoxCurseur2, SIGNAL(valueChanged(int)), this, SLOT(moveCursor2(int)));
+    connect(ui->spinBoxCurseur1, SIGNAL(valueChanged(double)), this, SLOT(moveCursor1(double)));
+    connect(ui->spinBoxCurseur2, SIGNAL(valueChanged(double)), this, SLOT(moveCursor2(double)));
     connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScroll(QWheelEvent*)));
     connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
     connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
@@ -575,8 +587,8 @@ void FenEnfantGraph::killCursorNew()
 
 void FenEnfantGraph::killCursorNewConnection()
 {
-    disconnect(ui->spinBoxCurseur1, SIGNAL(valueChanged(int)), this, SLOT(moveCursor1(int)));
-    disconnect(ui->spinBoxCurseur2, SIGNAL(valueChanged(int)), this, SLOT(moveCursor2(int)));
+    disconnect(ui->spinBoxCurseur1, SIGNAL(valueChanged(double)), this, SLOT(moveCursor1(double)));
+    disconnect(ui->spinBoxCurseur2, SIGNAL(valueChanged(double)), this, SLOT(moveCursor2(double)));
     disconnect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScroll(QWheelEvent*)));
     disconnect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
     disconnect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouse(QMouseEvent*)));
@@ -632,7 +644,7 @@ void FenEnfantGraph::eraseGraphNameFromIndex(const QString &name)
     }
 }
 
-void FenEnfantGraph::moveCursor1(const int &value)
+void FenEnfantGraph::moveCursor1(const double &value)
 {
     //Change value of keys
     QList<double> keysList(ui->customPlot->graph(indexGraph["cursorNew 1"])->data()->keys());
@@ -642,14 +654,14 @@ void FenEnfantGraph::moveCursor1(const int &value)
     {
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            keysVector.push_back((double) value);
+            keysVector.push_back(value);
         }
     }
     else if (ui->checkBoxTimeAbsis->checkState() == 2)
     {
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            keysVector.push_back((double) value*timeUnit() + offsetTime);
+            keysVector.push_back(value*timeUnit() + offsetTime);
         }
     }
 
@@ -665,7 +677,7 @@ void FenEnfantGraph::moveCursor1(const int &value)
     ui->customPlot->replot();
 }
 
-void FenEnfantGraph::moveCursor2(const int &value)
+void FenEnfantGraph::moveCursor2(const double &value)
 {
     //Change value of keys
     QList<double> keysList(ui->customPlot->graph(indexGraph["cursorNew 2"])->data()->keys());
@@ -675,14 +687,14 @@ void FenEnfantGraph::moveCursor2(const int &value)
     {
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            keysVector.push_back((double) value);
+            keysVector.push_back(value);
         }
     }
     else if (ui->checkBoxTimeAbsis->checkState() == 2)
     {
         for (int i(0); i <= keysList.size()-1; i++)
         {
-            keysVector.push_back((double) value*timeUnit() + offsetTime);
+            keysVector.push_back(value*timeUnit() + offsetTime);
         }
     }
 
@@ -714,7 +726,7 @@ void FenEnfantGraph::resizeCursorMouse(const QMouseEvent* &event)
 
 void FenEnfantGraph::sizeCursor1()
 {
-    int value(0);
+    double value(0);
     if (ui->checkBoxTimeAbsis->checkState() == 0)
     {
         value = ui->spinBoxCurseur1->value();
@@ -730,7 +742,7 @@ void FenEnfantGraph::sizeCursor1()
 
     for (int i(0); i <= keysList.size()-1; i++)
     {
-        keysVector.push_back((double) value);
+        keysVector.push_back(value);
     }
 
     // extract values from QCPData and create a QVector of values
@@ -749,7 +761,7 @@ void FenEnfantGraph::sizeCursor1()
 
 void FenEnfantGraph::sizeCursor2()
 {
-    int value(0);
+    double value(0);
     if (ui->checkBoxTimeAbsis->checkState() == 0)
     {
         value = ui->spinBoxCurseur2->value();
@@ -927,8 +939,11 @@ void FenEnfantGraph::zoom()
 
 void FenEnfantGraph::ajustToscreen()
 {
-    ui->customPlot->graph(0)->rescaleAxes();
-    ui->customPlot->replot();
+    if(ui->customPlot->selectedGraphs().size()!=0)
+    {
+        ui->customPlot->selectedGraphs().first()->rescaleAxes();
+        ui->customPlot->replot();
+    }
 }
 
 //Zoom manager end
@@ -940,6 +955,7 @@ void FenEnfantGraph::createCurveIntialisation()
     ui->comboBoxCurveType->setEnabled(true);
     ui->comboBoxCurveType->setEditable(false);
     ui->comboBoxCurveType->clear();
+    ui->comboBoxCurveType->addItem("None");
     ui->comboBoxCurveType->addItem("Moyenne");
     ui->comboBoxCurveType->addItem("Filtre médian");
     ui->ComboBoxCurveName->setEnabled(true);
@@ -1020,11 +1036,11 @@ void FenEnfantGraph::createCurve()
     {
        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
        {
-           displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime));
+           displayMathFunctionCurve(mathMethod->averageValueCurveNew(indexGraph[curveselected]+1, sampleTime));
        }
        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
        {
-           displayMathFunctionCurve(mathMethod->averageValueCurve(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+           displayMathFunctionCurve(mathMethod->averageValueCurveNew(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
        }
     }
 
@@ -1032,11 +1048,11 @@ void FenEnfantGraph::createCurve()
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime));
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilterNew(indexGraph[curveselected]+1, sampleTime));
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilterNew(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
         }
     }
     ui->customPlot->replot();
@@ -1387,5 +1403,21 @@ void FenEnfantGraph::customCurve()
 
     ui->customPlot->replot();
 }
-
 //Custom Curve end
+
+//cursor spinbox interaction
+void FenEnfantGraph::cursorSpinBoxInt(const QString &choice)
+{
+    QVector<double> dataInfo = mathMethod->dataInfo();
+    if(choice == "Moyenne")
+    {
+
+    }
+    else if(choice == "Filtre médian")
+    {
+
+    }
+    //cursor spinbox interaction
+    connect(ui->comboBoxCurveType, SIGNAL(activated(QString)), this, SLOT(cursorSpinBoxInt(QString)));
+}
+//cursor spinbox interaction end

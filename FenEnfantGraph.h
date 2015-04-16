@@ -55,8 +55,8 @@ public slots:
     void changeAbsisName();
     //NewCursor
     void cursorMangement(const int &state);
-    void moveCursor1(const int &value);
-    void moveCursor2(const int &value);
+    void moveCursor1(const double &value);
+    void moveCursor2(const double &value);
     void resizeCursorScroll(const QWheelEvent* &event);
     void resizeCursorMouse(const QMouseEvent* &event);
     //NewCursor end
@@ -64,6 +64,8 @@ public slots:
     //Custom Curve
     void customCurveManagement();
     void customCurve();
+    //cursor spinbox interaction
+    void cursorSpinBoxInt(const QString &choice);
 
 private:
     void setCurrentFile(const QString &fileName);

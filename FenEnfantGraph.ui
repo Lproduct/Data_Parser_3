@@ -408,10 +408,33 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_12">
           <item>
-           <widget class="QSpinBox" name="spinBoxCurseur1"/>
+           <widget class="QDoubleSpinBox" name="spinBoxCurseur1">
+            <property name="locale">
+             <locale language="English" country="UnitedKingdom"/>
+            </property>
+            <property name="minimum">
+             <double>-1000000.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000000.000000000000000</double>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBoxCurseur2"/>
+           <widget class="QDoubleSpinBox" name="spinBoxCurseur2">
+            <property name="locale">
+             <locale language="English" country="UnitedKingdom"/>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::UpDownArrows</enum>
+            </property>
+            <property name="minimum">
+             <double>-1000000.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000000.000000000000000</double>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
