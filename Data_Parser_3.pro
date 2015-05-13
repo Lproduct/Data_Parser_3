@@ -1,5 +1,9 @@
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
+
+LIBS += -LC:\Users\User\Lvil\Work\AIEA_DataViewer\Qt_5.4\Data_Parser_3\fftw-3.3.4-dll32\ -lfftw3-3
+INCLUDEPATH += C:\Users\User\Lvil\Work\AIEA_DataViewer\Qt_5.4\Data_Parser_3\fftw-3.3.4-dll32
+
 SOURCES += \
     main.cpp \
     FenPrincipale.cpp \
@@ -7,7 +11,7 @@ SOURCES += \
     qcustomplot.cpp \
     FenEnfantGraph.cpp \
     DataParser.cpp \
-    MathFunction.cpp
+    MathFunction.cpp \
 
 HEADERS += \
     FenPrincipale.h \
@@ -15,7 +19,8 @@ HEADERS += \
     qcustomplot.h \
     FenEnfantGraph.h \
     DataParser.h \
-    MathFunction.h
+    MathFunction.h \
+    fftw-3.3.4-dll32/fftw3.h
 
 RESOURCES += \
     data_parser_3.qrc

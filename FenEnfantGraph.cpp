@@ -958,6 +958,7 @@ void FenEnfantGraph::createCurveIntialisation()
     ui->comboBoxCurveType->addItem("None");
     ui->comboBoxCurveType->addItem("Moyenne");
     ui->comboBoxCurveType->addItem("Filtre médian");
+    ui->comboBoxCurveType->addItem("FFT Filter");
     ui->ComboBoxCurveName->setEnabled(true);
 
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
@@ -1023,6 +1024,22 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
                                                  .arg(ui->spinBoxCustomOffset->value());
     }
 
+    else if(opId == 3)
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("FFT_Filt_%1_%2%").arg(ui->ComboBoxCurveName->currentText())
+                                .arg(ui->spinBoxSampleTime->value());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("FFT_Filt_%1_%2%_%3->%4").arg(ui->ComboBoxCurveName->currentText())
+                                               .arg(ui->spinBoxSampleTime->value())
+                                               .arg(ui->spinBoxCurseur1->value())
+                                               .arg(ui->spinBoxCurseur2->value());
+        }
+    }
+
     return name;
 }
     //SLOT
@@ -1055,6 +1072,19 @@ void FenEnfantGraph::createCurve()
             displayMathFunctionCurve(mathMethod->middleValueCurveFilterNew(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
         }
     }
+
+    else if(curveType == "FFT Filter")
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            displayMathFunctionCurve(mathMethod->fftFilter(indexGraph[curveselected]+1, sampleTime));
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            displayMathFunctionCurve(mathMethod->fftFilter(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+        }
+    }
+
     ui->customPlot->replot();
 }
 
@@ -1319,7 +1349,7 @@ void FenEnfantGraph::subTimeOffsetToGraph()
 
 double FenEnfantGraph::timeUnit()
 {
-    double timeUnit;
+    double timeUnit(1);
     if (ui->comboBoxTimeUnit->currentText() == "s")
     {
         timeUnit = ui->spinBoxTimeUnit->value();
