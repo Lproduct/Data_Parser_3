@@ -2,6 +2,7 @@
 #include <fftw3.h>
 #include <QDebug>
 #include <QtMath>
+#include "overhauser.hpp"
 
 MathFunction::MathFunction(const QVector<QVector<double> > &tabData): m_tabData(tabData)
 {
@@ -31,49 +32,56 @@ QVector<double> MathFunction::dataInfo()
 /*** Average Value Filter ****/
 QVector<QVector<double> > MathFunction::averageValueCurveNew(const int &nbTab, const int &sampleTime , int startValue, int endValue)
 {
-    QVector<double> absTab(0);
-    QVector<double> ordTab(0);
-
-    double sumAbs(0);
-    double sumOrd(0);
+    QVector<double> xAxis;
+    QVector<double> yAxis;
 
     if(startValue == -1 && endValue ==-1)
     {
-        for(long int i(1); i<= m_tabData.at(0).size() ; i++)
-        {
-            sumAbs += m_tabData.at(0)[i-1];
-            sumOrd += m_tabData.at(nbTab)[i-1];
-
-            if ( i % sampleTime   == 0)
-            {
-                absTab.push_back(sumAbs/sampleTime);
-                ordTab.push_back(sumOrd/sampleTime);
-                sumAbs = 0;
-                sumOrd = 0;
-            }
-        }
+        QVector<QVector<double> >data(proceedMidFilter(nbTab, sampleTime, 0, m_tabData.at(0).size() -1));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
     }
     else
     {
         long int startValueInd(returnIndOfValueAbs(startValue, sampleTime, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, sampleTime, 1));
 
-        for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
-        {
-            sumAbs += m_tabData.at(0)[i-1];
-            sumOrd += m_tabData.at(nbTab)[i-1];
+        QVector<QVector<double> > data(proceedMidFilter(nbTab, sampleTime, startValueInd, endValueInd));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
+    }
 
-            if ( i % sampleTime   == 0)
-            {
-                absTab.push_back(sumAbs/sampleTime);
-                ordTab.push_back(sumOrd/sampleTime);
-                sumAbs = 0;
-                sumOrd = 0;
-            }
+    return createTabReturn(0, xAxis, yAxis);
+}
+
+QVector<QVector<double> > MathFunction::proceedAverageFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd)
+{
+    QVector<QVector<double> > tabDataReturn;
+
+    QVector<double> absTab;
+    QVector<double> ordTab;
+
+    double sumAbs(0);
+    double sumOrd(0);
+
+    for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
+    {
+        sumAbs += m_tabData.at(0)[i-1];
+        sumOrd += m_tabData.at(nbTab)[i-1];
+
+        if ( i % sampleTime   == 0)
+        {
+            absTab.push_back(sumAbs/sampleTime);
+            ordTab.push_back(sumOrd/sampleTime);
+            sumAbs = 0;
+            sumOrd = 0;
         }
     }
 
-    return createTabReturn(0, absTab, ordTab);
+    tabDataReturn.push_back(absTab);
+    tabDataReturn.push_back(ordTab);
+
+    return tabDataReturn;
 }
 /*** Average Value Filter end ****/
 
@@ -86,58 +94,61 @@ QVector<QVector<double> > MathFunction::middleValueCurveFilterNew(const int &nbT
         sampleTimeModif++;
     }
 
-    QVector<double> absTab;
-    QVector<double> ordTab;
-
-    QVector<double> midAbs(0);
-    QVector<double> midOrd(0);
+    QVector<double> xAxis;
+    QVector<double> yAxis;
 
     if(startValue == -1 && endValue ==-1)
     {
-        for(long int i(1); i<= m_tabData.at(0).size() ; i++)
-        {
-            midAbs.push_back(m_tabData.at(0)[i-1]);
-            midOrd.push_back(m_tabData.at(nbTab)[i-1]);
-
-            if ( i % sampleTimeModif   == 0)
-            {
-                std::sort(midAbs.begin(), midAbs.end());
-                std::sort(midOrd.begin(), midOrd.end());
-
-                absTab.push_back(midAbs.at(sampleTimeModif/2));
-                ordTab.push_back(midOrd.at(sampleTimeModif/2));
-
-                midAbs.clear();
-                midOrd.clear();
-            }
-        }
+        QVector<QVector<double> >data(proceedMidFilter(nbTab, sampleTimeModif, 0, m_tabData.at(0).size() -1));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
     }
     else
     {
         long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
 
-        for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
+        QVector<QVector<double> > data(proceedMidFilter(nbTab, sampleTimeModif, startValueInd, endValueInd));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
+    }
+
+    return createTabReturn(1, xAxis, yAxis);
+}
+
+QVector<QVector<double> > MathFunction::proceedMidFilter(const int &nbTab, const int &sampleTimeModif, const int &startValueInd, const int &endValueInd)
+{
+    QVector<QVector<double> > tabDataReturn;
+    QVector<double> absTab;
+    QVector<double> ordTab;
+
+    QVector<double> midAbs(0);
+    QVector<double> midOrd(0);
+
+    for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
+    {
+        midAbs.push_back(m_tabData.at(0)[i-1]);
+        midOrd.push_back(m_tabData.at(nbTab)[i-1]);
+
+        if ( i % sampleTimeModif   == 0)
         {
-            midAbs.push_back(m_tabData.at(0)[i-1]);
-            midOrd.push_back(m_tabData.at(nbTab)[i-1]);
+            std::sort(midAbs.begin(), midAbs.end());
+            std::sort(midOrd.begin(), midOrd.end());
 
-            if ( i % sampleTimeModif   == 0)
-            {
-                std::sort(midAbs.begin(), midAbs.end());
-                std::sort(midOrd.begin(), midOrd.end());
+            absTab.push_back(midAbs.at(sampleTimeModif/2));
+            ordTab.push_back(midOrd.at(sampleTimeModif/2));
 
-                absTab.push_back(midAbs.at(sampleTimeModif/2));
-                ordTab.push_back(midOrd.at(sampleTimeModif/2));
-
-                midAbs.clear();
-                midOrd.clear();
-            }
+            midAbs.clear();
+            midOrd.clear();
         }
     }
 
-    return createTabReturn(1, absTab, ordTab);
+    tabDataReturn.push_back(absTab);
+    tabDataReturn.push_back(ordTab);
+
+    return tabDataReturn;
 }
+
 /*** Middle Value Filter end ****/
 
 /*** FFT Filter ****/
@@ -294,6 +305,10 @@ void MathFunction::endFFT()
     m_testFFT.clear();
 }
 /*** FFT Filter end ****/
+
+/*** Spline Function ***/
+
+
 
 /*** General function ****/
 long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type)
