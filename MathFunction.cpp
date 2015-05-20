@@ -20,11 +20,37 @@ QVector<double> MathFunction::dataInfo()
     double dataMinX(m_tabData.at(0).at(0));
     double dataMaxX(m_tabData.at(0).at(m_tabData.at(0).size()-1));
     double dataRange(m_tabData.at(0).at(0) - m_tabData.at(0).at(1));
+    double nbValue(m_tabData.at(0).size());
+
+    double dataMaxY(0);
+    double dataMinY(0);
+    for(int j(1); j < m_tabData.size(); j++ )
+    {
+        for(long int i(0); i < m_tabData.at(0).size(); i++)
+        {
+            if(m_tabData.at(j).at(i) >= dataMaxY)
+            {
+                dataMaxY = m_tabData.at(j).at(i);
+            }
+        }
+
+        for(long int i(0); i < m_tabData.at(0).size(); i++)
+        {
+            if(m_tabData.at(j).at(i) <= dataMaxY)
+            {
+                dataMinY = m_tabData.at(j).at(i);
+            }
+        }
+    }
 
     QVector<double> dataInfoReturn;
     dataInfoReturn.push_back(dataMinX);
     dataInfoReturn.push_back(dataMaxX);
     dataInfoReturn.push_back(dataRange);
+    dataInfoReturn.push_back(nbValue);
+    dataInfoReturn.push_back(nbValue);
+    dataInfoReturn.push_back(dataMinY);
+    dataInfoReturn.push_back(dataMaxY);
 
     return dataInfoReturn;
 }

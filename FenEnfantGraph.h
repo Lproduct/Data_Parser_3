@@ -68,9 +68,14 @@ public slots:
     void cursorSpinBoxInt(const QString &choice);
     //Interpolation interaction
     void interpolationInteraction(const bool &state);
-    void cursorMangementInterpol(const bool &state);
+    void cursorMangementInterpol(const int &state);
     void resizeCursorScrollInterpol(const QWheelEvent* &event);
     void resizeCursorMouseInterpol(const QMouseEvent* &event);
+    void cursorMangementInterpolH(const int &state);
+    void moveCursorH(const int &id);
+    void resizeCursorScrollInterpolH(const QWheelEvent* &event);
+    void resizeCursorMouseInterpolH(const QMouseEvent* &event);
+
 
 private:
     void setCurrentFile(const QString &fileName);
@@ -103,6 +108,12 @@ private:
     void createCursorInterpolConnection();
     void killCursorInterpol();
     void killCursorInterpolConnection();
+    void createCursorInterpolH();
+    void createCursorInterpolConnectionH();
+    void killCursorInterpolH();
+    void killCursorInterpolConnectionH();
+    void setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen);
+    void sizeCursorH(const QString &name, QDoubleSpinBox *spinbox);
 
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);

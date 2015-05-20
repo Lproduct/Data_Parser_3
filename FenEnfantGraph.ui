@@ -454,7 +454,7 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
+          <item alignment="Qt::AlignLeft">
            <widget class="QLabel" name="label_11">
             <property name="maximumSize">
              <size>
@@ -468,7 +468,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_14">
+           <widget class="QLabel" name="label_sampleTime">
             <property name="maximumSize">
              <size>
               <width>90</width>
@@ -513,6 +513,19 @@
             </property>
             <property name="maximum">
              <number>10000</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_percent">
+            <property name="maximumSize">
+             <size>
+              <width>15</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>%</string>
             </property>
            </widget>
           </item>
@@ -678,10 +691,18 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_16">
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1X"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1X">
+            <property name="locale">
+             <locale language="English" country="UnitedKingdom"/>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -706,10 +727,18 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_20">
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1X2"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1X2">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y2"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y2">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -741,10 +770,18 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_18">
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2X"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2X">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -769,10 +806,18 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_22">
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2X2"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2X2">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y2"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y2">
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
