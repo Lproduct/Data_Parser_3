@@ -228,23 +228,35 @@ void MathFunction::proceedFFT()
         m_dataFFT.push_back(out[i]);
     }
 
-    for (long int i(0); i <= N-1; i++)
+    /*if (m_testFFT.size() == 0)
     {
-        m_testFFT.push_back(out[i]);
-    }
+        for (long int i(0); i <= N-1; i++)
+        {
+            m_testFFT.push_back(out[i]);
+        }
+    }*/
+
 
     fftw_destroy_plan(my_plan);
 }
 
-void MathFunction::filteringFFT(const int &percentFiltering)
+void MathFunction::filteringFFT(const double &percentFiltering)
 {
     long int N(m_dataFFT.size());
 
-    double startRow(N*(1-((double) percentFiltering/100)));
+    double startRow(N*(1-(percentFiltering/100)));
 
     for (long int i((int) startRow); i <= N-1; i++)
     {
         m_dataFFT.replace(i, 0);
+    }
+
+    if (m_testFFT.size() == 0)
+    {
+        for (long int i(0); i <= N-1; i++)
+        {
+            m_testFFT.push_back(m_dataFFT.at(i));
+        }
     }
 }
 
@@ -308,7 +320,188 @@ void MathFunction::endFFT()
 
 /*** Spline Function ***/
 
+QVector<QVector<double> > MathFunction::generatePoint()
+{
+    QVector<QVector<double> >  tabReturn;
 
+    QVector<double> xAxis;
+    QVector<double> yAxis;
+
+    /*for (int i = 0; i < 20; i++)
+    {
+        int yRand(-1);
+        yRand = rand()%20;
+
+        xAxis.push_back(i + 10);
+        yAxis.push_back(yRand);
+    }*/
+
+    /*xAxis.push_back(10);
+    yAxis.push_back(1);
+
+    xAxis.push_back(10.25);
+    yAxis.push_back(1.125);*/
+
+    /*xAxis.push_back(10.5);
+    yAxis.push_back(1.25);
+
+    xAxis.push_back(10.75);
+    yAxis.push_back(1.375);
+
+    xAxis.push_back(11);
+    yAxis.push_back(1.5);
+
+
+    xAxis.push_back(20);
+    yAxis.push_back(3);
+
+    xAxis.push_back(20.25);
+    yAxis.push_back(3.125);
+
+    xAxis.push_back(20.5);
+    yAxis.push_back(3.25);*/
+
+    /*xAxis.push_back(15);
+    yAxis.push_back(2.8);
+
+    xAxis.push_back(20.75);
+    yAxis.push_back(3.375);
+
+    xAxis.push_back(21);
+    yAxis.push_back(3.5);*/
+
+    xAxis = m_tabData.at(0);
+    yAxis = m_tabData.at(1);
+
+    tabReturn.push_back(xAxis);
+    tabReturn.push_back(yAxis);
+
+    m_tabPoint = tabReturn;
+
+    return createTabReturn(4, xAxis, yAxis);;
+}
+
+QVector<QVector<double> > MathFunction::generateSpline(QVector<QVector<double> > pointTab)
+{
+    CRSpline *spline = new CRSpline();
+    QVector<QVector<double> > tabSpline;
+    QVector<QVector<double> > tabReturn;
+
+    addPoint(m_tabPoint, spline);
+
+    tabSpline = generateSpline(spline);
+
+    tabReturn = fftFilteringSpline(tabSpline, 80);
+
+    return createTabReturn(5, tabReturn.at(0), tabReturn.at(1));
+}
+
+void MathFunction::addPoint(const QVector<QVector<double> > &pointTab, CRSpline *spline)
+{
+    long int N(pointTab.at(0).size());
+
+    for (int i = 0; i < N; i++)
+    {        
+        vec3 v(pointTab.at(0).at(i), pointTab.at(1).at(i), 0);
+        spline->AddSplinePoint(v);
+    }
+}
+
+QVector<QVector<double> > MathFunction::generateSpline(CRSpline *spline)
+{
+    QVector<QVector<double> > tabReturn;
+    QVector<double> xAxis;
+    QVector<double> yAxis;
+
+    for (int i = 0; i < 2000; i++)
+    {
+        float t = (float)i / (float)2000;
+        vec3 rv = spline->GetInterpolatedSplinePoint(t);
+        xAxis.push_back(rv.x);
+        yAxis.push_back(rv.y);
+    }
+
+    tabReturn.push_back(xAxis);
+    tabReturn.push_back(yAxis);
+
+    return tabReturn;
+}
+
+QVector<QVector<double> > MathFunction::fftFilteringSpline(QVector<QVector<double> > tabSpline, const double &percentFFT)
+{
+    int mode(0);
+
+    /******** Create a Tab Data **********/
+    createTabDataSpline(tabSpline);
+
+    /******** FFT Forward **********/
+    proceedFFT();
+
+    /******** FFT Filtering **********/
+    filteringFFT(percentFFT);
+
+    /******** FFT Backward **********/
+    proceedFFT();
+
+    /******** Tab Data Return **********/
+    QVector<QVector<double> > tabSplineFilt(tabReturSplineFFT(tabSpline, mode));
+
+    /******** Clean Tab **********/
+    endFFT();
+
+    return tabSplineFilt;
+}
+
+void MathFunction::createTabDataSpline(QVector<QVector<double> > tabSpline)
+{
+    m_dataFFT.clear();
+    m_testFFT.clear();
+
+    long int N(tabSpline.at(0).size());
+    for (long int i(0); i <= N-1; i++)
+    {
+        m_dataFFT.push_back(tabSpline.at(1).at(i));
+    }
+}
+
+QVector<QVector<double> > MathFunction::tabReturSplineFFT(QVector<QVector<double> > tabSpline, int mode)
+{
+    long int N(m_dataFFT.size());
+
+    QVector<QVector<double> > dataReturn;
+
+    QVector<double> xAxis;
+
+    for (int i(0); i<= N-1; i++)
+    {
+        xAxis.push_back(tabSpline.at(0).at(i));
+    }
+
+    QVector<double> yAxis;
+    for (int i(0); i<= N-1; i++)
+    {
+        switch(mode)
+        {
+            case 0:
+            {
+                yAxis.push_back(m_dataFFT.at(i) / (2*(N-1)));
+                break;
+            }
+            case 1:
+            {
+                yAxis.push_back(qSqrt(m_testFFT.at(i)*m_testFFT.at(i)));
+                break;
+            }
+        }
+    }
+
+    dataReturn.push_back(xAxis);
+    dataReturn.push_back(yAxis);
+
+    return dataReturn;
+}
+
+/*** Spline Function end***/
 
 /*** General function ****/
 long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type)

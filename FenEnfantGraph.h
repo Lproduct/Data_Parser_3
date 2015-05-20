@@ -38,6 +38,7 @@ public slots:
     void changeSelectedGraphColor();
     void changeSelectedGraphThickness();
     void changeSelectedGraphScatter();
+    void changeSelectedGraphStyle();
     void changeColorBGB();
     void changeColorBGW();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -55,8 +56,7 @@ public slots:
     void changeAbsisName();
     //NewCursor
     void cursorMangement(const int &state);
-    void moveCursor1(const double &value);
-    void moveCursor2(const double &value);
+    void moveCursorV(const int &id);
     void resizeCursorScroll(const QWheelEvent* &event);
     void resizeCursorMouse(const QMouseEvent* &event);
     //NewCursor end
@@ -64,8 +64,13 @@ public slots:
     //Custom Curve
     void customCurveManagement();
     void customCurve();
-    //cursor spinbox interaction
+    //Cursor spinbox interaction
     void cursorSpinBoxInt(const QString &choice);
+    //Interpolation interaction
+    void interpolationInteraction(const bool &state);
+    void cursorMangementInterpol(const bool &state);
+    void resizeCursorScrollInterpol(const QWheelEvent* &event);
+    void resizeCursorMouseInterpol(const QMouseEvent* &event);
 
 private:
     void setCurrentFile(const QString &fileName);
@@ -77,13 +82,12 @@ private:
     //new Cursor
     void createCursorNew();
     void createCursorNewConnection();
-    void setCursorVNew(const int cursorId, const double &posCursor, const double &offset = 0);
-    void displayCursor(const QString &name, const QVector<double> &absTab, const QVector<double> &ordTab);
+    void setCursorVNew(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset = 0);
+    void displayCursor(const QString &name, const QVector<double> &absTab, const QVector<double> &ordTab, const QPen &pen);
     void killCursorNew();
     void killCursorNewConnection();
     void eraseGraphNameFromIndex(const QString &name);
-    void sizeCursor1();
-    void sizeCursor2();
+    void sizeCursorV(const QString &name, QDoubleSpinBox *spinbox);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     //new cursor end
@@ -94,6 +98,11 @@ private:
     void addTimeOffsetToGraph();
     void subTimeOffsetToGraph();
     double timeUnit();
+    //del base line
+    void createCursorInterpol();
+    void createCursorInterpolConnection();
+    void killCursorInterpol();
+    void killCursorInterpolConnection();
 
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
@@ -101,6 +110,7 @@ private:
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;
     QSignalMapper *signalMapper;
+    QSignalMapper *signalMapperCursorV;
     QString curFile;
     QTimer dataTimer;
     bool blackTheme;
@@ -108,6 +118,8 @@ private:
     double offsetTime;
     QStringList m_header;
     bool controlPressed;
+    QPen penCursor;
+    QPen penCursorInterpol;
 };
 
 #endif // FENENFANTGRAPH_H

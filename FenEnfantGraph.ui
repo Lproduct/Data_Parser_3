@@ -41,7 +41,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="tabWidgetPage4">
      <property name="maximumSize">
       <size>
        <width>250</width>
@@ -52,7 +52,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabWidgetPage1">
       <attribute name="title">
@@ -611,6 +611,251 @@
            <string>Time Absis</string>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="Delbaseline">
+      <attribute name="title">
+       <string>Del base line</string>
+      </attribute>
+      <widget class="QWidget" name="verticalLayoutWidget_4">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>231</width>
+         <height>491</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QCheckBox" name="checkBoxBaseLineEnable">
+          <property name="text">
+           <string>Supr Base Line enable</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_9">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_40">
+          <property name="text">
+           <string>Cursors:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_30">
+          <property name="text">
+           <string>Zone 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_28">
+            <property name="text">
+             <string>X</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_29">
+            <property name="text">
+             <string>Y</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_16">
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1X"/>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_19">
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>X2</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>Y2</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_20">
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1X2"/>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y2"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_31">
+          <property name="text">
+           <string>Zone 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_17">
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_32">
+            <property name="text">
+             <string>X</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_33">
+            <property name="text">
+             <string>Y</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_18">
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2X"/>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_21">
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_36">
+            <property name="text">
+             <string>X2</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_37">
+            <property name="text">
+             <string>Y2</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_22">
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2X2"/>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y2"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="Line" name="line_10">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_38">
+          <property name="text">
+           <string>Interpolation</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonGenerateBaseLine">
+          <property name="text">
+           <string>Generate Base line</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="Line" name="line_11">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_39">
+          <property name="text">
+           <string>Sub Base Line</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonDelBaseLine">
+          <property name="text">
+           <string>Sub Base Line</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>
