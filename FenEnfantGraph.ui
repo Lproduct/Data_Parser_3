@@ -52,7 +52,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabWidgetPage1">
       <attribute name="title">
@@ -664,11 +664,33 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_30">
-          <property name="text">
-           <string>Zone 1</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_23">
+          <item>
+           <widget class="QLabel" name="label_30">
+            <property name="text">
+             <string>Zone 1</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonLinkZone1">
+            <property name="maximumSize">
+             <size>
+              <width>25</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normalon>:/images/link.png</normalon>
+             </iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_15">
@@ -698,7 +720,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y2">
             <property name="locale">
              <locale language="English" country="UnitedStates"/>
             </property>
@@ -734,7 +756,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline1Y">
             <property name="locale">
              <locale language="English" country="UnitedStates"/>
             </property>
@@ -743,11 +765,33 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_31">
-          <property name="text">
-           <string>Zone 2</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_24">
+          <item>
+           <widget class="QLabel" name="label_31">
+            <property name="text">
+             <string>Zone 2</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonLinkZone2">
+            <property name="maximumSize">
+             <size>
+              <width>25</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normalon>:/images/link.png</normalon>
+             </iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_17">
@@ -777,7 +821,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y2">
             <property name="locale">
              <locale language="English" country="UnitedStates"/>
             </property>
@@ -813,7 +857,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y2">
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxCursorSpline2Y">
             <property name="locale">
              <locale language="English" country="UnitedStates"/>
             </property>
@@ -847,6 +891,9 @@
            <string>Interpolation</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBoxInterpolCurve"/>
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonGenerateBaseLine">

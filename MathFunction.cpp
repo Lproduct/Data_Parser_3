@@ -19,11 +19,11 @@ QVector<double> MathFunction::dataInfo()
     //Return information about data, data min, data max, size of array
     double dataMinX(m_tabData.at(0).at(0));
     double dataMaxX(m_tabData.at(0).at(m_tabData.at(0).size()-1));
-    double dataRange(m_tabData.at(0).at(0) - m_tabData.at(0).at(1));
+    double dataRange( - (m_tabData.at(0).at(0) - m_tabData.at(0).at(1)));
     double nbValue(m_tabData.at(0).size());
 
-    double dataMaxY(0);
-    double dataMinY(0);
+    double dataMaxY(m_tabData.at(1).at(0));
+    double dataMinY(m_tabData.at(1).at(0));
     for(int j(1); j < m_tabData.size(); j++ )
     {
         for(long int i(0); i < m_tabData.at(0).size(); i++)
@@ -36,7 +36,7 @@ QVector<double> MathFunction::dataInfo()
 
         for(long int i(0); i < m_tabData.at(0).size(); i++)
         {
-            if(m_tabData.at(j).at(i) <= dataMaxY)
+            if(m_tabData.at(j).at(i) <= dataMinY)
             {
                 dataMinY = m_tabData.at(j).at(i);
             }
@@ -44,13 +44,13 @@ QVector<double> MathFunction::dataInfo()
     }
 
     QVector<double> dataInfoReturn;
-    dataInfoReturn.push_back(dataMinX);
-    dataInfoReturn.push_back(dataMaxX);
-    dataInfoReturn.push_back(dataRange);
-    dataInfoReturn.push_back(nbValue);
-    dataInfoReturn.push_back(nbValue);
-    dataInfoReturn.push_back(dataMinY);
-    dataInfoReturn.push_back(dataMaxY);
+    dataInfoReturn.push_back(dataMinX);  //0
+    dataInfoReturn.push_back(dataMaxX);  //1
+    dataInfoReturn.push_back(dataRange); //2
+    dataInfoReturn.push_back(nbValue);   //3
+    dataInfoReturn.push_back(nbValue);   //4
+    dataInfoReturn.push_back(dataMinY);  //5
+    dataInfoReturn.push_back(dataMaxY);  //6
 
     return dataInfoReturn;
 }
@@ -346,63 +346,31 @@ void MathFunction::endFFT()
 
 /*** Spline Function ***/
 
-QVector<QVector<double> > MathFunction::generatePoint()
+QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const QVector<double> &tabPoint)
 {
-    QVector<QVector<double> >  tabReturn;
+    //extract data from tabData
+    long int startZone1(returnIndOfValueAbs(tabPoint.at(0),1,0));
+    long int endZone1(returnIndOfValueAbs(tabPoint.at(1),1,0));
+    long int startZone2(returnIndOfValueAbs(tabPoint.at(4),1,0));
+    long int endZone2(returnIndOfValueAbs(tabPoint.at(5),1,0));
 
-    QVector<double> xAxis;
-    QVector<double> yAxis;
-
-    /*for (int i = 0; i < 20; i++)
+    QVector<double> dataZone1;
+    QVector<double> keyZone1;
+    for(long int i(startZone1); i < endZone1; i++)
     {
-        int yRand(-1);
-        yRand = rand()%20;
+        dataZone1.push_back(m_tabData.at(nbCurve).at(i));
+        keyZone1.push_back(i);
+    }
 
-        xAxis.push_back(i + 10);
-        yAxis.push_back(yRand);
-    }*/
-
-    /*xAxis.push_back(10);
-    yAxis.push_back(1);
-
-    xAxis.push_back(10.25);
-    yAxis.push_back(1.125);*/
-
-    /*xAxis.push_back(10.5);
-    yAxis.push_back(1.25);
-
-    xAxis.push_back(10.75);
-    yAxis.push_back(1.375);
-
-    xAxis.push_back(11);
-    yAxis.push_back(1.5);
+    QVector<double> dataZone2;
+    QVector<double> keyZone2;
+    for(long int i(startZone2); i < endZone2; i++)
+    {
+        dataZone2.push_back(m_tabData.at(nbCurve).at(i));
+        keyZone2.push_back(i);
+    }
 
 
-    xAxis.push_back(20);
-    yAxis.push_back(3);
-
-    xAxis.push_back(20.25);
-    yAxis.push_back(3.125);
-
-    xAxis.push_back(20.5);
-    yAxis.push_back(3.25);*/
-
-    /*xAxis.push_back(15);
-    yAxis.push_back(2.8);
-
-    xAxis.push_back(20.75);
-    yAxis.push_back(3.375);
-
-    xAxis.push_back(21);
-    yAxis.push_back(3.5);*/
-
-    xAxis = m_tabData.at(0);
-    yAxis = m_tabData.at(1);
-
-    tabReturn.push_back(xAxis);
-    tabReturn.push_back(yAxis);
-
-    m_tabPoint = tabReturn;
 
     return createTabReturn(4, xAxis, yAxis);;
 }
@@ -526,7 +494,6 @@ QVector<QVector<double> > MathFunction::tabReturSplineFFT(QVector<QVector<double
 
     return dataReturn;
 }
-
 /*** Spline Function end***/
 
 /*** General function ****/
@@ -535,7 +502,6 @@ long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTi
     /****************************************************************
      * This function permit to found witch indice correspond a value
      * *************************************************************/
-
     long int indice(0);
     for(long int i(0); i<= m_tabData.at(0).size()-1; i++)
     {

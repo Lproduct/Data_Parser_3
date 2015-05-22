@@ -16,7 +16,7 @@ public:
     QVector<QVector<double> >middleValueCurveFilterNew(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
     QVector<QVector<double> > fftFilter(const int &nbTab, const int &percentFiltering, int startValue = -1, int endValue = -1);
     QVector<QVector<double> > generateSpline(QVector<QVector<double> > pointTab);
-    QVector<QVector<double> > generatePoint();
+    QVector<QVector<double> > generatePoint(const int &nbCurve, const QVector<double> &tabPoint);
 
 private:
     /*** Average Value Filter ****/
@@ -46,7 +46,6 @@ private:
     /*** General Function ***/
     QVector<QVector<double> > createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab);
     long int returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type);
-
     /*** General Function end ***/
 
     QVector<QVector<double> > m_tabData;

@@ -67,14 +67,23 @@ public slots:
     //Cursor spinbox interaction
     void cursorSpinBoxInt(const QString &choice);
     //Interpolation interaction
-    void interpolationInteraction(const bool &state);
+    void interpolationInteraction(const int &state);
     void cursorMangementInterpol(const int &state);
-    void resizeCursorScrollInterpol(const QWheelEvent* &event);
-    void resizeCursorMouseInterpol(const QMouseEvent* &event);
-    void cursorMangementInterpolH(const int &state);
     void moveCursorH(const int &id);
-    void resizeCursorScrollInterpolH(const QWheelEvent* &event);
-    void resizeCursorMouseInterpolH(const QMouseEvent* &event);
+    void resizeCursorSpinboxInterpolH(const int &id);
+    void resizeCursorSpinboxInterpolV(const int &id);
+    void sizeCursorV(const QString &name, QDoubleSpinBox *spinbox);
+    void linkCursorZ1(const bool &state);
+    void linkCursor1Z1X(const double &value);
+    void linkCursor2Z1X(const double &value);
+    void linkCursor1Z1Y(const double &value);
+    void linkCursor2Z1Y(const double &value);
+    void linkCursorZ2(const bool &state);
+    void linkCursor1Z2X(const double &value);
+    void linkCursor2Z2X(const double &value);
+    void linkCursor1Z2Y(const double &value);
+    void linkCursor2Z2Y(const double &value);
+    void generateInterpolation();
 
 
 private:
@@ -92,7 +101,6 @@ private:
     void killCursorNew();
     void killCursorNewConnection();
     void eraseGraphNameFromIndex(const QString &name);
-    void sizeCursorV(const QString &name, QDoubleSpinBox *spinbox);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     //new cursor end
@@ -108,12 +116,10 @@ private:
     void createCursorInterpolConnection();
     void killCursorInterpol();
     void killCursorInterpolConnection();
-    void createCursorInterpolH();
-    void createCursorInterpolConnectionH();
-    void killCursorInterpolH();
-    void killCursorInterpolConnectionH();
+    void setCursorV(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset = 0);
     void setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen);
     void sizeCursorH(const QString &name, QDoubleSpinBox *spinbox);
+    void addItemToComboboxInterpol();
 
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
@@ -122,6 +128,7 @@ private:
     std::map<QString,int>  indexGraph;
     QSignalMapper *signalMapper;
     QSignalMapper *signalMapperCursorV;
+    QSignalMapper *signalMapperCursorH;
     QString curFile;
     QTimer dataTimer;
     bool blackTheme;
@@ -130,7 +137,8 @@ private:
     QStringList m_header;
     bool controlPressed;
     QPen penCursor;
-    QPen penCursorInterpol;
+    QPen penCursorInterpolZ1;
+    QPen penCursorInterpolZ2;
 };
 
 #endif // FENENFANTGRAPH_H

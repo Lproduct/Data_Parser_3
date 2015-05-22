@@ -80,17 +80,31 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(customCurveManagement()));
 
     //Del base line interaction
-    penCursorInterpol.setColor(Qt::red);
-    penCursorInterpol.setStyle(Qt::DotLine);
-    penCursorInterpol.setWidth(2);
+    penCursorInterpolZ1.setColor(Qt::red);
+    penCursorInterpolZ1.setStyle(Qt::DotLine);
+    penCursorInterpolZ1.setWidth(2);
+
+    penCursorInterpolZ2.setColor(Qt::blue);
+    penCursorInterpolZ2.setStyle(Qt::DotLine);
+    penCursorInterpolZ2.setWidth(2);
+
+    ui->comboBoxInterpolCurve->setEnabled(false);
 
     ui->checkBoxBaseLineEnable->setCheckable(true);
     ui->checkBoxBaseLineEnable->setChecked(false);
+
+    ui->pushButtonLinkZone1->setCheckable(true);
+    ui->pushButtonLinkZone1->setChecked(false);
+    ui->pushButtonLinkZone1->setEnabled(false);
 
     ui->doubleSpinBoxCursorSpline1X->setEnabled(false);
     ui->doubleSpinBoxCursorSpline1X2->setEnabled(false);
     ui->doubleSpinBoxCursorSpline1Y->setEnabled(false);
     ui->doubleSpinBoxCursorSpline1Y2->setEnabled(false);
+
+    ui->pushButtonLinkZone2->setCheckable(true);
+    ui->pushButtonLinkZone2->setChecked(false);
+    ui->pushButtonLinkZone2->setEnabled(false);
 
     ui->doubleSpinBoxCursorSpline2X->setEnabled(false);
     ui->doubleSpinBoxCursorSpline2X2->setEnabled(false);
@@ -100,10 +114,11 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->pushButtonGenerateBaseLine->setEnabled(false);
     ui->pushButtonDelBaseLine->setEnabled(false);
 
-    connect(ui->checkBoxBaseLineEnable, SIGNAL(clicked(bool)), this, SLOT(interpolationInteraction(bool)));
+    connect(ui->checkBoxBaseLineEnable, SIGNAL(stateChanged(int)), this, SLOT(interpolationInteraction(int)));
     connect(ui->checkBoxBaseLineEnable,SIGNAL(stateChanged(int)), this, SLOT(cursorMangementInterpol(int)));
 
-    //connect(ui->checkBoxBaseLineEnable,SIGNAL(stateChanged(int)), this, SLOT(cursorMangementInterpolH(int)));
+    connect(ui->pushButtonLinkZone1, SIGNAL(clicked(bool)), this, SLOT(linkCursorZ1(bool)));
+    connect(ui->pushButtonLinkZone1, SIGNAL(clicked(bool)), this, SLOT(linkCursorZ2(bool)));
 
         //cursor spinbox interaction
     ui->spinBoxSampleTime->setVisible(false);
@@ -112,17 +127,26 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->comboBoxCurveType, SIGNAL(activated(QString)), this, SLOT(cursorSpinBoxInt(QString)));
 
         //link vetical cursor to signal mapper
-    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline1Y, 2);
-    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline1Y2, 3);
+    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline1X, 2);
+    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline1X2, 3);
+    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline2X, 4);
+    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline2X2, 5);
 
-    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline2Y, 4);
-    signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline2Y2, 5);
+    connect(ui->doubleSpinBoxCursorSpline1X, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline1X2, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline2X, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline2X2, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
 
-    connect(ui->doubleSpinBoxCursorSpline1Y, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
-    connect(ui->doubleSpinBoxCursorSpline1Y2, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
+    signalMapperCursorH = new QSignalMapper(this);
+    signalMapperCursorH->setMapping(ui->doubleSpinBoxCursorSpline1Y, 0);
+    signalMapperCursorH->setMapping(ui->doubleSpinBoxCursorSpline1Y2, 1);
+    signalMapperCursorH->setMapping(ui->doubleSpinBoxCursorSpline2Y, 2);
+    signalMapperCursorH->setMapping(ui->doubleSpinBoxCursorSpline2Y2, 3);
 
-    connect(ui->doubleSpinBoxCursorSpline2Y, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
-    connect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), signalMapperCursorV, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline1Y, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline1Y2, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline2Y, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
+    connect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -205,6 +229,7 @@ void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<d
         indexGraph[header.at(i+1)] = i;        
     }
     createCurveIntialisation();
+    addItemToComboboxInterpol();
 }
 
 void FenEnfantGraph::defineAxis(const QStringList &header)
@@ -655,21 +680,23 @@ void FenEnfantGraph::cursorMangement(const int &state)
 
 void FenEnfantGraph::createCursorNew()
 {
+    double incrementH((mathMethod->dataInfo().at(1))/100);
+
     double viewCenter (ui->customPlot->xAxis->range().center());
 
     if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
-        ui->spinBoxCurseur1->setValue((int) viewCenter -10);
-        ui->spinBoxCurseur2->setValue((int) viewCenter +10);
+        ui->spinBoxCurseur1->setValue((int) viewCenter -incrementH*5);
+        ui->spinBoxCurseur2->setValue((int) viewCenter +incrementH*5);
     }
     else if(ui->checkBoxTimeAbsis->checkState() == 2)
     {
-        ui->spinBoxCurseur1->setValue((int) viewCenter -10 - offsetTime);
-        ui->spinBoxCurseur2->setValue((int) viewCenter +10 - offsetTime);
+        ui->spinBoxCurseur1->setValue((int) viewCenter -incrementH*5 - offsetTime);
+        ui->spinBoxCurseur2->setValue((int) viewCenter +incrementH*5 - offsetTime);
     }
 
-    setCursorVNew("cursorNew 1", viewCenter -10, penCursor);
-    setCursorVNew("cursorNew 2", viewCenter +10, penCursor);
+    setCursorVNew("cursorNew 1", viewCenter -incrementH*5, penCursor);
+    setCursorVNew("cursorNew 2", viewCenter +incrementH*5, penCursor);
     ui->spinBoxCurseur1->setEnabled(true);
     ui->spinBoxCurseur2->setEnabled(true);
     createCursorNewConnection();
@@ -724,7 +751,6 @@ void FenEnfantGraph::setCursorVNew(const QString &cursorName, const double &posC
 
 void FenEnfantGraph::displayCursor(const QString &name, const QVector<double> &absTab, const QVector<double> &ordTab, const QPen &pen)
 {
-
     int nbGraph(ui->customPlot->graphCount());
 
     ui->customPlot->addGraph();
@@ -766,22 +792,22 @@ void FenEnfantGraph::moveCursorV(const int &id)
     else if (id == 2)
     {
          name = "cursorInterpol 1Z1";
-         value = ui->doubleSpinBoxCursorSpline1Y->value();
+         value = ui->doubleSpinBoxCursorSpline1X->value();
     }
     else if (id == 3)
     {
          name = "cursorInterpol 2Z1";
-         value = ui->doubleSpinBoxCursorSpline1Y2->value();
+         value = ui->doubleSpinBoxCursorSpline1X2->value();
     }
     else if (id == 4)
     {
          name = "cursorInterpol 1Z2";
-         value = ui->doubleSpinBoxCursorSpline2Y->value();
+         value = ui->doubleSpinBoxCursorSpline2X->value();
     }
     else if (id == 5)
     {
          name = "cursorInterpol 2Z2";
-         value = ui->doubleSpinBoxCursorSpline2Y2->value();
+         value = ui->doubleSpinBoxCursorSpline2X2->value();
     }
 
     //Change value of keys
@@ -833,6 +859,7 @@ void FenEnfantGraph::resizeCursorMouse(const QMouseEvent* &event)
 
 void FenEnfantGraph::sizeCursorV(const QString &name, QDoubleSpinBox *spinbox)
 {
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
     double value(0);
     if (ui->checkBoxTimeAbsis->checkState() == 0)
     {
@@ -852,10 +879,34 @@ void FenEnfantGraph::sizeCursorV(const QString &name, QDoubleSpinBox *spinbox)
         keysVector.push_back(value);
     }
 
+
     // extract values from QCPData and create a QVector of values
     QVector<double> valuesVector;
-    valuesVector.push_back(ui->customPlot->yAxis->range().lower);
-    valuesVector.push_back(ui->customPlot->yAxis->range().upper);
+    if(name == "cursorInterpol 1Z1")
+    {
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline1Y->value() - incrementV);
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline1Y2->value() + incrementV);
+    }
+    else if(name == "cursorInterpol 2Z1")
+    {
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline1Y->value()- incrementV);
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline1Y2->value() + incrementV);
+    }
+    else if(name == "cursorInterpol 1Z2")
+    {
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline2Y->value() - incrementV);
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline2Y2->value() + incrementV);
+    }
+    else if(name == "cursorInterpol 2Z2")
+    {
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline2Y->value() - incrementV);
+        valuesVector.push_back(ui->doubleSpinBoxCursorSpline2Y2->value() + incrementV);
+    }
+    else
+    {
+        valuesVector.push_back(ui->customPlot->yAxis->range().lower);
+        valuesVector.push_back(ui->customPlot->yAxis->range().upper);
+    }
 
     ui->customPlot->graph(indexGraph[name])->setData(keysVector, valuesVector);
     ui->customPlot->replot();
@@ -863,6 +914,9 @@ void FenEnfantGraph::sizeCursorV(const QString &name, QDoubleSpinBox *spinbox)
 
 void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
 {
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    double incrementH((mathMethod->dataInfo().at(1))/100);
+
     if(ui->checkBoxCurseurNew->checkState() == 2 || ui->checkBoxBaseLineEnable->checkState() == 2)
     {
         if(event->key() ==  Qt::Key_Control)
@@ -875,64 +929,104 @@ void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
             {
                 if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
                 {
-                    ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()+1);
+                    ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()+incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
                 {
-                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()+1);
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()+incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()+1);
+                   ui->doubleSpinBoxCursorSpline1X->setValue(ui->doubleSpinBoxCursorSpline1X->value()+incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()+1);
+                   ui->doubleSpinBoxCursorSpline1X2->setValue(ui->doubleSpinBoxCursorSpline1X2->value()+incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()+1);
+                   ui->doubleSpinBoxCursorSpline2X->setValue(ui->doubleSpinBoxCursorSpline2X->value()+incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()+1);
+                   ui->doubleSpinBoxCursorSpline2X2->setValue(ui->doubleSpinBoxCursorSpline2X2->value()+incrementH);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()+incrementV);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()+incrementV);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()+incrementV);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()+incrementV);
                 }
             }
             else if(event->key() == Qt::Key_Minus)
             {
                 if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
                 {
-                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()-1);
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()-incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
                 {
-                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()-1);
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()-incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()-1);
+                   ui->doubleSpinBoxCursorSpline1X->setValue(ui->doubleSpinBoxCursorSpline1X->value()-incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()-1);
+                   ui->doubleSpinBoxCursorSpline1X2->setValue(ui->doubleSpinBoxCursorSpline1X2->value()-incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()-1);
+                   ui->doubleSpinBoxCursorSpline2X->setValue(ui->doubleSpinBoxCursorSpline2X->value()-incrementH);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()-1);
+                   ui->doubleSpinBoxCursorSpline2X2->setValue(ui->doubleSpinBoxCursorSpline2X2->value()-incrementH);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()-incrementV);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()-incrementV);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()-incrementV);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()-incrementV);
                 }
             }
         }
@@ -943,64 +1037,104 @@ void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
             {
                 if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
                 {
-                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()-10);
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()-incrementH*10);
                 }
 
                 if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
                 {
-                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()-10);
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()-incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()-10);
+                   ui->doubleSpinBoxCursorSpline1X->setValue(ui->doubleSpinBoxCursorSpline1X->value()-incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()-10);
+                   ui->doubleSpinBoxCursorSpline1X2->setValue(ui->doubleSpinBoxCursorSpline1X2->value()-incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()-10);
+                   ui->doubleSpinBoxCursorSpline2X->setValue(ui->doubleSpinBoxCursorSpline2X->value()-incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()-10);
+                   ui->doubleSpinBoxCursorSpline2X2->setValue(ui->doubleSpinBoxCursorSpline2X2->value()-incrementH*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()-incrementV*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()-incrementV*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()-incrementV*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()-incrementV*10);
                 }
             }
             else if(event->key() == (Qt::Key_Plus))
             {
                 if(ui->customPlot->graph(indexGraph["cursorNew 1"])->selected() == true)
                 {
-                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()+10);
+                   ui->spinBoxCurseur1->setValue(ui->spinBoxCurseur1->value()+incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorNew 2"])->selected() == true)
                 {
-                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()+10);
+                   ui->spinBoxCurseur2->setValue(ui->spinBoxCurseur2->value()+incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()+10);
+                   ui->doubleSpinBoxCursorSpline1X->setValue(ui->doubleSpinBoxCursorSpline1X->value()+incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()+10);
+                   ui->doubleSpinBoxCursorSpline1X2->setValue(ui->doubleSpinBoxCursorSpline1X2->value()+incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()+10);
+                   ui->doubleSpinBoxCursorSpline2X->setValue(ui->doubleSpinBoxCursorSpline2X->value()+incrementH*10);
                 }
 
                 else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2"])->selected() == true)
                 {
-                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()+10);
+                   ui->doubleSpinBoxCursorSpline2X2->setValue(ui->doubleSpinBoxCursorSpline2X2->value()+incrementH*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y->setValue(ui->doubleSpinBoxCursorSpline1Y->value()+incrementV*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z1 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline1Y2->setValue(ui->doubleSpinBoxCursorSpline1Y2->value()+incrementV*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 1Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y->setValue(ui->doubleSpinBoxCursorSpline2Y->value()+incrementV*10);
+                }
+
+                else if(ui->customPlot->graph(indexGraph["cursorInterpol 2Z2 H"])->selected() == true)
+                {
+                   ui->doubleSpinBoxCursorSpline2Y2->setValue(ui->doubleSpinBoxCursorSpline2Y2->value()+incrementV*10);
                 }
             }
         }
@@ -1246,7 +1380,7 @@ void FenEnfantGraph::createCurve()
     else if(curveType == "Spline")
     {
         QVector<QVector<double> > tabTest;
-        displayMathFunctionCurve(mathMethod->generatePoint());
+        //displayMathFunctionCurve(mathMethod->generatePoint());
         displayMathFunctionCurve(mathMethod->generateSpline(tabTest));
     }
 
@@ -1311,10 +1445,10 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
 
     else if(ui->checkBoxBaseLineEnable->checkState() == 2)
     {
-        setCursorVNew("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1Y->value(), penCursorInterpol);
-        setCursorVNew("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1Y2->value(), penCursorInterpol);
-        setCursorVNew("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2Y->value(), penCursorInterpol);
-        setCursorVNew("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2Y2->value(), penCursorInterpol);
+        setCursorVNew("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1Y->value(), penCursorInterpolZ1);
+        setCursorVNew("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1Y2->value(), penCursorInterpolZ1);
+        setCursorVNew("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2Y->value(), penCursorInterpolZ2);
+        setCursorVNew("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2Y2->value(), penCursorInterpolZ2);
         createCursorInterpolConnection();
     }
 }
@@ -1655,14 +1789,22 @@ void FenEnfantGraph::cursorSpinBoxInt(const QString &choice)
 //cursor spinbox interaction end
 
 //Del base line interaction
-void FenEnfantGraph::interpolationInteraction(const bool &state)
+void FenEnfantGraph::interpolationInteraction(const int &state)
 {
-    if (state == true)
+    if (state == 2)
     {
+        ui->pushButtonLinkZone1->setCheckable(true);
+        ui->pushButtonLinkZone1->setChecked(false);
+        ui->pushButtonLinkZone1->setEnabled(true);
+
         ui->doubleSpinBoxCursorSpline1X->setEnabled(true);
         ui->doubleSpinBoxCursorSpline1X2->setEnabled(true);
         ui->doubleSpinBoxCursorSpline1Y->setEnabled(true);
         ui->doubleSpinBoxCursorSpline1Y2->setEnabled(true);
+
+        ui->pushButtonLinkZone2->setCheckable(true);
+        ui->pushButtonLinkZone2->setChecked(false);
+        ui->pushButtonLinkZone2->setEnabled(true);
 
         ui->doubleSpinBoxCursorSpline2X->setEnabled(true);
         ui->doubleSpinBoxCursorSpline2X2->setEnabled(true);
@@ -1671,14 +1813,24 @@ void FenEnfantGraph::interpolationInteraction(const bool &state)
 
         ui->pushButtonGenerateBaseLine->setEnabled(true);
         ui->pushButtonDelBaseLine->setEnabled(true);
+
+        ui->comboBoxInterpolCurve->setEnabled(true);
     }
 
-    else if (state == false)
+    else if (state == 0)
     {
+        ui->pushButtonLinkZone1->setCheckable(true);
+        ui->pushButtonLinkZone1->setChecked(false);
+        ui->pushButtonLinkZone1->setEnabled(false);
+
         ui->doubleSpinBoxCursorSpline1X->setEnabled(false);
         ui->doubleSpinBoxCursorSpline1X2->setEnabled(false);
         ui->doubleSpinBoxCursorSpline1Y->setEnabled(false);
         ui->doubleSpinBoxCursorSpline1Y2->setEnabled(false);
+
+        ui->pushButtonLinkZone2->setCheckable(true);
+        ui->pushButtonLinkZone2->setChecked(false);
+        ui->pushButtonLinkZone2->setEnabled(false);
 
         ui->doubleSpinBoxCursorSpline2X->setEnabled(false);
         ui->doubleSpinBoxCursorSpline2X2->setEnabled(false);
@@ -1687,6 +1839,8 @@ void FenEnfantGraph::interpolationInteraction(const bool &state)
 
         ui->pushButtonGenerateBaseLine->setEnabled(false);
         ui->pushButtonDelBaseLine->setEnabled(false);
+
+        ui->comboBoxInterpolCurve->setEnabled(false);
     }
 }
 
@@ -1700,39 +1854,35 @@ void FenEnfantGraph::cursorMangementInterpol(const int &state)
         ui->checkBoxCurseurNew->setChecked(false);
 
         QVector<double> dataInfo = mathMethod->dataInfo();
-        ui->doubleSpinBoxCursorSpline1Y->setMinimum(dataInfo.at(0));
-        ui->doubleSpinBoxCursorSpline1Y->setMaximum(dataInfo.at(1));
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline1Y2->setMinimum(dataInfo.at(0));
-        ui->doubleSpinBoxCursorSpline1Y2->setMaximum(dataInfo.at(1));
-        ui->doubleSpinBoxCursorSpline1Y2->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline2Y->setMinimum(dataInfo.at(0));
-        ui->doubleSpinBoxCursorSpline2Y->setMaximum(dataInfo.at(1));
-        ui->doubleSpinBoxCursorSpline2Y->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline2Y2->setMinimum(dataInfo.at(0));
-        ui->doubleSpinBoxCursorSpline2Y2->setMaximum(dataInfo.at(1));
-        ui->doubleSpinBoxCursorSpline2Y2->setSingleStep(dataInfo.at(2));
-
-        //added
-        ui->doubleSpinBoxCursorSpline1X->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline1X->setMaximum(dataInfo.at(6));
+        //zone 1
+        ui->doubleSpinBoxCursorSpline1X->setMinimum(dataInfo.at(0));
+        ui->doubleSpinBoxCursorSpline1X->setMaximum(dataInfo.at(1));
         ui->doubleSpinBoxCursorSpline1X->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline1X2->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline1X2->setMaximum(dataInfo.at(6));
+        ui->doubleSpinBoxCursorSpline1X2->setMinimum(dataInfo.at(0));
+        ui->doubleSpinBoxCursorSpline1X2->setMaximum(dataInfo.at(1));
         ui->doubleSpinBoxCursorSpline1X2->setSingleStep(dataInfo.at(2));
 
-        ui->doubleSpinBoxCursorSpline2X->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline2X->setMaximum(dataInfo.at(6));
-        ui->doubleSpinBoxCursorSpline2X->setSingleStep(dataInfo.at(2));
+        ui->doubleSpinBoxCursorSpline1Y->setMinimum(dataInfo.at(5));
+        ui->doubleSpinBoxCursorSpline1Y->setMaximum(dataInfo.at(6));
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(dataInfo.at(2));
+        ui->doubleSpinBoxCursorSpline1Y2->setMinimum(dataInfo.at(5));
+        ui->doubleSpinBoxCursorSpline1Y2->setMaximum(dataInfo.at(6));
+        ui->doubleSpinBoxCursorSpline1Y2->setSingleStep(dataInfo.at(2));
 
-        ui->doubleSpinBoxCursorSpline2X2->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline2X2->setMaximum(dataInfo.at(6));
+        //zone 2
+        ui->doubleSpinBoxCursorSpline2X->setMinimum(dataInfo.at(0));
+        ui->doubleSpinBoxCursorSpline2X->setMaximum(dataInfo.at(1));
+        ui->doubleSpinBoxCursorSpline2X->setSingleStep(dataInfo.at(2));
+        ui->doubleSpinBoxCursorSpline2X2->setMinimum(dataInfo.at(0));
+        ui->doubleSpinBoxCursorSpline2X2->setMaximum(dataInfo.at(1));
         ui->doubleSpinBoxCursorSpline2X2->setSingleStep(dataInfo.at(2));
-        //added
+
+        ui->doubleSpinBoxCursorSpline2Y->setMinimum(dataInfo.at(5));
+        ui->doubleSpinBoxCursorSpline2Y->setMaximum(dataInfo.at(6));
+        ui->doubleSpinBoxCursorSpline2Y->setSingleStep(dataInfo.at(2));
+        ui->doubleSpinBoxCursorSpline2Y2->setMinimum(dataInfo.at(5));
+        ui->doubleSpinBoxCursorSpline2Y2->setMaximum(dataInfo.at(6));
+        ui->doubleSpinBoxCursorSpline2Y2->setSingleStep(dataInfo.at(2));
 
         createCursorInterpol();
     }
@@ -1743,83 +1893,119 @@ void FenEnfantGraph::cursorMangementInterpol(const int &state)
 }
 
 void FenEnfantGraph::createCursorInterpol()
-{
-    double viewCenter (ui->customPlot->xAxis->range().center());
+{    
+    double viewLowV(ui->customPlot->yAxis->range().lower);
+    double viewUpV(ui->customPlot->yAxis->range().upper);
+    double viewCenterV ((int)(viewLowV + viewUpV)/2);
+
+    double viewLeftH(ui->customPlot->xAxis->range().lower);
+    double viewRightH(ui->customPlot->xAxis->range().upper);
+    double viewCenterH ((int)(viewRightH + viewLeftH)/2);
+
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    double incrementH((mathMethod->dataInfo().at(1))/100);
 
     if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
-        ui->doubleSpinBoxCursorSpline1Y->setValue((int) viewCenter - 15);
-        ui->doubleSpinBoxCursorSpline1Y2->setValue((int) viewCenter -10);
-
-        ui->doubleSpinBoxCursorSpline2Y->setValue((int) viewCenter + 10);
-        ui->doubleSpinBoxCursorSpline2Y2->setValue((int) viewCenter + 15);
-
-        //added
-        ui->doubleSpinBoxCursorSpline1X->setValue( -2);
-        ui->doubleSpinBoxCursorSpline1X2->setValue( -1);
-
-        ui->doubleSpinBoxCursorSpline2X->setValue(1);
-        ui->doubleSpinBoxCursorSpline2X2->setValue(2);
-        //added
+        //Zone 1
+        ui->doubleSpinBoxCursorSpline1X->setValue( (viewCenterH/2 -incrementH));
+        ui->doubleSpinBoxCursorSpline1X2->setValue( (viewCenterH/2 +incrementH));
+        ui->doubleSpinBoxCursorSpline1Y->setValue( (viewCenterV -incrementV));
+        ui->doubleSpinBoxCursorSpline1Y2->setValue( (viewCenterV +incrementV));
+        //Zone 2
+        ui->doubleSpinBoxCursorSpline2X->setValue( (viewCenterH * 1.5 -incrementH));
+        ui->doubleSpinBoxCursorSpline2X2->setValue( (viewCenterH * 1.5 +incrementH));
+        ui->doubleSpinBoxCursorSpline2Y->setValue( (viewCenterV -incrementV));
+        ui->doubleSpinBoxCursorSpline2Y2->setValue( (viewCenterV +incrementV));
     }
     else if(ui->checkBoxTimeAbsis->checkState() == 2)
     {
-        ui->doubleSpinBoxCursorSpline1Y->setValue((int) viewCenter - 15 - offsetTime);
-        ui->doubleSpinBoxCursorSpline1Y2->setValue((int) viewCenter -10 - offsetTime);
+        ui->doubleSpinBoxCursorSpline1Y->setValue( (viewCenterH/2 -incrementH) - offsetTime);
+        ui->doubleSpinBoxCursorSpline1Y2->setValue( (viewCenterH/2 +incrementH) - offsetTime);
 
-        ui->doubleSpinBoxCursorSpline2Y->setValue((int) viewCenter + 10 - offsetTime);
-        ui->doubleSpinBoxCursorSpline2Y2->setValue((int) viewCenter + 15 - offsetTime);
-        //added
-        ui->doubleSpinBoxCursorSpline1X->setValue( -2);
-        ui->doubleSpinBoxCursorSpline1X2->setValue( -1);
+        ui->doubleSpinBoxCursorSpline2Y->setValue( (viewCenterH * 1.5 -incrementH) - offsetTime);
+        ui->doubleSpinBoxCursorSpline2Y2->setValue( (viewCenterH * 1.5 +incrementH) - offsetTime);
 
-        ui->doubleSpinBoxCursorSpline2X->setValue(1);
-        ui->doubleSpinBoxCursorSpline2X2->setValue(2);
-        //added
+        ui->doubleSpinBoxCursorSpline1X->setValue((viewCenterV -incrementV));
+        ui->doubleSpinBoxCursorSpline1X2->setValue((viewCenterV +incrementV));
+
+        ui->doubleSpinBoxCursorSpline2X->setValue( (viewCenterV -incrementV));
+        ui->doubleSpinBoxCursorSpline2X2->setValue( (viewCenterV +incrementV));
     }
+    //zone 1
+    setCursorV("cursorInterpol 1Z1", (viewCenterH/2 -incrementH), penCursorInterpolZ1);
+    setCursorV("cursorInterpol 2Z1", (viewCenterH/2 +incrementH), penCursorInterpolZ1);
+    setCursorH("cursorInterpol 1Z1 H", (viewCenterV -incrementV), penCursorInterpolZ1);
+    setCursorH("cursorInterpol 2Z1 H", (viewCenterV +incrementV), penCursorInterpolZ1);
 
-    setCursorVNew("cursorInterpol 1Z1", viewCenter - 15.0, penCursorInterpol);
-    setCursorVNew("cursorInterpol 2Z1", viewCenter - 10.0, penCursorInterpol);
-    setCursorVNew("cursorInterpol 1Z2", viewCenter + 10.0, penCursorInterpol);
-    setCursorVNew("cursorInterpol 2Z2", viewCenter + 15.0, penCursorInterpol);
-
-    //added
-    setCursorH("cursorInterpol 1Z1 H", -2, penCursorInterpol);
-    setCursorH("cursorInterpol 2Z1 H", -1, penCursorInterpol);
-    setCursorH("cursorInterpol 1Z2 H", 1, penCursorInterpol);
-    setCursorH("cursorInterpol 2Z2 H", 2, penCursorInterpol);
-    //added
+    //zone 2
+    setCursorV("cursorInterpol 1Z2", (viewCenterH * 1.5 -incrementH), penCursorInterpolZ2);
+    setCursorV("cursorInterpol 2Z2", (viewCenterH * 1.5 +incrementH), penCursorInterpolZ2);
+    setCursorH("cursorInterpol 1Z2 H", (viewCenterV -incrementV), penCursorInterpolZ2);
+    setCursorH("cursorInterpol 2Z2 H", (viewCenterV +incrementV), penCursorInterpolZ2);
 
     createCursorInterpolConnection();
+}
+
+void FenEnfantGraph::setCursorV(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset)
+{
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    QVector<double> absTab;
+    for(int i(0); i <= 1; i++)
+    {
+        absTab.push_back(posCursor + offset);
+    }
+
+    QVector<double> ordTab;
+
+    if(cursorName == "cursorInterpol 1Z1")
+    {
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline1Y->value() - incrementV);
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline1Y2->value() + incrementV);
+    }
+    else if(cursorName == "cursorInterpol 2Z1")
+    {
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline1Y->value() - incrementV);
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline1Y2->value() + incrementV);
+    }
+    else if(cursorName == "cursorInterpol 1Z2")
+    {
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline2Y->value() - incrementV);
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline2Y2->value() + incrementV);
+    }
+    else if(cursorName == "cursorInterpol 2Z2")
+    {
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline2Y->value() - incrementV);
+        ordTab.push_back(ui->doubleSpinBoxCursorSpline2Y2->value() + incrementV);
+    }
+    else
+    {
+        ordTab.push_back(ui->customPlot->yAxis->range().lower);
+        ordTab.push_back(ui->customPlot->yAxis->range().upper);
+    }
+
+    //Draw cursor
+    displayCursor(cursorName, absTab, ordTab, pen);
 }
 
 void FenEnfantGraph::createCursorInterpolConnection()
 {
     connect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(moveCursorV(int)));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScrollInterpol(QWheelEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpol(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpol(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpol(QMouseEvent*)));
+    connect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(resizeCursorSpinboxInterpolH(int)));
 
-    //added
-    connect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(moveCursorH(int)));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScrollInterpolH(QWheelEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    //added
+    connect(signalMapperCursorH, SIGNAL(mapped(int)), this, SLOT(moveCursorH(int)));
+    connect(signalMapperCursorH, SIGNAL(mapped(int)), this, SLOT(resizeCursorSpinboxInterpolV(int)));
 }
 
 void FenEnfantGraph::killCursorInterpol()
 {
-    //added
     ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z2 H"]);
     ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z2 H"]);
-    ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z1 H"]);
-    ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z1 H"]);
-    //added
     ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z2"]);
     ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z2"]);
+
+    ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z1 H"]);
+    ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z1 H"]);
     ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z1"]);
     ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z1"]);
     ui->customPlot->replot();
@@ -1829,12 +2015,11 @@ void FenEnfantGraph::killCursorInterpol()
     eraseGraphNameFromIndex("cursorInterpol 2Z1");
     eraseGraphNameFromIndex("cursorInterpol 1Z2");
     eraseGraphNameFromIndex("cursorInterpol 2Z2");
-    //added
+
     eraseGraphNameFromIndex("cursorInterpol 1Z1 H");
     eraseGraphNameFromIndex("cursorInterpol 2Z1 H");
     eraseGraphNameFromIndex("cursorInterpol 1Z2 H");
     eraseGraphNameFromIndex("cursorInterpol 2Z2 H");
-    //added
 
     killCursorInterpolConnection();
 }
@@ -1842,102 +2027,54 @@ void FenEnfantGraph::killCursorInterpol()
 void FenEnfantGraph::killCursorInterpolConnection()
 {
     disconnect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(moveCursorV(int)));
-    disconnect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScrollInterpol(QWheelEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpol(QMouseEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpol(QMouseEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpol(QMouseEvent*)));
+    disconnect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(resizeCursorSpinboxInterpolH(int)));
 
-    //added
-    disconnect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(moveCursorH(int)));
-    disconnect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScrollInterpolH(QWheelEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    //added
+    disconnect(signalMapperCursorH, SIGNAL(mapped(int)), this, SLOT(moveCursorH(int)));
+    disconnect(signalMapperCursorH, SIGNAL(mapped(int)), this, SLOT(resizeCursorSpinboxInterpolV(int)));
 }
 
-void FenEnfantGraph::resizeCursorScrollInterpol(const QWheelEvent* &event)
+void FenEnfantGraph::resizeCursorSpinboxInterpolV(const int &id)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(id)
 
-    sizeCursorV("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1Y);
-    sizeCursorV("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1Y2);
+    sizeCursorV("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1X);
+    sizeCursorV("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1X2);
 
-    sizeCursorV("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2Y);
-    sizeCursorV("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2Y2);
+    sizeCursorV("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2X);
+    sizeCursorV("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2X2);
 }
 
-void FenEnfantGraph::resizeCursorMouseInterpol(const QMouseEvent* &event)
-{
-    Q_UNUSED(event)
-
-    sizeCursorV("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1Y);
-    sizeCursorV("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1Y2);
-
-    sizeCursorV("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2Y);
-    sizeCursorV("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2Y2);
-}
-//Del base line interaction end
-
-//Create horisontal cursor
-void FenEnfantGraph::cursorMangementInterpolH(const int &state)
-{
-    if(state == 2)
-    {
-        //key control pressed
-        controlPressed = false;
-
-        ui->checkBoxCurseurNew->setChecked(false);
-
-        QVector<double> dataInfo = mathMethod->dataInfo();
-        ui->doubleSpinBoxCursorSpline1X->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline1X->setMaximum(dataInfo.at(6));
-        ui->doubleSpinBoxCursorSpline1X->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline1X2->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline1X2->setMaximum(dataInfo.at(6));
-        ui->doubleSpinBoxCursorSpline1X2->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline2X->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline2X->setMaximum(dataInfo.at(6));
-        ui->doubleSpinBoxCursorSpline2X->setSingleStep(dataInfo.at(2));
-
-        ui->doubleSpinBoxCursorSpline2X2->setMinimum(dataInfo.at(5));
-        ui->doubleSpinBoxCursorSpline2X2->setMaximum(dataInfo.at(6));
-        ui->doubleSpinBoxCursorSpline2X2->setSingleStep(dataInfo.at(2));
-
-        createCursorInterpolH();
-    }
-    else if (state == 0)
-    {
-        killCursorInterpolH();
-    }
-}
-
-void FenEnfantGraph::createCursorInterpolH()
-{
-    double viewCenter (ui->customPlot->yAxis->range().center());
-
-    ui->doubleSpinBoxCursorSpline1X->setValue( -2);
-    ui->doubleSpinBoxCursorSpline1X2->setValue( -1);
-
-    ui->doubleSpinBoxCursorSpline2X->setValue(1);
-    ui->doubleSpinBoxCursorSpline2X2->setValue(2);
-
-    setCursorH("cursorInterpol 1Z1 H", -2, penCursorInterpol);
-    setCursorH("cursorInterpol 2Z1 H", -1, penCursorInterpol);
-    setCursorH("cursorInterpol 1Z2 H", 1, penCursorInterpol);
-    setCursorH("cursorInterpol 2Z2 H", 2, penCursorInterpol);
-
-    createCursorInterpolConnectionH();
-}
-
+    //Create horisontal cursor
 void FenEnfantGraph::setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen)
 {
+    double incrementH((mathMethod->dataInfo().at(1))/100);
     QVector<double> absTab;
 
-    absTab.push_back(ui->customPlot->xAxis->range().lower);
-    absTab.push_back(ui->customPlot->xAxis->range().upper);
+    if(cursorName == "cursorInterpol 1Z1 H")
+    {
+        absTab.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH);
+        absTab.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH);
+    }
+    else if(cursorName == "cursorInterpol 2Z1 H")
+    {
+        absTab.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH);
+        absTab.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH);
+    }
+    else if(cursorName == "cursorInterpol 1Z2 H")
+    {
+        absTab.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH);
+        absTab.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH);
+    }
+    else if(cursorName == "cursorInterpol 2Z2 H")
+    {
+        absTab.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH);
+        absTab.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH);
+    }
+    else
+    {
+        absTab.push_back(ui->customPlot->xAxis->range().lower);
+        absTab.push_back(ui->customPlot->xAxis->range().upper);
+    }
 
     QVector<double> ordTab;
     for(int i(0); i <= 1; i++)
@@ -1949,41 +2086,6 @@ void FenEnfantGraph::setCursorH(const QString &cursorName, const double &posCurs
     displayCursor(cursorName, absTab, ordTab, pen);
 }
 
-void FenEnfantGraph::createCursorInterpolConnectionH()
-{
-    connect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(moveCursorH(int)));
-    connect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScrollInterpolH(QWheelEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    connect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-}
-
-void FenEnfantGraph::killCursorInterpolH()
-{
-    ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z2 H"]);
-    ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z2 H"]);
-    ui->customPlot->removeGraph(indexGraph["cursorInterpol 2Z1 H"]);
-    ui->customPlot->removeGraph(indexGraph["cursorInterpol 1Z1 H"]);
-    ui->customPlot->replot();
-
-    //erase cursor from indexGraph
-    eraseGraphNameFromIndex("cursorInterpol 1Z1 H");
-    eraseGraphNameFromIndex("cursorInterpol 2Z1 H");
-    eraseGraphNameFromIndex("cursorInterpol 1Z2 H");
-    eraseGraphNameFromIndex("cursorInterpol 2Z2 H");
-
-    killCursorInterpolConnectionH();
-}
-
-void FenEnfantGraph::killCursorInterpolConnectionH()
-{
-    disconnect(signalMapperCursorV, SIGNAL(mapped(int)), this, SLOT(moveCursorH(int)));
-    disconnect(ui->customPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(resizeCursorScrollInterpolH(QWheelEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-    disconnect(ui->customPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(resizeCursorMouseInterpolH(QMouseEvent*)));
-}
-
 void FenEnfantGraph::moveCursorH(const int &id)
 {
     QString name;
@@ -1991,32 +2093,48 @@ void FenEnfantGraph::moveCursorH(const int &id)
     if (id == 0)
     {
          name = "cursorInterpol 1Z1 H";
-         value = ui->doubleSpinBoxCursorSpline1X->value();
+         value = ui->doubleSpinBoxCursorSpline1Y->value();
     }
     else if (id == 1)
     {
          name = "cursorInterpol 2Z1 H";
-         value = ui->doubleSpinBoxCursorSpline1X2->value();
+         value = ui->doubleSpinBoxCursorSpline1Y2->value();
     }
     else if (id == 2)
     {
          name = "cursorInterpol 1Z2 H";
-         value = ui->doubleSpinBoxCursorSpline2X->value();
+         value = ui->doubleSpinBoxCursorSpline2Y->value();
     }
     else if (id == 3)
     {
          name = "cursorInterpol 2Z2 H";
-         value = ui->doubleSpinBoxCursorSpline2X2->value();
+         value = ui->doubleSpinBoxCursorSpline2Y2->value();
     }
 
     //Change value of keys
     QList<double> keysList(ui->customPlot->graph(indexGraph[name])->data()->keys());
     QVector<double> keysVector;
 
-    for (int i(0); i <= keysList.size()-1; i++)
+    /*for (int i(0); i <= keysList.size()-1; i++)
     {
         keysVector.push_back(keysList.at(i));
+    }*/
+
+    if(ui->checkBoxTimeAbsis->checkState() == 0)
+    {
+        for (int i(0); i <= keysList.size()-1; i++)
+        {
+            keysVector.push_back(keysList.at(i));
+        }
     }
+    else if (ui->checkBoxTimeAbsis->checkState() == 2)
+    {
+        for (int i(0); i <= keysList.size()-1; i++)
+        {
+            keysVector.push_back(keysList.at(i) + offsetTime);
+        }
+    }
+
 
     // extract values from QCPData and create a QVector of values
     QList<QCPData> valuesList(ui->customPlot->graph(indexGraph[name])->data()->values());
@@ -2031,38 +2149,86 @@ void FenEnfantGraph::moveCursorH(const int &id)
     ui->customPlot->replot();
 }
 
-void FenEnfantGraph::resizeCursorScrollInterpolH(const QWheelEvent* &event)
+void FenEnfantGraph::resizeCursorSpinboxInterpolH(const int &id)
 {
-    Q_UNUSED(event)
+    Q_UNUSED(id)
 
-    sizeCursorH("cursorInterpol 1Z1 H", ui->doubleSpinBoxCursorSpline1X);
-    sizeCursorH("cursorInterpol 2Z1 H", ui->doubleSpinBoxCursorSpline1X2);
+    sizeCursorH("cursorInterpol 1Z1 H", ui->doubleSpinBoxCursorSpline1Y);
+    sizeCursorH("cursorInterpol 2Z1 H", ui->doubleSpinBoxCursorSpline1Y2);
 
-    sizeCursorH("cursorInterpol 1Z2 H", ui->doubleSpinBoxCursorSpline2X);
-    sizeCursorH("cursorInterpol 2Z2 H", ui->doubleSpinBoxCursorSpline2X2);
-}
-
-void FenEnfantGraph::resizeCursorMouseInterpolH(const QMouseEvent* &event)
-{
-    Q_UNUSED(event)
-
-    sizeCursorH("cursorInterpol 1Z1 H", ui->doubleSpinBoxCursorSpline1X);
-    sizeCursorH("cursorInterpol 2Z1 H", ui->doubleSpinBoxCursorSpline1X2);
-
-    sizeCursorH("cursorInterpol 1Z2 H", ui->doubleSpinBoxCursorSpline2X);
-    sizeCursorH("cursorInterpol 2Z2 H", ui->doubleSpinBoxCursorSpline2X2);
+    sizeCursorH("cursorInterpol 1Z2 H", ui->doubleSpinBoxCursorSpline2Y);
+    sizeCursorH("cursorInterpol 2Z2 H", ui->doubleSpinBoxCursorSpline2Y2);
 }
 
 void FenEnfantGraph::sizeCursorH(const QString &name, QDoubleSpinBox *spinbox)
 {
+    double incrementH((mathMethod->dataInfo().at(1))/100);
     double value(0);
     value = spinbox->value();
 
     //Change value of keys
     QVector<double> keysVector;
 
-    keysVector.push_back(ui->customPlot->xAxis->range().lower);
-    keysVector.push_back(ui->customPlot->xAxis->range().upper);
+    if(name == "cursorInterpol 1Z1 H")
+    {
+        if(ui->checkBoxTimeAbsis->checkState() == 0)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH);
+        }
+        else if (ui->checkBoxTimeAbsis->checkState() == 2)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH + offsetTime);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH + offsetTime);
+        }
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH);
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH);
+    }
+    else if(name == "cursorInterpol 2Z1 H")
+    {
+        if(ui->checkBoxTimeAbsis->checkState() == 0)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH);
+        }
+        else if (ui->checkBoxTimeAbsis->checkState() == 2)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH +offsetTime);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH +offsetTime);
+        }
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline1X->value() - incrementH);
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline1X2->value() + incrementH);
+    }
+    else if(name == "cursorInterpol 1Z2 H")
+    {
+        if(ui->checkBoxTimeAbsis->checkState() == 0)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH);
+        }
+        else if (ui->checkBoxTimeAbsis->checkState() == 2)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH +offsetTime);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH +offsetTime);
+        }
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH);
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH);
+    }
+    else if(name == "cursorInterpol 2Z2 H")
+    {
+        if(ui->checkBoxTimeAbsis->checkState() == 0)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH);
+        }
+        else if (ui->checkBoxTimeAbsis->checkState() == 2)
+        {
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH +offsetTime);
+            keysVector.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH +offsetTime);
+        }
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline2X->value() - incrementH);
+        //keysVector.push_back(ui->doubleSpinBoxCursorSpline2X2->value() + incrementH);
+    }
 
     // extract values from QCPData and create a QVector of values
     QList<QCPData> valuesList(ui->customPlot->graph(indexGraph[name])->data()->values());
@@ -2076,4 +2242,157 @@ void FenEnfantGraph::sizeCursorH(const QString &name, QDoubleSpinBox *spinbox)
     ui->customPlot->graph(indexGraph[name])->setData(keysVector, valuesVector);
     ui->customPlot->replot();
 }
-//Create horisontal cursor end
+    //Create horisontal cursor end
+    //link cursor Zone 1
+void FenEnfantGraph::linkCursorZ1(const bool &state)
+{
+    if (state == true)
+    {
+        connect(ui->doubleSpinBoxCursorSpline1X, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z1X(double)));
+        connect(ui->doubleSpinBoxCursorSpline1X2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z1X(double)));
+        connect(ui->doubleSpinBoxCursorSpline1Y, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z1Y(double)));
+        connect(ui->doubleSpinBoxCursorSpline1Y2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z1Y(double)));
+    }
+
+    else if (state == false)
+    {
+        disconnect(ui->doubleSpinBoxCursorSpline1X, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z1X(double)));
+        disconnect(ui->doubleSpinBoxCursorSpline1X2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z1X(double)));
+        disconnect(ui->doubleSpinBoxCursorSpline1Y, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z1Y(double)));
+        disconnect(ui->doubleSpinBoxCursorSpline1Y2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z1Y(double)));
+    }
+}
+
+void FenEnfantGraph::linkCursor1Z1X(const double &value)
+{
+    double incrementH((mathMethod->dataInfo().at(1))/100);
+
+    if( ui->pushButtonLinkZone1->isChecked() == true && ui->doubleSpinBoxCursorSpline1X->value() != ui->doubleSpinBoxCursorSpline1X2->value() - 1)
+    {
+        ui->doubleSpinBoxCursorSpline1X2->setValue(value +incrementH);
+    }
+}
+
+void FenEnfantGraph::linkCursor2Z1X(const double &value)
+{
+    double incrementH((mathMethod->dataInfo().at(1))/100);
+
+    if( ui->pushButtonLinkZone1->isChecked() == true && ui->doubleSpinBoxCursorSpline1X2->value() != ui->doubleSpinBoxCursorSpline1X->value() + 1)
+    {
+        ui->doubleSpinBoxCursorSpline1X->setValue(value -incrementH);
+    }
+}
+
+void FenEnfantGraph::linkCursor1Z1Y(const double &value)
+{
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    if( ui->pushButtonLinkZone1->isChecked() == true && ui->doubleSpinBoxCursorSpline1Y->value() != ui->doubleSpinBoxCursorSpline1Y2->value() - 1)
+    {
+        ui->doubleSpinBoxCursorSpline1Y2->setValue(value +incrementV);
+    }
+}
+
+void FenEnfantGraph::linkCursor2Z1Y(const double &value)
+{
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    if( ui->pushButtonLinkZone1->isChecked() == true && ui->doubleSpinBoxCursorSpline1Y2->value() != ui->doubleSpinBoxCursorSpline1Y->value() + 1)
+    {
+        ui->doubleSpinBoxCursorSpline1Y->setValue(value -incrementV);
+    }
+}
+    //link cursor Zone 2
+void FenEnfantGraph::linkCursorZ2(const bool &state)
+{
+    if (state == true)
+    {
+        connect(ui->doubleSpinBoxCursorSpline2X, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z2X(double)));
+        connect(ui->doubleSpinBoxCursorSpline2X2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z2X(double)));
+        connect(ui->doubleSpinBoxCursorSpline2Y, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z2Y(double)));
+        connect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z2Y(double)));
+    }
+
+    else if (state == false)
+    {
+        disconnect(ui->doubleSpinBoxCursorSpline2X, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z2X(double)));
+        disconnect(ui->doubleSpinBoxCursorSpline2X2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z2X(double)));
+        disconnect(ui->doubleSpinBoxCursorSpline2Y, SIGNAL(valueChanged(double)), this, SLOT(linkCursor1Z2Y(double)));
+        disconnect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), this, SLOT(linkCursor2Z2Y(double)));
+    }
+}
+
+void FenEnfantGraph::linkCursor1Z2X(const double &value)
+{
+    double incrementH((mathMethod->dataInfo().at(1))/100);
+    if( ui->pushButtonLinkZone2->isChecked() == true && ui->doubleSpinBoxCursorSpline2X->value() != ui->doubleSpinBoxCursorSpline2X2->value() - 1)
+    {
+        ui->doubleSpinBoxCursorSpline2X2->setValue(value +incrementH);
+    }
+}
+
+void FenEnfantGraph::linkCursor2Z2X(const double &value)
+{
+    double incrementH((mathMethod->dataInfo().at(1))/100);
+    if( ui->pushButtonLinkZone1->isChecked() == true && ui->doubleSpinBoxCursorSpline2X2->value() != ui->doubleSpinBoxCursorSpline2X->value() + 1)
+    {
+        ui->doubleSpinBoxCursorSpline2X->setValue(value -incrementH);
+    }
+}
+
+void FenEnfantGraph::linkCursor1Z2Y(const double &value)
+{
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    if( ui->pushButtonLinkZone2->isChecked() == true && ui->doubleSpinBoxCursorSpline2Y->value() != ui->doubleSpinBoxCursorSpline2Y2->value() - 1)
+    {
+        ui->doubleSpinBoxCursorSpline2Y2->setValue(value +incrementV);
+    }
+}
+
+void FenEnfantGraph::linkCursor2Z2Y(const double &value)
+{
+    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    if( ui->pushButtonLinkZone2->isChecked() == true && ui->doubleSpinBoxCursorSpline2Y2->value() != ui->doubleSpinBoxCursorSpline2Y->value() + 1)
+    {
+        ui->doubleSpinBoxCursorSpline2Y->setValue(value -incrementV);
+    }
+}
+
+//Generate interpolation
+void FenEnfantGraph::generateInterpolation()
+{
+    QVector<double> dataReturn;
+    double valueZ1Left(ui->doubleSpinBoxCursorSpline1X->value());
+    double valueZ1Right(ui->doubleSpinBoxCursorSpline1X2->value());
+    double valueZ1Up(ui->doubleSpinBoxCursorSpline1Y2->value());
+    double valueZ1Down(ui->doubleSpinBoxCursorSpline1Y->value());
+
+    double valueZ2Left(ui->doubleSpinBoxCursorSpline2X->value());
+    double valueZ2Right(ui->doubleSpinBoxCursorSpline2X2->value());
+    double valueZ2Up(ui->doubleSpinBoxCursorSpline2Y2->value());
+    double valueZ2Down(ui->doubleSpinBoxCursorSpline2Y->value());
+
+    dataReturn.push_back(valueZ1Left);  //0
+    dataReturn.push_back(valueZ1Right); //1
+    dataReturn.push_back(valueZ1Up);    //2
+    dataReturn.push_back(valueZ1Down);  //3
+
+    dataReturn.push_back(valueZ2Left);  //4
+    dataReturn.push_back(valueZ2Right); //5
+    dataReturn.push_back(valueZ2Up);    //6
+    dataReturn.push_back(valueZ2Down);  //7
+
+    mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
+}
+
+void FenEnfantGraph::addItemToComboboxInterpol()
+{
+    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    {
+        QString nameCurve(it->first);
+        if (nameCurve != "cursorNew 1" || nameCurve == "cursorNew 2")
+        {
+            ui->comboBoxInterpolCurve->addItem(nameCurve);
+        }
+    }
+}
+
+//Del base line interaction end
