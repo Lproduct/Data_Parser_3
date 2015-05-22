@@ -16,7 +16,7 @@ public:
     QVector<QVector<double> >middleValueCurveFilterNew(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
     QVector<QVector<double> > fftFilter(const int &nbTab, const int &percentFiltering, int startValue = -1, int endValue = -1);
     QVector<QVector<double> > generateSpline(QVector<QVector<double> > pointTab);
-    QVector<QVector<double> > generatePoint(const int &nbCurve, const QVector<double> &tabPoint);
+    QVector<QVector<double> > generatePoint(const int &nbCurve, const QVector<double> &tabInd);
 
 private:
     /*** Average Value Filter ****/
@@ -47,6 +47,13 @@ private:
     QVector<QVector<double> > createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab);
     long int returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type);
     /*** General Function end ***/
+
+    /*** Reg Line ***/
+    QVector<QVector<double> > regLine(QVector<QVector<double> > tabData);
+    double calculatePente(QVector<QVector<double> > tabData);
+    double calculateOrdonnee(QVector<QVector<double> > tabData);
+    double calculateCorr(QVector<QVector<double> > tabData);
+    /*** Reg Line end ***/
 
     QVector<QVector<double> > m_tabData;
     QVector<QVector<double> > m_tabPoint;

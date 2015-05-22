@@ -12,7 +12,8 @@ SOURCES += \
     FenEnfantGraph.cpp \
     DataParser.cpp \
     MathFunction.cpp \
-    overhauser.cpp
+    overhauser.cpp \
+    reglin.cpp
 
 HEADERS += \
     FenPrincipale.h \
@@ -23,7 +24,8 @@ HEADERS += \
     MathFunction.h \
     fftw-3.3.4-dll32/fftw3.h \
     overhauser.hpp \
-    vec3.hpp
+    vec3.hpp \
+    reglin.h
 
 RESOURCES += \
     data_parser_3.qrc

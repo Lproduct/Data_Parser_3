@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QtMath>
 #include "overhauser.hpp"
+#include "reglin.h"
 
 MathFunction::MathFunction(const QVector<QVector<double> > &tabData): m_tabData(tabData)
 {
@@ -203,7 +204,6 @@ QVector<QVector<double> > MathFunction::fftFilter(const int &nbTab, const int &p
 
     return createTabReturn(3, xAxis, yAxis);
 }
-
 void MathFunction::createTabData(const int &nbTab, int startValue, int endValue)
 {
     m_dataFFT.clear();
@@ -345,34 +345,158 @@ void MathFunction::endFFT()
 /*** FFT Filter end ****/
 
 /*** Spline Function ***/
-
-QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const QVector<double> &tabPoint)
+QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const QVector<double> &tabInd)
 {
     //extract data from tabData
-    long int startZone1(returnIndOfValueAbs(tabPoint.at(0),1,0));
-    long int endZone1(returnIndOfValueAbs(tabPoint.at(1),1,0));
-    long int startZone2(returnIndOfValueAbs(tabPoint.at(4),1,0));
-    long int endZone2(returnIndOfValueAbs(tabPoint.at(5),1,0));
+    long int startZone1(returnIndOfValueAbs(tabInd.at(0),1,0));
+    long int endZone1(returnIndOfValueAbs(tabInd.at(1),1,0));
+    long int startZone2(returnIndOfValueAbs(tabInd.at(4),1,0));
+    long int endZone2(returnIndOfValueAbs(tabInd.at(5),1,0));
 
     QVector<double> dataZone1;
     QVector<double> keyZone1;
     for(long int i(startZone1); i < endZone1; i++)
     {
-        dataZone1.push_back(m_tabData.at(nbCurve).at(i));
-        keyZone1.push_back(i);
+        dataZone1.push_back(m_tabData.at(nbCurve+1).at(i));
+        keyZone1.push_back(m_tabData.at(0).at(i));
     }
 
     QVector<double> dataZone2;
     QVector<double> keyZone2;
     for(long int i(startZone2); i < endZone2; i++)
     {
-        dataZone2.push_back(m_tabData.at(nbCurve).at(i));
-        keyZone2.push_back(i);
+        dataZone2.push_back(m_tabData.at(nbCurve+1).at(i));
+        keyZone2.push_back(m_tabData.at(0).at(i));
     }
 
+    //Reg line for data zone 1
+    QVector<QVector<double> > tabZone1;
+    tabZone1.push_back(keyZone1);
+    tabZone1.push_back(dataZone1);
+    QVector<QVector<double> > regLineTabZ1(regLine(tabZone1));
 
+    //Reg Line for data zone 2
+    QVector<QVector<double> > tabZone2;
+    tabZone2.push_back(keyZone2);
+    tabZone2.push_back(dataZone2);
+    QVector<QVector<double> > regLineTabZ2(regLine(tabZone2));
 
-    return createTabReturn(4, xAxis, yAxis);;
+    //concatenate data to create a tab of point
+    QVector<QVector<double> > tabPoint;
+    QVector<double> tabPointData;
+    QVector<double> tabPointKey;
+    /*for (long int i(0); i< dataZone1.size(); i++)
+    {
+        tabPointdata.push_back(regLineTabZ1.at(1).at(i));
+        tabPointKey.push_back(regLineTabZ1.at(0).at(i));
+    }
+    for (long int i(0); i< dataZone2.size(); i++)
+    {
+        tabPointdata.push_back(regLineTabZ2.at(1).at(i));
+        tabPointKey.push_back(regLineTabZ2.at(0).at(i));
+    }*/
+
+    tabPointData.push_back(regLineTabZ1.at(1).at(0));
+    tabPointData.push_back(regLineTabZ1.at(1).at(regLineTabZ1.at(1).size()-1));
+    tabPointKey.push_back(regLineTabZ1.at(0).at(0));
+    tabPointKey.push_back(regLineTabZ1.at(0).at(regLineTabZ1.at(0).size()-1));
+
+    tabPointData.push_back(regLineTabZ2.at(1).at(0));
+    tabPointData.push_back(regLineTabZ2.at(1).at(regLineTabZ2.at(1).size()-1));
+    tabPointKey.push_back(regLineTabZ2.at(0).at(0));
+    tabPointKey.push_back(regLineTabZ2.at(0).at(regLineTabZ2.at(1).size()-1));
+
+    tabPoint.push_back(tabPointKey);
+    tabPoint.push_back(tabPointData);
+
+    return createTabReturn(4, tabPoint.at(0), tabPoint.at(1));
+}
+
+QVector<QVector<double> > MathFunction::regLine(QVector<QVector<double> > tabData)
+{
+    double a;
+    a = calculatePente(tabData);
+
+    double b;
+    b= calculateOrdonnee(tabData);
+
+    //double corr;
+    //corr = calculateCorr(tabData);
+
+    QVector<double> tabYAxis;
+    for(long int i(0); i < tabData.at(0).size(); i++)
+    {
+        tabYAxis.push_back( a*tabData.at(0).at(i) + b);
+    }
+
+    QVector<QVector<double> > tabReturn;
+    tabReturn.push_back(tabData.at(0));
+    tabReturn.push_back(tabYAxis);
+
+    return tabReturn;
+}
+
+double MathFunction::calculatePente(QVector<QVector<double> > tabData)
+{
+    long int N(tabData.at(0).size());
+    double X[N];
+    for (long int i(0); i< N; i++)
+    {
+        X[i] = tabData.at(0).at(i);
+    }
+
+    double Y[N];
+    for (long int i(0); i< N; i++)
+    {
+        Y[i] = tabData.at(1).at(i);
+    }
+
+    double a;
+    a = pente(X, Y, N);
+
+    return a;
+}
+
+double MathFunction::calculateOrdonnee(QVector<QVector<double> > tabData)
+{
+    long int N(tabData.at(0).size());
+    double X[N];
+    for (long int i(0); i< N; i++)
+    {
+        X[i] = tabData.at(0).at(i);
+    }
+
+    double Y[N];
+    for (long int i(0); i< N; i++)
+    {
+        Y[i] = tabData.at(1).at(i);
+    }
+
+    double b;
+    b = ordonnee(X, Y, N);
+
+    return b;
+}
+
+double MathFunction::calculateCorr(QVector<QVector<double> > tabData)
+{
+    long int N(tabData.size());
+    double X[N];
+    for (long int i(0); i< N; i++)
+    {
+        X[i] = tabData.at(0).at(i);
+    }
+
+    double Y[N];
+    for (long int i(0); i< N; i++)
+    {
+        Y[i] = tabData.at(1).at(i);
+    }
+
+    double cor;
+    cor = corr(X, Y, N);
+
+    return cor;
 }
 
 QVector<QVector<double> > MathFunction::generateSpline(QVector<QVector<double> > pointTab)
@@ -381,11 +505,11 @@ QVector<QVector<double> > MathFunction::generateSpline(QVector<QVector<double> >
     QVector<QVector<double> > tabSpline;
     QVector<QVector<double> > tabReturn;
 
-    addPoint(m_tabPoint, spline);
+    addPoint(pointTab, spline);
 
     tabSpline = generateSpline(spline);
 
-    tabReturn = fftFilteringSpline(tabSpline, 80);
+    tabReturn = fftFilteringSpline(tabSpline, 0);
 
     return createTabReturn(5, tabReturn.at(0), tabReturn.at(1));
 }

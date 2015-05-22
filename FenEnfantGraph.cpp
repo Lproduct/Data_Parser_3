@@ -147,6 +147,10 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->doubleSpinBoxCursorSpline1Y2, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
     connect(ui->doubleSpinBoxCursorSpline2Y, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
     connect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
+
+        //generate point interaction
+    connect(ui->pushButtonGenerateBaseLine, SIGNAL(clicked()), this, SLOT(generateInterpolation()));
+    connect(ui->pushButtonDelBaseLine, SIGNAL(clicked()), this, SLOT());
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -1246,7 +1250,7 @@ void FenEnfantGraph::createCurveIntialisation()
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
     {
         QString nameCurve(it->first);
-        if (nameCurve != "cursorNew 1" || nameCurve == "cursorNew 2")
+        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2")
         {
             ui->ComboBoxCurveName->addItem(nameCurve);
         }
@@ -1407,6 +1411,7 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
     ui->customPlot->graph(nbGraph)->setName(curveName(tab.at(2)));
     ui->customPlot->graph(nbGraph)->setData(tab.at(0), tab.at(1));
 
+    //rescale curve if time offset is on
     if(ui->checkBoxTimeAbsis->checkState() == 2)
     {
         //Check time unit
@@ -1445,10 +1450,17 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
 
     else if(ui->checkBoxBaseLineEnable->checkState() == 2)
     {
-        setCursorVNew("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1Y->value(), penCursorInterpolZ1);
-        setCursorVNew("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1Y2->value(), penCursorInterpolZ1);
-        setCursorVNew("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2Y->value(), penCursorInterpolZ2);
-        setCursorVNew("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2Y2->value(), penCursorInterpolZ2);
+        //zone 1
+        setCursorV("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1X->value(), penCursorInterpolZ1);
+        setCursorV("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1X2->value(), penCursorInterpolZ1);
+        setCursorH("cursorInterpol 1Z1 H", ui->doubleSpinBoxCursorSpline1Y->value(), penCursorInterpolZ1);
+        setCursorH("cursorInterpol 2Z1 H", ui->doubleSpinBoxCursorSpline1Y2->value(), penCursorInterpolZ1);
+
+        //zone 2
+        setCursorV("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2X->value(), penCursorInterpolZ2);
+        setCursorV("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2X2->value(), penCursorInterpolZ2);
+        setCursorH("cursorInterpol 1Z2 H", ui->doubleSpinBoxCursorSpline2Y->value(), penCursorInterpolZ2);
+        setCursorH("cursorInterpol 2Z2 H", ui->doubleSpinBoxCursorSpline2Y2->value(), penCursorInterpolZ2);
         createCursorInterpolConnection();
     }
 }
@@ -1793,6 +1805,8 @@ void FenEnfantGraph::interpolationInteraction(const int &state)
 {
     if (state == 2)
     {
+        //addItemToComboboxInterpol();
+
         ui->pushButtonLinkZone1->setCheckable(true);
         ui->pushButtonLinkZone1->setChecked(false);
         ui->pushButtonLinkZone1->setEnabled(true);
@@ -1819,6 +1833,8 @@ void FenEnfantGraph::interpolationInteraction(const int &state)
 
     else if (state == 0)
     {
+        //destroyItemFromCombobox();
+
         ui->pushButtonLinkZone1->setCheckable(true);
         ui->pushButtonLinkZone1->setChecked(false);
         ui->pushButtonLinkZone1->setEnabled(false);
@@ -2380,7 +2396,9 @@ void FenEnfantGraph::generateInterpolation()
     dataReturn.push_back(valueZ2Up);    //6
     dataReturn.push_back(valueZ2Down);  //7
 
-    mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
+    QVector<QVector<double> > tabPoint(mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn));
+    displayMathFunctionCurve(tabPoint);
+    displayMathFunctionCurve(mathMethod->generateSpline(tabPoint));
 }
 
 void FenEnfantGraph::addItemToComboboxInterpol()
@@ -2388,11 +2406,21 @@ void FenEnfantGraph::addItemToComboboxInterpol()
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
     {
         QString nameCurve(it->first);
-        if (nameCurve != "cursorNew 1" || nameCurve == "cursorNew 2")
+        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
         {
             ui->comboBoxInterpolCurve->addItem(nameCurve);
         }
     }
+}
+
+void FenEnfantGraph::destroyItemFromCombobox()
+{
+    ui->comboBoxInterpolCurve->clear();
+}
+
+void FenEnfantGraph::delBaseLine()
+{
+
 }
 
 //Del base line interaction end

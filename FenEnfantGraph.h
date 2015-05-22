@@ -84,6 +84,7 @@ public slots:
     void linkCursor1Z2Y(const double &value);
     void linkCursor2Z2Y(const double &value);
     void generateInterpolation();
+    void delBaseLine();
 
 
 private:
@@ -120,6 +121,7 @@ private:
     void setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen);
     void sizeCursorH(const QString &name, QDoubleSpinBox *spinbox);
     void addItemToComboboxInterpol();
+    void destroyItemFromCombobox();
 
     MathFunction *mathMethod;
     QColor randomColor(const QString &colorType);
