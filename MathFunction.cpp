@@ -204,6 +204,7 @@ QVector<QVector<double> > MathFunction::fftFilter(const int &nbTab, const int &p
 
     return createTabReturn(3, xAxis, yAxis);
 }
+
 void MathFunction::createTabData(const int &nbTab, int startValue, int endValue)
 {
     m_dataFFT.clear();
@@ -507,7 +508,7 @@ QVector<QVector<double> > MathFunction::generateSpline(QVector<QVector<double> >
 
     addPoint(pointTab, spline);
 
-    tabSpline = generateSpline(spline);
+    tabSpline = generateSplineF(spline);
 
     tabReturn = fftFilteringSpline(tabSpline, 0);
 
@@ -525,7 +526,7 @@ void MathFunction::addPoint(const QVector<QVector<double> > &pointTab, CRSpline 
     }
 }
 
-QVector<QVector<double> > MathFunction::generateSpline(CRSpline *spline)
+QVector<QVector<double> > MathFunction::generateSplineF(CRSpline *spline)
 {
     QVector<QVector<double> > tabReturn;
     QVector<double> xAxis;
@@ -619,6 +620,40 @@ QVector<QVector<double> > MathFunction::tabReturSplineFFT(QVector<QVector<double
     return dataReturn;
 }
 /*** Spline Function end***/
+
+/*** Del base line Function ***/
+QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QVector<double> &tabData, const QVector<QVector<double> > &tabSpline)
+{
+    long int startZone1(returnIndOfValueAbs(tabData.at(0),1,0));
+    long int endZone2(returnIndOfValueAbs(tabData.at(1),1,0));
+
+    QVector<double> data;
+    QVector<double> key;
+    for(long int i(startZone1); i < endZone2; i++)
+    {
+        data.push_back(m_tabData.at(nbCurve+1).at(i));
+        key.push_back(m_tabData.at(0).at(i));
+    }
+
+    QVector<double> tabDataSplineFilter;
+    for (long int i(0); i< tabSpline.at(0).size(); i++)
+    {
+        if (i % (int) (tabSpline.at(0).size()/key.size()) == 0)
+        {
+            tabDataSplineFilter.push_back(tabSpline.at(nbCurve+1).at(i));
+        }
+    }
+
+    QVector<double> tabDelBaseLine;
+    for (long int i(0); i < data.size(); i++)
+    {
+        tabDelBaseLine.push_back(data.at(i) - tabDataSplineFilter.at(i));
+    }
+
+    return createTabReturn(6, key, tabDelBaseLine);
+}
+
+/*** del base line end***/
 
 /*** General function ****/
 long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type)

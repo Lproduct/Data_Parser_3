@@ -17,6 +17,7 @@ public:
     QVector<QVector<double> > fftFilter(const int &nbTab, const int &percentFiltering, int startValue = -1, int endValue = -1);
     QVector<QVector<double> > generateSpline(QVector<QVector<double> > pointTab);
     QVector<QVector<double> > generatePoint(const int &nbCurve, const QVector<double> &tabInd);
+    QVector<QVector<double> > delBaseLine(const int &nbCurve, const QVector<double> &tabData, const QVector<QVector<double> > &tabSpline);
 
 private:
     /*** Average Value Filter ****/
@@ -37,7 +38,7 @@ private:
 
     /*** Spline Function ***/
     void addPoint(const QVector<QVector<double> > &pointTab, CRSpline *spline);
-    QVector<QVector<double> > generateSpline(CRSpline *spline);
+    QVector<QVector<double> > generateSplineF(CRSpline *spline);
     QVector<QVector<double> > fftFilteringSpline(QVector<QVector<double> > tabSpline, const double &percentFFT);
     void createTabDataSpline(QVector<QVector<double> > tabSpline);
     QVector<QVector<double> > tabReturSplineFFT(QVector<QVector<double> > tabSpline, int mode);

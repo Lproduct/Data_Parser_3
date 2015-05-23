@@ -141,6 +141,7 @@ private:
     QPen penCursor;
     QPen penCursorInterpolZ1;
     QPen penCursorInterpolZ2;
+    QVector<QVector<double> > m_tabSpline;
 };
 
 #endif // FENENFANTGRAPH_H
