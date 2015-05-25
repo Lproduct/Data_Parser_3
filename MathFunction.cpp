@@ -779,7 +779,7 @@ QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QV
     {
         if (i % (int) (tabSpline.at(0).size()/key.size()) == 0)
         {
-            tabDataSplineFilter.push_back(tabSpline.at(nbCurve+1).at(i));
+            tabDataSplineFilter.push_back(tabSpline.at(1).at(i));
         }
     }
 

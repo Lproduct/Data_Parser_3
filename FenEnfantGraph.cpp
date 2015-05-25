@@ -921,8 +921,19 @@ void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
     /*double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
     double incrementH((mathMethod->dataInfo().at(1))/100);*/
 
-    double incrementV((ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100);
-    double incrementH((ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower)/100);
+    double incrementV;
+    double incrementH;
+    if(ui->checkBoxTimeAbsis->checkState() == 0)
+    {
+        incrementV = (ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100;
+        incrementH = (ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower)/100;
+    }
+    else if (ui->checkBoxTimeAbsis->checkState() == 2)
+    {
+        incrementV = (ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100;
+        incrementH = (ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100;
+    }
+
 
     if(ui->checkBoxCurseurNew->checkState() == 2 || ui->checkBoxBaseLineEnable->checkState() == 2)
     {
