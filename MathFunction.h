@@ -13,11 +13,13 @@ public:
 
     QVector<double> dataInfo();
     QVector<QVector<double> > averageValueCurveNew(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
-    QVector<QVector<double> >middleValueCurveFilterNew(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
+    QVector<QVector<double> > middleValueCurveFilterNew(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
     QVector<QVector<double> > fftFilter(const int &nbTab, const int &percentFiltering, int startValue = -1, int endValue = -1);
     QVector<QVector<double> > generateSpline(QVector<QVector<double> > pointTab);
     QVector<QVector<double> > generatePoint(const int &nbCurve, const QVector<double> &tabInd);
     QVector<QVector<double> > delBaseLine(const int &nbCurve, const QVector<double> &tabData, const QVector<QVector<double> > &tabSpline);
+    QVector<QVector<double> > mouvingAverageValueCurve(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
+    QVector<QVector<double> > mouvingMedianValueCurve(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
 
 private:
     /*** Average Value Filter ****/
@@ -55,6 +57,14 @@ private:
     double calculateOrdonnee(QVector<QVector<double> > tabData);
     double calculateCorr(QVector<QVector<double> > tabData);
     /*** Reg Line end ***/
+
+    /*** Mouving Average filter ***/
+    QVector<QVector<double> > proceedMouvingAverageFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd);
+    /*** Mouving Average filter end***/
+
+    /*** Mouving Median Filter ****/
+    QVector<QVector<double> > proceedMouvingMedianFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd);
+    /*** Mouving Median Filter end ****/
 
     QVector<QVector<double> > m_tabData;
     QVector<QVector<double> > m_tabPoint;

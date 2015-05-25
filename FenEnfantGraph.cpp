@@ -918,8 +918,11 @@ void FenEnfantGraph::sizeCursorV(const QString &name, QDoubleSpinBox *spinbox)
 
 void FenEnfantGraph::keyPressEvent(QKeyEvent *event)
 {
-    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
-    double incrementH((mathMethod->dataInfo().at(1))/100);
+    /*double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    double incrementH((mathMethod->dataInfo().at(1))/100);*/
+
+    double incrementV((ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100);
+    double incrementH((ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower)/100);
 
     if(ui->checkBoxCurseurNew->checkState() == 2 || ui->checkBoxBaseLineEnable->checkState() == 2)
     {
@@ -1242,9 +1245,10 @@ void FenEnfantGraph::createCurveIntialisation()
     ui->comboBoxCurveType->clear();
     ui->comboBoxCurveType->addItem("None");
     ui->comboBoxCurveType->addItem("Moyenne");
+    ui->comboBoxCurveType->addItem("Mouving Average");
     ui->comboBoxCurveType->addItem("Filtre médian");
+    ui->comboBoxCurveType->addItem("Mouving Median");
     ui->comboBoxCurveType->addItem("FFT Filter");
-    ui->comboBoxCurveType->addItem("Spline");
     ui->ComboBoxCurveName->setEnabled(true);
 
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
@@ -1296,7 +1300,7 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
+            name = tr("average_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
                                                .arg(ui->spinBoxSampleTime->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
@@ -1333,12 +1337,44 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
 
     else if(opId == 5)
     {
-        name = tr("Spline");
+        name = tr("Spline_%1").arg(ui->comboBoxInterpolCurve->currentText());
     }
 
     else if(opId == 6)
     {
-        name = tr("Del Base Line");
+        name = tr("Del_Base_Line_%1").arg(ui->comboBoxInterpolCurve->currentText());
+    }
+
+    else if(opId == 7)
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("mouving_middle_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
+                                        .arg(ui->spinBoxSampleTime->value());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("mouving_middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
+                                               .arg(ui->spinBoxSampleTime->value())
+                                               .arg(ui->spinBoxCurseur1->value())
+                                               .arg(ui->spinBoxCurseur2->value());
+        }
+    }
+
+    else if(opId == 8)
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("mouving_median_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
+                                        .arg(ui->spinBoxSampleTime->value());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("mouving_median_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
+                                               .arg(ui->spinBoxSampleTime->value())
+                                               .arg(ui->spinBoxCurseur1->value())
+                                               .arg(ui->spinBoxCurseur2->value());
+        }
     }
 
     return name;
@@ -1362,6 +1398,18 @@ void FenEnfantGraph::createCurve()
        }
     }
 
+    else if(curveType == "Mouving Average")
+    {
+       if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+       {
+           displayMathFunctionCurve(mathMethod->mouvingAverageValueCurve(indexGraph[curveselected]+1, sampleTime));
+       }
+       else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+       {
+           displayMathFunctionCurve(mathMethod->mouvingAverageValueCurve(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+       }
+    }
+
     else if(curveType == "Filtre médian")
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
@@ -1371,6 +1419,19 @@ void FenEnfantGraph::createCurve()
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
             displayMathFunctionCurve(mathMethod->middleValueCurveFilterNew(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+        }
+    }
+
+
+    else if(curveType == "Mouving Median")
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            displayMathFunctionCurve(mathMethod->mouvingMedianValueCurve(indexGraph[curveselected]+1, sampleTime));
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            displayMathFunctionCurve(mathMethod->mouvingMedianValueCurve(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
         }
     }
 
@@ -1384,13 +1445,6 @@ void FenEnfantGraph::createCurve()
         {
             displayMathFunctionCurve(mathMethod->fftFilter(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
         }
-    }
-
-    else if(curveType == "Spline")
-    {
-        QVector<QVector<double> > tabTest;
-        //displayMathFunctionCurve(mathMethod->generatePoint());
-        displayMathFunctionCurve(mathMethod->generateSpline(tabTest));
     }
 
     ui->customPlot->replot();
@@ -1782,7 +1836,8 @@ void FenEnfantGraph::cursorSpinBoxInt(const QString &choice)
         ui->label_percent->setVisible(false);
         ui->spinBoxSampleTime->setMinimum(1);
         ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(dataInfo.at(2));
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(1);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
     }
     else if(choice == "Filtre médian")
     {
@@ -1791,7 +1846,8 @@ void FenEnfantGraph::cursorSpinBoxInt(const QString &choice)
         ui->label_percent->setVisible(false);
         ui->spinBoxSampleTime->setMinimum(1);
         ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(dataInfo.at(2));
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
     }
     else if(choice == "FFT Filter")
     {
@@ -1801,6 +1857,27 @@ void FenEnfantGraph::cursorSpinBoxInt(const QString &choice)
         ui->spinBoxSampleTime->setMinimum(0);
         ui->spinBoxSampleTime->setMaximum(100);
         ui->doubleSpinBoxCursorSpline1Y->setSingleStep(0.1);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(0);
+    }
+    else if(choice == "Mouving Average")
+    {
+        ui->spinBoxSampleTime->setVisible(true);
+        ui->label_sampleTime->setVisible(true);
+        ui->label_percent->setVisible(false);
+        ui->spinBoxSampleTime->setMinimum(1);
+        ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+    }
+    else if(choice == "Mouving Median")
+    {
+        ui->spinBoxSampleTime->setVisible(true);
+        ui->label_sampleTime->setVisible(true);
+        ui->label_percent->setVisible(false);
+        ui->spinBoxSampleTime->setMinimum(1);
+        ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
     }
 }
 //cursor spinbox interaction end

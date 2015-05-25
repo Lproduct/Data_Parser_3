@@ -5,6 +5,16 @@
 #include "overhauser.hpp"
 #include "reglin.h"
 
+//Id of math function
+#define AVERAGE_FILTER          0
+#define MEDIAN_FILTER           1
+#define FFT_FILTER              3
+#define POINT                   4
+#define SPLINE                  5
+#define DEL_BASE_LINE           6
+#define MOUVING_AVERAGE_FILTER  7
+#define MOUVING_MEDIAN_FILTER   8
+
 MathFunction::MathFunction(const QVector<QVector<double> > &tabData): m_tabData(tabData)
 {
 
@@ -64,7 +74,7 @@ QVector<QVector<double> > MathFunction::averageValueCurveNew(const int &nbTab, c
 
     if(startValue == -1 && endValue ==-1)
     {
-        QVector<QVector<double> >data(proceedMidFilter(nbTab, sampleTime, 0, m_tabData.at(0).size() -1));
+        QVector<QVector<double> >data(proceedAverageFilter(nbTab, sampleTime, 0, m_tabData.at(0).size() -1));
         xAxis = data.at(0);
         yAxis = data.at(1);
     }
@@ -73,12 +83,12 @@ QVector<QVector<double> > MathFunction::averageValueCurveNew(const int &nbTab, c
         long int startValueInd(returnIndOfValueAbs(startValue, sampleTime, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, sampleTime, 1));
 
-        QVector<QVector<double> > data(proceedMidFilter(nbTab, sampleTime, startValueInd, endValueInd));
+        QVector<QVector<double> > data(proceedAverageFilter(nbTab, sampleTime, startValueInd, endValueInd));
         xAxis = data.at(0);
         yAxis = data.at(1);
     }
 
-    return createTabReturn(0, xAxis, yAxis);
+    return createTabReturn(AVERAGE_FILTER, xAxis, yAxis);
 }
 
 QVector<QVector<double> > MathFunction::proceedAverageFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd)
@@ -103,6 +113,69 @@ QVector<QVector<double> > MathFunction::proceedAverageFilter(const int &nbTab, c
             sumAbs = 0;
             sumOrd = 0;
         }
+    }
+
+    tabDataReturn.push_back(absTab);
+    tabDataReturn.push_back(ordTab);
+
+    return tabDataReturn;
+}
+/*** Average Value Filter end ****/
+
+/*** Mouving Average Filter ****/
+QVector<QVector<double> > MathFunction::mouvingAverageValueCurve(const int &nbTab, const int &sampleTime , int startValue, int endValue)
+{
+    int sampleTimeModif(sampleTime);
+    if(sampleTime % 2 == 0)
+    {
+        sampleTimeModif++;
+    }
+
+    QVector<double> xAxis;
+    QVector<double> yAxis;
+
+    if(startValue == -1 && endValue ==-1)
+    {
+        QVector<QVector<double> >data(proceedMouvingAverageFilter(nbTab, sampleTimeModif, 0, m_tabData.at(nbTab).size() -1));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
+    }
+    else
+    {
+        long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
+        long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
+
+        QVector<QVector<double> > data(proceedMouvingAverageFilter(nbTab, sampleTimeModif, startValueInd, endValueInd));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
+    }
+
+    return createTabReturn(MOUVING_AVERAGE_FILTER, xAxis, yAxis);
+}
+
+QVector<QVector<double> > MathFunction::proceedMouvingAverageFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd)
+{
+    QVector<QVector<double> > tabDataReturn;
+
+    QVector<double> ordTab;
+
+    double sumOrd(0);
+    for(long int i(1 + startValueInd); i <= (endValueInd+1 - sampleTime); i++)
+    {
+        for (int j(0 + i); j< (sampleTime + i); j++)
+        {
+            sumOrd += m_tabData.at(nbTab).at(j-1);
+        }
+
+        ordTab.push_back(sumOrd/sampleTime);
+
+        sumOrd = 0;
+    }
+
+    QVector<double> absTab;
+    for (long int i(startValueInd + (int)((double)sampleTime/2)); i <= (endValueInd +1 - sampleTime); i++)
+    {
+        absTab.push_back(m_tabData.at(0).at(i));
     }
 
     tabDataReturn.push_back(absTab);
@@ -140,7 +213,7 @@ QVector<QVector<double> > MathFunction::middleValueCurveFilterNew(const int &nbT
         yAxis = data.at(1);
     }
 
-    return createTabReturn(1, xAxis, yAxis);
+    return createTabReturn(MEDIAN_FILTER, xAxis, yAxis);
 }
 
 QVector<QVector<double> > MathFunction::proceedMidFilter(const int &nbTab, const int &sampleTimeModif, const int &startValueInd, const int &endValueInd)
@@ -175,8 +248,74 @@ QVector<QVector<double> > MathFunction::proceedMidFilter(const int &nbTab, const
 
     return tabDataReturn;
 }
-
 /*** Middle Value Filter end ****/
+
+/*** Mouving Median Filter ****/
+QVector<QVector<double> > MathFunction::mouvingMedianValueCurve(const int &nbTab, const int &sampleTime , int startValue, int endValue)
+{
+    int sampleTimeModif(sampleTime);
+    if(sampleTime % 2 == 0)
+    {
+        sampleTimeModif++;
+    }
+
+    QVector<double> xAxis;
+    QVector<double> yAxis;
+
+    QVector<double> info(dataInfo());
+
+    if(startValue == -1 && endValue ==-1)
+    {
+        QVector<QVector<double> >data(proceedMouvingMedianFilter(nbTab, sampleTimeModif, 0, m_tabData.at(nbTab).size() -1));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
+    }
+    else
+    {
+        long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
+        long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
+
+        QVector<QVector<double> > data(proceedMouvingMedianFilter(nbTab, sampleTimeModif, startValueInd, endValueInd));
+        xAxis = data.at(0);
+        yAxis = data.at(1);
+    }
+
+    return createTabReturn(MOUVING_MEDIAN_FILTER, xAxis, yAxis);
+}
+
+QVector<QVector<double> > MathFunction::proceedMouvingMedianFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd)
+{
+    QVector<QVector<double> > tabDataReturn;
+
+    QVector<double> ordTab;
+
+    QVector<double> midOrd(0);
+    for(long int i(1 + startValueInd); i <= (endValueInd+1 - sampleTime); i++)
+    {
+        for (int j(0 + i); j< (sampleTime + i); j++)
+        {
+            midOrd.push_back(m_tabData.at(nbTab).at(j-1));
+        }
+
+        std::sort(midOrd.begin(), midOrd.end());
+
+        ordTab.push_back(midOrd.at(sampleTime/2));
+
+        midOrd.clear();
+    }
+
+    QVector<double> absTab;
+    for (long int i(startValueInd + (int)((double)sampleTime/2)); i <= (endValueInd +1 - sampleTime); i++)
+    {
+        absTab.push_back(m_tabData.at(0).at(i));
+    }
+
+    tabDataReturn.push_back(absTab);
+    tabDataReturn.push_back(ordTab);
+
+    return tabDataReturn;
+}
+/*** Mouving Median Filter end ****/
 
 /*** FFT Filter ****/
 QVector<QVector<double> > MathFunction::fftFilter(const int &nbTab, const int &percentFiltering, int startValue, int endValue)
@@ -202,7 +341,7 @@ QVector<QVector<double> > MathFunction::fftFilter(const int &nbTab, const int &p
     /******** Clean Tab **********/
     endFFT();
 
-    return createTabReturn(3, xAxis, yAxis);
+    return createTabReturn(FFT_FILTER, xAxis, yAxis);
 }
 
 void MathFunction::createTabData(const int &nbTab, int startValue, int endValue)
@@ -410,7 +549,7 @@ QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const Q
     tabPoint.push_back(tabPointKey);
     tabPoint.push_back(tabPointData);
 
-    return createTabReturn(4, tabPoint.at(0), tabPoint.at(1));
+    return createTabReturn(POINT, tabPoint.at(0), tabPoint.at(1));
 }
 
 QVector<QVector<double> > MathFunction::regLine(QVector<QVector<double> > tabData)
@@ -512,7 +651,7 @@ QVector<QVector<double> > MathFunction::generateSpline(QVector<QVector<double> >
 
     tabReturn = fftFilteringSpline(tabSpline, 0);
 
-    return createTabReturn(5, tabReturn.at(0), tabReturn.at(1));
+    return createTabReturn(SPLINE, tabReturn.at(0), tabReturn.at(1));
 }
 
 void MathFunction::addPoint(const QVector<QVector<double> > &pointTab, CRSpline *spline)
@@ -650,9 +789,8 @@ QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QV
         tabDelBaseLine.push_back(data.at(i) - tabDataSplineFilter.at(i));
     }
 
-    return createTabReturn(6, key, tabDelBaseLine);
+    return createTabReturn(DEL_BASE_LINE, key, tabDelBaseLine);
 }
-
 /*** del base line end***/
 
 /*** General function ****/
