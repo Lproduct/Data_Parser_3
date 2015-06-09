@@ -536,38 +536,11 @@ QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const Q
         tabPointKey.push_back(regLineTabZ2.at(0).at(i));
     }
 
-    //test
-    /*QVector<QVector<double> > tabDataTest;
-    QVector<double> xData;
-    xData.push_back(-1);
-    xData.push_back(-0);
-    xData.push_back(1);
-    xData.push_back(2);
-    xData.push_back(3);
-    xData.push_back(5);
-    xData.push_back(7);
-    xData.push_back(9);
-
-    QVector<double> yData;
-    yData.push_back(-1);
-    yData.push_back(3);
-    yData.push_back(2.5);
-    yData.push_back(5);
-    yData.push_back(4);
-    yData.push_back(2);
-    yData.push_back(5);
-    yData.push_back(4);
-
-    tabDataTest.push_back(xData);
-    tabDataTest.push_back(yData);
-
-    regPoly(tabDataTest, 4);*/
-    //test end
     QVector<QVector<double> > tabDataZone;
     tabDataZone.push_back(tabPointKey);
     tabDataZone.push_back(tabPointData);
 
-    tabPoint = regPoly(tabDataZone, 3);
+    tabPoint = regPoly(tabDataZone, m_polyOrder);
 
     return createTabReturn(POINT, tabPoint.at(0), tabPoint.at(1));
 }
@@ -781,6 +754,31 @@ QVector<QVector<double> > MathFunction::tabReturSplineFFT(QVector<QVector<double
 
 QVector<QVector<double> > MathFunction::regPoly(const QVector<QVector<double> > &tabData, const int &nOrder)
 {
+    m_regFactor.clear();
+
+    //Generate a matrix of regression
+    QVector<QVector<double> > M;
+    M = matrixReg(tabData, nOrder);
+
+    //Solve the matrix and return factor for the polynomial function
+    m_regFactor = gaussPivot(M);
+
+    //Create a tab of value with the factor
+    QVector<QVector<double> > tabReg;
+    tabReg = createRegTab(tabData.at(0), m_regFactor);
+
+    //Calculate the corelation coefficient
+    double rSquare;
+    rSquare = coeffReg(tabData, m_regFactor);
+    QVector<double> rSquareTab;
+    rSquareTab.push_back(rSquare);
+    tabReg.push_back(rSquareTab);
+
+    return tabReg;
+}
+
+QVector<QVector<double> > MathFunction::matrixReg(const QVector<QVector<double> > &tabData, const int &nOrder)
+{
     QVector<double> xData(tabData.at(0));
     QVector<double> yData(tabData.at(1));
 
@@ -810,24 +808,17 @@ QVector<QVector<double> > MathFunction::regPoly(const QVector<QVector<double> > 
         V.push_back(sum);
     }
 
-    QVector<double> factor;
-    factor = gaussPivot(M, V);
+    for (int i(0); i< M.size(); i++)
+    {
+        M[i].push_back(V.at(i));
+    }
 
-    QVector<QVector<double> > tabReturn;
-
-    tabReturn = createRegTab(xData, factor);
-
-    return tabReturn;
+    return M;
 }
 
-QVector<double> MathFunction::gaussPivot(QVector<QVector<double> > tabM, QVector<double> tabV)
+QVector<double> MathFunction::gaussPivot(QVector<QVector<double> > tabM)
 {    
     int n = tabM.size();
-
-    for (int i(0); i<n; i++)
-    {
-        tabM[i].push_back(tabV.at(i));
-    }
 
     for (int i(0); i<n; i++)
     {
@@ -914,6 +905,63 @@ QVector<QVector<double> > MathFunction::createRegTab(const QVector<double> &xTab
     return tabReturn;
 }
 
+double MathFunction::coeffReg(const QVector<QVector<double> > &tabData, const QVector<double> &factorReg)
+{
+    m_rSquare = 0;
+    //Create a Regression Table
+    QVector<double> f;
+    for (int i(0); i<tabData.at(0).size(); i++)
+    {
+        double sum(0);
+        for (int j(0); j<factorReg.size(); j++)
+        {
+            sum += factorReg.at(j) * qPow(tabData.at(0).at(i), j);
+        }
+        f.push_back(sum);
+    }
+
+    QVector<double> y(tabData.at(1));
+
+    double yBar(0);
+    for(int i(0); i<y.size(); i++)
+    {
+        yBar += y.at(i);
+    }
+    yBar = yBar/y.size();
+
+    double SSres;
+    for (int i(0); i<y.size(); i++)
+    {
+        SSres += qPow(y.at(i) - f.at(i), 2);
+    }
+
+    double SStot;
+    for (int i(0); i<y.size(); i++)
+    {
+        SStot += qPow(y.at(i) - yBar, 2);
+    }
+
+    double rSquare;
+    rSquare = 1-(SSres/SStot);
+
+    m_rSquare = rSquare;
+    return rSquare;
+}
+
+QVector<double> MathFunction::getRegFactor()
+{
+    return m_regFactor;
+}
+
+double MathFunction::getRegCC()
+{
+    return m_rSquare;
+}
+
+void MathFunction::setPolyOrder(const int &order)
+{
+    m_polyOrder = order;
+}
 /*** Spline Function end***/
 
 /*** Del base line Function ***/

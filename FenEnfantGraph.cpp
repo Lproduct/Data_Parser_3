@@ -111,8 +111,10 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->doubleSpinBoxCursorSpline2Y->setEnabled(false);
     ui->doubleSpinBoxCursorSpline2Y2->setEnabled(false);
 
-    ui->pushButtonGenerateBaseLine->setEnabled(false);
     ui->pushButtonDelBaseLine->setEnabled(false);
+
+    ui->textEditPolyOrder->setEnabled(false);
+    ui->textEditPolyOrder->setReadOnly(true);
 
     connect(ui->checkBoxBaseLineEnable, SIGNAL(stateChanged(int)), this, SLOT(interpolationInteraction(int)));
     connect(ui->checkBoxBaseLineEnable,SIGNAL(stateChanged(int)), this, SLOT(cursorMangementInterpol(int)));
@@ -149,7 +151,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
 
         //generate point interaction
-    connect(ui->pushButtonGenerateBaseLine, SIGNAL(clicked()), this, SLOT(generateInterpolation()));
+    connect(ui->pushButtonDelBaseLine, SIGNAL(clicked()), this, SLOT(generateInterpolation()));
     connect(ui->pushButtonDelBaseLine, SIGNAL(clicked()), this, SLOT(delBaseLine()));
 }
 
@@ -1918,8 +1920,9 @@ void FenEnfantGraph::interpolationInteraction(const int &state)
         ui->doubleSpinBoxCursorSpline2Y->setEnabled(true);
         ui->doubleSpinBoxCursorSpline2Y2->setEnabled(true);
 
-        ui->pushButtonGenerateBaseLine->setEnabled(true);
         ui->pushButtonDelBaseLine->setEnabled(true);
+
+        ui->textEditPolyOrder->setEnabled(true);
 
         ui->comboBoxInterpolCurve->setEnabled(true);
     }
@@ -1946,8 +1949,9 @@ void FenEnfantGraph::interpolationInteraction(const int &state)
         ui->doubleSpinBoxCursorSpline2Y->setEnabled(false);
         ui->doubleSpinBoxCursorSpline2Y2->setEnabled(false);
 
-        ui->pushButtonGenerateBaseLine->setEnabled(false);
         ui->pushButtonDelBaseLine->setEnabled(false);
+
+        ui->textEditPolyOrder->setEnabled(false);
 
         ui->comboBoxInterpolCurve->setEnabled(false);
     }
@@ -2489,12 +2493,8 @@ void FenEnfantGraph::generateInterpolation()
     dataReturn.push_back(valueZ2Up);    //6
     dataReturn.push_back(valueZ2Down);  //7
 
+    mathMethod->setPolyOrder(3);
     m_tabReg = mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
-    displayMathFunctionCurve(m_tabReg);
-    /*QVector<QVector<double> > tabSpline(mathMethod->generateSpline(tabPoint));
-    m_tabSpline.clear();
-    m_tabSpline = tabSpline;
-    displayMathFunctionCurve(tabSpline);*/
 }
 
 void FenEnfantGraph::addItemToComboboxInterpol()
@@ -2516,7 +2516,77 @@ void FenEnfantGraph::destroyItemFromCombobox()
 
 void FenEnfantGraph::delBaseLine()
 {
+    ui->textEditPolyOrder->clear();
     displayMathFunctionCurve(mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], m_tabReg));
-}
+    QVector<double> regFactor(mathMethod->getRegFactor());
+    double cc(mathMethod->getRegCC());
 
+    QString text;
+    QString textCC;
+    QString textPoly;
+
+    if (regFactor.size() == 2)
+    {
+        textCC = tr("R^2 = %1 \n").arg(cc);
+        textPoly = tr("f(x) = %1x + %2 ").arg(regFactor.at(1))
+                                            .arg(regFactor.at(0));
+        text = textCC + textPoly;
+        ui->textEditPolyOrder->setText(text);
+    }
+    else if (regFactor.size() == 3)
+    {
+        textCC = tr("R^2 = %1 \n").arg(cc);
+        textPoly = tr("f(x) = %1x^2 + %2x + %3").arg(regFactor.at(2))
+                                                .arg(regFactor.at(1))
+                                                .arg(regFactor.at(0));
+        text = textCC + textPoly;
+        ui->textEditPolyOrder->setText(text);
+    }
+    else if (regFactor.size() == 4)
+    {
+        textCC = tr("R^2 = %1 \n").arg(cc);
+        textPoly = tr("f(x) = %1x^3 + %2x^2 + %3x + %4").arg(regFactor.at(3))
+                                                        .arg(regFactor.at(2))
+                                                        .arg(regFactor.at(1))
+                                                        .arg(regFactor.at(0));
+        text = textCC + textPoly;
+        ui->textEditPolyOrder->setText(text);
+    }
+    else if (regFactor.size() == 5)
+    {
+        textCC = tr("R^2 = %1 \n").arg(cc);
+        textPoly = textPoly = tr("f(x) = %1x^4 + %2x^3 + %3x^2 + %4x + %5").arg(regFactor.at(4))
+                                                                            .arg(regFactor.at(3))
+                                                                            .arg(regFactor.at(2))
+                                                                            .arg(regFactor.at(1))
+                                                                            .arg(regFactor.at(0));
+        text = textCC + textPoly;
+        ui->textEditPolyOrder->setText(text);
+    }
+    else if (regFactor.size() == 6)
+    {
+        textCC = tr("R^2 = %1 \n").arg(cc);
+        textPoly = textPoly = tr("f(x) = %1x^5 + %2x^4 + %3x^3 + %4x^2 + %5x + %6").arg(regFactor.at(5))
+                                                                            .arg(regFactor.at(4))
+                                                                            .arg(regFactor.at(3))
+                                                                            .arg(regFactor.at(2))
+                                                                            .arg(regFactor.at(1))
+                                                                            .arg(regFactor.at(0));
+        text = textCC + textPoly;
+        ui->textEditPolyOrder->setText(text);
+    }
+    else if (regFactor.size() == 7)
+    {
+        textCC = tr("R^2 = %1 \n").arg(cc);
+        textPoly = textPoly = tr("f(x) = %1x^6 + %2x^5 + %3x^4 + %4x^3 + %5x^2 + %6x + %7").arg(regFactor.at(6))
+                                                                            .arg(regFactor.at(5))
+                                                                            .arg(regFactor.at(4))
+                                                                            .arg(regFactor.at(3))
+                                                                            .arg(regFactor.at(2))
+                                                                            .arg(regFactor.at(1))
+                                                                            .arg(regFactor.at(0));
+        text = textCC + textPoly;
+        ui->textEditPolyOrder->setText(text);
+    }
+}
 //Del base line interaction end

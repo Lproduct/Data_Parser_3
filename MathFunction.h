@@ -20,6 +20,9 @@ public:
     QVector<QVector<double> > delBaseLine(const int &nbCurve, const QVector<QVector<double> > &tabReg);
     QVector<QVector<double> > mouvingAverageValueCurve(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
     QVector<QVector<double> > mouvingMedianValueCurve(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
+    QVector<double> getRegFactor();
+    void setPolyOrder(const int &order);
+    double getRegCC();
 
 private:
     /*** Average Value Filter ****/
@@ -57,8 +60,10 @@ private:
     double calculateOrdonnee(QVector<QVector<double> > tabData);
     double calculateCorr(QVector<QVector<double> > tabData);
     QVector<QVector<double> > regPoly(const QVector<QVector<double> > &tabData, const int &nOrder);
-    QVector<double> gaussPivot(QVector<QVector<double> > tabM, QVector<double> tabV);
+    QVector<QVector<double> > matrixReg(const QVector<QVector<double> > &tabData, const int &nOrder);
+    QVector<double> gaussPivot(QVector<QVector<double> > tabM);
     QVector<QVector<double> > createRegTab(const QVector<double> &xTab, const QVector<double> factorReg);
+    double coeffReg(const QVector<QVector<double> > &tabData, const QVector<double> &factorReg);
     /*** Reg Line end ***/
 
     /*** Mouving Average filter ***/
@@ -73,6 +78,9 @@ private:
     QVector<QVector<double> > m_tabPoint;
     QVector<double> m_dataFFT;
     QVector<double> m_testFFT;
+    int m_polyOrder;
+    QVector<double> m_regFactor;
+    double m_rSquare;
 };
 
 #endif // MATHFUNCTION_H
