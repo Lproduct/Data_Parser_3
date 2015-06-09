@@ -525,29 +525,49 @@ QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const Q
     QVector<QVector<double> > tabPoint;
     QVector<double> tabPointData;
     QVector<double> tabPointKey;
-    /*for (long int i(0); i< dataZone1.size(); i++)
+    for (long int i(0); i< dataZone1.size(); i++)
     {
-        tabPointdata.push_back(regLineTabZ1.at(1).at(i));
+        tabPointData.push_back(regLineTabZ1.at(1).at(i));
         tabPointKey.push_back(regLineTabZ1.at(0).at(i));
     }
     for (long int i(0); i< dataZone2.size(); i++)
     {
-        tabPointdata.push_back(regLineTabZ2.at(1).at(i));
+        tabPointData.push_back(regLineTabZ2.at(1).at(i));
         tabPointKey.push_back(regLineTabZ2.at(0).at(i));
-    }*/
+    }
 
-    tabPointData.push_back(regLineTabZ1.at(1).at(0));
-    tabPointData.push_back(regLineTabZ1.at(1).at(regLineTabZ1.at(1).size()-1));
-    tabPointKey.push_back(regLineTabZ1.at(0).at(0));
-    tabPointKey.push_back(regLineTabZ1.at(0).at(regLineTabZ1.at(0).size()-1));
+    //test
+    /*QVector<QVector<double> > tabDataTest;
+    QVector<double> xData;
+    xData.push_back(-1);
+    xData.push_back(-0);
+    xData.push_back(1);
+    xData.push_back(2);
+    xData.push_back(3);
+    xData.push_back(5);
+    xData.push_back(7);
+    xData.push_back(9);
 
-    tabPointData.push_back(regLineTabZ2.at(1).at(0));
-    tabPointData.push_back(regLineTabZ2.at(1).at(regLineTabZ2.at(1).size()-1));
-    tabPointKey.push_back(regLineTabZ2.at(0).at(0));
-    tabPointKey.push_back(regLineTabZ2.at(0).at(regLineTabZ2.at(1).size()-1));
+    QVector<double> yData;
+    yData.push_back(-1);
+    yData.push_back(3);
+    yData.push_back(2.5);
+    yData.push_back(5);
+    yData.push_back(4);
+    yData.push_back(2);
+    yData.push_back(5);
+    yData.push_back(4);
 
-    tabPoint.push_back(tabPointKey);
-    tabPoint.push_back(tabPointData);
+    tabDataTest.push_back(xData);
+    tabDataTest.push_back(yData);
+
+    regPoly(tabDataTest, 4);*/
+    //test end
+    QVector<QVector<double> > tabDataZone;
+    tabDataZone.push_back(tabPointKey);
+    tabDataZone.push_back(tabPointData);
+
+    tabPoint = regPoly(tabDataZone, 3);
 
     return createTabReturn(POINT, tabPoint.at(0), tabPoint.at(1));
 }
@@ -758,38 +778,160 @@ QVector<QVector<double> > MathFunction::tabReturSplineFFT(QVector<QVector<double
 
     return dataReturn;
 }
-/*** Spline Function end***/
 
-/*** Del base line Function ***/
-QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QVector<double> &tabData, const QVector<QVector<double> > &tabSpline)
+QVector<QVector<double> > MathFunction::regPoly(const QVector<QVector<double> > &tabData, const int &nOrder)
 {
-    long int startZone1(returnIndOfValueAbs(tabData.at(0),1,0));
-    long int endZone2(returnIndOfValueAbs(tabData.at(1),1,0));
+    QVector<double> xData(tabData.at(0));
+    QVector<double> yData(tabData.at(1));
 
-    QVector<double> data;
-    QVector<double> key;
-    for(long int i(startZone1); i < endZone2; i++)
-    {
-        data.push_back(m_tabData.at(nbCurve+1).at(i));
-        key.push_back(m_tabData.at(0).at(i));
-    }
+    QVector<QVector<double> > M(nOrder+1);
 
-    QVector<double> tabDataSplineFilter;
-    for (long int i(0); i< tabSpline.at(0).size(); i++)
+    for (int c(0); c <=nOrder; c++)
     {
-        if (i % (int) (tabSpline.at(0).size()/key.size()) == 0)
+        for (int r(0); r <=nOrder; r++)
         {
-            tabDataSplineFilter.push_back(tabSpline.at(1).at(i));
+            double sum(0);
+            for(int k(0); k < xData.size(); k++)
+            {
+                sum += qPow(xData.at(k), r+c);
+            }
+            M[c].push_back(sum);
         }
     }
 
-    QVector<double> tabDelBaseLine;
-    for (long int i(0); i < data.size(); i++)
+    QVector<double> V;
+    for (int r(0); r<=nOrder; r++)
     {
-        tabDelBaseLine.push_back(data.at(i) - tabDataSplineFilter.at(i));
+        double sum(0);
+        for(int k(0); k < xData.size(); k++)
+        {
+            sum += qPow(xData.at(k), r) * yData.at(k);
+        }
+        V.push_back(sum);
     }
 
-    return createTabReturn(DEL_BASE_LINE, key, tabDelBaseLine);
+    QVector<double> factor;
+    factor = gaussPivot(M, V);
+
+    QVector<QVector<double> > tabReturn;
+
+    tabReturn = createRegTab(xData, factor);
+
+    return tabReturn;
+}
+
+QVector<double> MathFunction::gaussPivot(QVector<QVector<double> > tabM, QVector<double> tabV)
+{    
+    int n = tabM.size();
+
+    for (int i(0); i<n; i++)
+    {
+        tabM[i].push_back(tabV.at(i));
+    }
+
+    for (int i(0); i<n; i++)
+    {
+        // Search for maximum in this column
+        double maxEl = abs(tabM.at(i).at(i));
+        int maxRow(i);
+        for (int k(i+1); k<n; k++)
+        {
+            if (abs(tabM.at(k).at(i)) > maxEl)
+            {
+                maxEl = abs(tabM.at(k).at(i));
+                maxRow = k;
+            }
+        }
+
+        // Swap maximum row with current row (column by column)
+        for (int k(i); k<n+1; k++)
+        {
+            double tmp(tabM[maxRow][k]);
+            tabM[maxRow][k] = tabM[i][k];
+            tabM[i][k] = tmp;
+        }
+
+
+        // Make all rows below this one 0 in current column
+        for (int k=i+1; k<n; k++)
+        {
+            double c(-tabM.at(k).at(i)/tabM.at(i).at(i));
+            for (int j=i; j<n+1; j++)
+            {
+                if (i==j)
+                {
+                    tabM[k][j] = 0;
+
+                }
+                else
+                {
+                    tabM[k][j] += c * tabM.at(i).at(j);
+                }
+            }
+        }
+    }
+
+    // Solve equation Ax=b for an upper triangular matrix A
+    QVector<double> x(n);
+    for (int i(n-1); i>=0; i--)
+    {
+        x[i] = tabM[i][n]/tabM[i][i];
+        for (int k(i-1); k>=0; k--)
+        {
+            tabM[k][n] -= tabM[k][i] * x[i];
+        }
+    }
+    return x;
+}
+
+QVector<QVector<double> > MathFunction::createRegTab(const QVector<double> &xTab, const QVector<double> factorReg)
+{
+    long int startInd(returnIndOfValueAbs(xTab.at(0),1,0));
+    long int endInd(returnIndOfValueAbs(xTab.at(xTab.size()-1),1,0));
+
+    // create a tab of xData between start of the first cursor zone and the last cursor of zone 2
+    QVector<double> xAxis;
+    for (int i(startInd); i<=endInd; i++)
+    {
+        xAxis.push_back(m_tabData.at(0).at(i));
+    }
+
+    QVector<double> yAxis;
+    for (int i(0); i<xAxis.size(); i++)
+    {
+        double sum(0);
+        for (int j(0); j<factorReg.size(); j++)
+        {
+            sum += factorReg.at(j) * qPow(xAxis.at(i), j);
+        }
+        yAxis.push_back(sum);
+    }
+
+    QVector<QVector<double> > tabReturn;
+    tabReturn.push_back(xAxis);
+    tabReturn.push_back(yAxis);
+
+    return tabReturn;
+}
+
+/*** Spline Function end***/
+
+/*** Del base line Function ***/
+QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QVector<QVector<double> > &tabReg)
+{    
+    long int startReg(returnIndOfValueAbs(tabReg.at(0).at(0),1,0));
+    long int endReg(returnIndOfValueAbs(tabReg.at(0).at(tabReg.at(0).size()-1),1,0));
+
+    QVector<double> xAxis;
+    QVector<double> yAxis;
+
+    for (int i(startReg); i< endReg; i++)
+    {
+        xAxis.push_back(m_tabData.at(0).at(i));
+        yAxis.push_back(m_tabData.at(nbCurve+1).at(i) - tabReg.at(1).at(i - startReg));
+    }
+
+    return createTabReturn(DEL_BASE_LINE, xAxis, yAxis);
 }
 /*** del base line end***/
 

@@ -2489,12 +2489,12 @@ void FenEnfantGraph::generateInterpolation()
     dataReturn.push_back(valueZ2Up);    //6
     dataReturn.push_back(valueZ2Down);  //7
 
-    QVector<QVector<double> > tabPoint(mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn));
-    displayMathFunctionCurve(tabPoint);
-    QVector<QVector<double> > tabSpline(mathMethod->generateSpline(tabPoint));
+    m_tabReg = mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
+    displayMathFunctionCurve(m_tabReg);
+    /*QVector<QVector<double> > tabSpline(mathMethod->generateSpline(tabPoint));
     m_tabSpline.clear();
     m_tabSpline = tabSpline;
-    displayMathFunctionCurve(tabSpline);
+    displayMathFunctionCurve(tabSpline);*/
 }
 
 void FenEnfantGraph::addItemToComboboxInterpol()
@@ -2516,14 +2516,7 @@ void FenEnfantGraph::destroyItemFromCombobox()
 
 void FenEnfantGraph::delBaseLine()
 {
-    double valueZ1Left(ui->doubleSpinBoxCursorSpline1X->value());
-    double valueZ2Right(ui->doubleSpinBoxCursorSpline2X2->value());
-
-    QVector<double> tabData;
-    tabData.push_back(valueZ1Left);
-    tabData.push_back(valueZ2Right);
-
-    displayMathFunctionCurve(mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], tabData, m_tabSpline));
+    displayMathFunctionCurve(mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], m_tabReg));
 }
 
 //Del base line interaction end

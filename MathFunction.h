@@ -17,7 +17,7 @@ public:
     QVector<QVector<double> > fftFilter(const int &nbTab, const int &percentFiltering, int startValue = -1, int endValue = -1);
     QVector<QVector<double> > generateSpline(QVector<QVector<double> > pointTab);
     QVector<QVector<double> > generatePoint(const int &nbCurve, const QVector<double> &tabInd);
-    QVector<QVector<double> > delBaseLine(const int &nbCurve, const QVector<double> &tabData, const QVector<QVector<double> > &tabSpline);
+    QVector<QVector<double> > delBaseLine(const int &nbCurve, const QVector<QVector<double> > &tabReg);
     QVector<QVector<double> > mouvingAverageValueCurve(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
     QVector<QVector<double> > mouvingMedianValueCurve(const int &nbTab, const int &sampleTime , int startValue = -1, int endValue = -1);
 
@@ -56,6 +56,9 @@ private:
     double calculatePente(QVector<QVector<double> > tabData);
     double calculateOrdonnee(QVector<QVector<double> > tabData);
     double calculateCorr(QVector<QVector<double> > tabData);
+    QVector<QVector<double> > regPoly(const QVector<QVector<double> > &tabData, const int &nOrder);
+    QVector<double> gaussPivot(QVector<QVector<double> > tabM, QVector<double> tabV);
+    QVector<QVector<double> > createRegTab(const QVector<double> &xTab, const QVector<double> factorReg);
     /*** Reg Line end ***/
 
     /*** Mouving Average filter ***/
