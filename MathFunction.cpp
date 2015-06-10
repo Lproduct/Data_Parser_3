@@ -484,7 +484,7 @@ void MathFunction::endFFT()
 }
 /*** FFT Filter end ****/
 
-/*** Spline Function ***/
+/*** Reg & Interpol Function ***/
 QVector<QVector<double> > MathFunction::generatePoint(const int &nbCurve,const QVector<double> &tabInd)
 {
     //extract data from tabData
@@ -962,7 +962,29 @@ void MathFunction::setPolyOrder(const int &order)
 {
     m_polyOrder = order;
 }
-/*** Spline Function end***/
+/*** Reg & Interpol Function end***/
+
+/*** Baricenter Function ***/
+double MathFunction::baricenterCurve(const QVector<QVector<double> > &tabData)
+{
+    double num(0);
+    for (int i(0); i<tabData.at(0).size(); i++)
+    {
+        num += tabData.at(0).at(i) * tabData.at(1).at(i);
+    }
+
+    double den;
+    for (int i(0); i<tabData.at(0).size(); i++)
+    {
+        den += tabData.at(1).at(i);
+    }
+
+    double T;
+    T = num/den;
+
+    return T;
+}
+/*** Baricenter Function end***/
 
 /*** Del base line Function ***/
 QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QVector<QVector<double> > &tabReg)

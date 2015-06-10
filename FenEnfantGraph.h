@@ -83,7 +83,6 @@ public slots:
     void linkCursor2Z2X(const double &value);
     void linkCursor1Z2Y(const double &value);
     void linkCursor2Z2Y(const double &value);
-    void generateInterpolation();
     void delBaseLine();
 
 
@@ -141,7 +140,6 @@ private:
     QPen penCursor;
     QPen penCursorInterpolZ1;
     QPen penCursorInterpolZ2;
-    QVector<QVector<double> > m_tabReg;
 };
 
 #endif // FENENFANTGRAPH_H

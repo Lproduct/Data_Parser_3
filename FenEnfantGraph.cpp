@@ -150,8 +150,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->doubleSpinBoxCursorSpline2Y, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
     connect(ui->doubleSpinBoxCursorSpline2Y2, SIGNAL(valueChanged(double)), signalMapperCursorH, SLOT(map()));
 
-        //generate point interaction
-    connect(ui->pushButtonDelBaseLine, SIGNAL(clicked()), this, SLOT(generateInterpolation()));
+        //Regression interaction
     connect(ui->pushButtonDelBaseLine, SIGNAL(clicked()), this, SLOT(delBaseLine()));
 }
 
@@ -2470,7 +2469,26 @@ void FenEnfantGraph::linkCursor2Z2Y(const double &value)
 }
 
 //Generate interpolation
-void FenEnfantGraph::generateInterpolation()
+
+
+void FenEnfantGraph::addItemToComboboxInterpol()
+{
+    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    {
+        QString nameCurve(it->first);
+        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+        {
+            ui->comboBoxInterpolCurve->addItem(nameCurve);
+        }
+    }
+}
+
+void FenEnfantGraph::destroyItemFromCombobox()
+{
+    ui->comboBoxInterpolCurve->clear();
+}
+
+void FenEnfantGraph::delBaseLine()
 {
     QVector<double> dataReturn;
     double valueZ1Left(ui->doubleSpinBoxCursorSpline1X->value());
@@ -2494,98 +2512,111 @@ void FenEnfantGraph::generateInterpolation()
     dataReturn.push_back(valueZ2Down);  //7
 
     mathMethod->setPolyOrder(3);
-    m_tabReg = mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
-}
+    QVector<QVector<double> > tabReg;
+    tabReg = mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
 
-void FenEnfantGraph::addItemToComboboxInterpol()
-{
-    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
-    {
-        QString nameCurve(it->first);
-        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
-        {
-            ui->comboBoxInterpolCurve->addItem(nameCurve);
-        }
-    }
-}
+    QVector<QVector<double> > tabDelBaseLine;
+    tabDelBaseLine = mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], tabReg);
+    displayMathFunctionCurve(tabDelBaseLine);
 
-void FenEnfantGraph::destroyItemFromCombobox()
-{
-    ui->comboBoxInterpolCurve->clear();
-}
-
-void FenEnfantGraph::delBaseLine()
-{
-    ui->textEditPolyOrder->clear();
-    displayMathFunctionCurve(mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], m_tabReg));
+    //Get regression factor
     QVector<double> regFactor(mathMethod->getRegFactor());
+
+    //Get corelation coefficient
     double cc(mathMethod->getRegCC());
 
-    QString text;
+    //Get baricenter value
+    double baricenter(mathMethod->baricenterCurve(tabDelBaseLine));
+
+    //Get text doc text
+    QString textDoc(ui->textEditPolyOrder->toPlainText());
+    QString text(textDoc);
+
+    QString textCurve;
     QString textCC;
+    QString textBar;
     QString textPoly;
+    QString textSpacer;
 
     if (regFactor.size() == 2)
     {
+        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
         textCC = tr("R^2 = %1 \n").arg(cc);
-        textPoly = tr("f(x) = %1x + %2 ").arg(regFactor.at(1))
+        textBar = tr("Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n\n");
+        textPoly = tr("f(x) = %1x + %2 \n").arg(regFactor.at(1))
                                             .arg(regFactor.at(0));
-        text = textCC + textPoly;
+        text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 3)
     {
+        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
         textCC = tr("R^2 = %1 \n").arg(cc);
-        textPoly = tr("f(x) = %1x^2 + %2x + %3").arg(regFactor.at(2))
-                                                .arg(regFactor.at(1))
-                                                .arg(regFactor.at(0));
-        text = textCC + textPoly;
+        textBar = tr("Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n\n");
+        textPoly = tr("f(x) = %1x^2 + %2x + %3\n").arg(regFactor.at(2))
+                                                    .arg(regFactor.at(1))
+                                                    .arg(regFactor.at(0));
+        text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 4)
     {
+        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
         textCC = tr("R^2 = %1 \n").arg(cc);
-        textPoly = tr("f(x) = %1x^3 + %2x^2 + %3x + %4").arg(regFactor.at(3))
-                                                        .arg(regFactor.at(2))
-                                                        .arg(regFactor.at(1))
-                                                        .arg(regFactor.at(0));
-        text = textCC + textPoly;
+        textBar = tr("Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n\n");
+        textPoly = tr("f(x) = %1x^3 + %2x^2 + %3x + %4\n").arg(regFactor.at(3))
+                                                            .arg(regFactor.at(2))
+                                                            .arg(regFactor.at(1))
+                                                            .arg(regFactor.at(0));
+        text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 5)
     {
+        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
         textCC = tr("R^2 = %1 \n").arg(cc);
-        textPoly = textPoly = tr("f(x) = %1x^4 + %2x^3 + %3x^2 + %4x + %5").arg(regFactor.at(4))
-                                                                            .arg(regFactor.at(3))
-                                                                            .arg(regFactor.at(2))
-                                                                            .arg(regFactor.at(1))
-                                                                            .arg(regFactor.at(0));
-        text = textCC + textPoly;
+        textBar = tr("Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n\n");
+        textPoly = textPoly = tr("f(x) = %1x^4 + %2x^3 + %3x^2 + %4x + %5\n").arg(regFactor.at(4))
+                                                                                .arg(regFactor.at(3))
+                                                                                .arg(regFactor.at(2))
+                                                                                .arg(regFactor.at(1))
+                                                                                .arg(regFactor.at(0));
+        text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 6)
     {
+        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
         textCC = tr("R^2 = %1 \n").arg(cc);
-        textPoly = textPoly = tr("f(x) = %1x^5 + %2x^4 + %3x^3 + %4x^2 + %5x + %6").arg(regFactor.at(5))
-                                                                            .arg(regFactor.at(4))
-                                                                            .arg(regFactor.at(3))
-                                                                            .arg(regFactor.at(2))
-                                                                            .arg(regFactor.at(1))
-                                                                            .arg(regFactor.at(0));
-        text = textCC + textPoly;
+        textBar = tr("Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n\n");
+        textPoly = textPoly = tr("f(x) = %1x^5 + %2x^4 + %3x^3 + %4x^2 + %5x + %6\n").arg(regFactor.at(5))
+                                                                                        .arg(regFactor.at(4))
+                                                                                        .arg(regFactor.at(3))
+                                                                                        .arg(regFactor.at(2))
+                                                                                        .arg(regFactor.at(1))
+                                                                                        .arg(regFactor.at(0));
+        text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 7)
     {
+        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
         textCC = tr("R^2 = %1 \n").arg(cc);
-        textPoly = textPoly = tr("f(x) = %1x^6 + %2x^5 + %3x^4 + %4x^3 + %5x^2 + %6x + %7").arg(regFactor.at(6))
-                                                                            .arg(regFactor.at(5))
-                                                                            .arg(regFactor.at(4))
-                                                                            .arg(regFactor.at(3))
-                                                                            .arg(regFactor.at(2))
-                                                                            .arg(regFactor.at(1))
-                                                                            .arg(regFactor.at(0));
-        text = textCC + textPoly;
+        textBar = tr("Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n\n");
+        textPoly = textPoly = tr("f(x) = %1x^6 + %2x^5 + %3x^4 + %4x^3 + %5x^2 + %6x + %7\n").arg(regFactor.at(6))
+                                                                                                .arg(regFactor.at(5))
+                                                                                                .arg(regFactor.at(4))
+                                                                                                .arg(regFactor.at(3))
+                                                                                                .arg(regFactor.at(2))
+                                                                                                .arg(regFactor.at(1))
+                                                                                                .arg(regFactor.at(0));
+        text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
 }

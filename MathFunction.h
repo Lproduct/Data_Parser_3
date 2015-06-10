@@ -23,6 +23,7 @@ public:
     QVector<double> getRegFactor();
     void setPolyOrder(const int &order);
     double getRegCC();
+    double baricenterCurve(const QVector<QVector<double> > &tabData);
 
 private:
     /*** Average Value Filter ****/
@@ -41,13 +42,13 @@ private:
     void endFFT();
     /*** FFT Function end ***/
 
-    /*** Spline Function ***/
+    /*** Reg & Interpol Function ***/
     void addPoint(const QVector<QVector<double> > &pointTab, CRSpline *spline);
     QVector<QVector<double> > generateSplineF(CRSpline *spline);
     QVector<QVector<double> > fftFilteringSpline(QVector<QVector<double> > tabSpline, const double &percentFFT);
     void createTabDataSpline(QVector<QVector<double> > tabSpline);
     QVector<QVector<double> > tabReturSplineFFT(QVector<QVector<double> > tabSpline, int mode);
-    /*** Spline Function end***/
+    /*** Reg & Interpol Function end***/
 
     /*** General Function ***/
     QVector<QVector<double> > createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab);
