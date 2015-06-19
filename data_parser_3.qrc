@@ -8,5 +8,9 @@
         <file>images/paste.png</file>
         <file>images/save.png</file>
         <file>images/link.png</file>
+        <file>images/advancedsettings.png</file>
+        <file>images/tabicon.png</file>
+        <file>images/charticon.png</file>
+        <file>images/crossicon.png</file>
     </qresource>
 </RCC>

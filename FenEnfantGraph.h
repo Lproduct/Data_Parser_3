@@ -39,6 +39,7 @@ public slots:
     void changeSelectedGraphThickness();
     void changeSelectedGraphScatter();
     void changeSelectedGraphStyle();
+    void changeSelectedGraphLineStyle();
     void changeColorBGB();
     void changeColorBGW();
     void axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part);
@@ -47,6 +48,7 @@ public slots:
     void exportGraphAsPng();
     void exportGraphAsPdf();
     void exportGraphAsJpeg();
+    void exportGraphData();
     void linkPngValueX(const int &value);
     void linkJpegValueX(const int &value);
     void linkPngValueY(const int &value);
@@ -84,6 +86,10 @@ public slots:
     void linkCursor1Z2Y(const double &value);
     void linkCursor2Z2Y(const double &value);
     void delBaseLine();
+    //tab Custom
+    void graphTabManagement();
+    void graphTabShow();
+    void graphTabActualisation(QVector<QVector<double> > data);
 
 
 private:
@@ -93,6 +99,8 @@ private:
     void setGraphParameter();
     void defineAxis(const QStringList &header);
     void setTabCurve(const QString &nameCurve);
+    QColor randomColor(const QString &colorType);
+    QString strippedName(const QString &fullFileName);
     //new Cursor
     void createCursorNew();
     void createCursorNewConnection();
@@ -122,9 +130,7 @@ private:
     void addItemToComboboxInterpol();
     void destroyItemFromCombobox();
 
-    MathFunction *mathMethod;
-    QColor randomColor(const QString &colorType);
-    QString strippedName(const QString &fullFileName);
+
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;
     QSignalMapper *signalMapper;
@@ -140,6 +146,8 @@ private:
     QPen penCursor;
     QPen penCursorInterpolZ1;
     QPen penCursorInterpolZ2;
+    MathFunction *mathMethod;
+    QStringList m_fileInfo;
 };
 
 #endif // FENENFANTGRAPH_H

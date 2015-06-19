@@ -52,7 +52,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabWidgetPage1">
       <attribute name="title">
@@ -64,7 +64,7 @@
          <x>10</x>
          <y>0</y>
          <width>219</width>
-         <height>371</height>
+         <height>383</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -260,12 +260,19 @@
           </item>
          </layout>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxTimeAbsis">
+          <property name="text">
+           <string>Time Absis</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
      <widget class="QWidget" name="tabWidgetPage2">
       <attribute name="title">
-       <string>Courbe</string>
+       <string>Curve</string>
       </attribute>
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <property name="geometry">
@@ -332,7 +339,7 @@
         <item>
          <widget class="QLabel" name="label_8">
           <property name="text">
-           <string>Courbes :</string>
+           <string>Curve management :</string>
           </property>
          </widget>
         </item>
@@ -383,7 +390,7 @@
         <item>
          <widget class="QCheckBox" name="checkBoxCurseurNew">
           <property name="text">
-           <string>New curseurs</string>
+           <string>Create cursors</string>
           </property>
          </widget>
         </item>
@@ -392,14 +399,14 @@
           <item>
            <widget class="QLabel" name="label_26">
             <property name="text">
-             <string>Curseur 1</string>
+             <string>Cursor 1</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_27">
             <property name="text">
-             <string>curseur 2</string>
+             <string>cursor 2</string>
             </property>
            </widget>
           </item>
@@ -448,7 +455,7 @@
         <item>
          <widget class="QLabel" name="label_15">
           <property name="text">
-           <string>Création de courbe:</string>
+           <string>Create curve:</string>
           </property>
          </widget>
         </item>
@@ -463,7 +470,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Opération :</string>
+             <string>Operation :</string>
             </property>
            </widget>
           </item>
@@ -476,7 +483,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Echantillonnage :</string>
+             <string>Sampling Time :</string>
             </property>
            </widget>
           </item>
@@ -534,7 +541,7 @@
         <item>
          <widget class="QLabel" name="label_12">
           <property name="text">
-           <string>Courbe :</string>
+           <string>Curve :</string>
           </property>
          </widget>
         </item>
@@ -551,14 +558,242 @@
         <item>
          <widget class="QCheckBox" name="checkBoxDrawBetweenCursor">
           <property name="text">
-           <string>Tracer entre les curseurs</string>
+           <string>Draw between cursor</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButtoncreateCurve">
           <property name="text">
-           <string>Créer</string>
+           <string>Proceed</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tabWidgetPage5">
+      <attribute name="title">
+       <string>Custom Curve</string>
+      </attribute>
+      <widget class="QWidget" name="verticalLayoutWidget_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>231</width>
+         <height>491</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_43">
+          <property name="text">
+           <string>Opration :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_18">
+          <item>
+           <widget class="QComboBox" name="comboBoxAddCurve1"/>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBoxAddCurvOpration">
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string>+</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>-</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>/</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBoxAddCurve2"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_12">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_42">
+          <property name="text">
+           <string>Custom Curve:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="maximumSize">
+                 <size>
+                  <width>40</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Gain:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="spinBoxCustomGain">
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_19">
+              <item>
+               <widget class="QLabel" name="label_10">
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Offset X:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBoxCustomOffset">
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="minimum">
+                 <number>-1000000</number>
+                </property>
+                <property name="maximum">
+                 <number>1000000</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_20">
+              <item>
+               <widget class="QLabel" name="label_45">
+                <property name="maximumSize">
+                 <size>
+                  <width>40</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Offset Y:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="spinBoxCustomOffsetY">
+                <property name="maximumSize">
+                 <size>
+                  <width>60</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item alignment="Qt::AlignHCenter">
+             <widget class="QPushButton" name="pushButtonCustomCurve">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Proceed</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_13">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_44">
+          <property name="text">
+           <string>Manualy change cuve data:</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignHCenter">
+         <widget class="QPushButton" name="pushButtonTabCustom">
+          <property name="minimumSize">
+           <size>
+            <width>30</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>30</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normalon>:/images/advancedsettings.png</normalon>
+           </iconset>
           </property>
          </widget>
         </item>
@@ -570,42 +805,46 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <widget class="QLabel" name="label_46">
+          <property name="text">
+           <string>Decay compensation</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_22">
           <item>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="label_47">
             <property name="text">
-             <string>Gain:</string>
+             <string>Half time (T1/2)</string>
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Offset:</string>
-            </property>
-           </widget>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBoxDecayCorrection"/>
           </item>
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <layout class="QHBoxLayout" name="horizontalLayout_29">
           <item>
-           <widget class="QDoubleSpinBox" name="spinBoxCustomGain"/>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QLabel" name="label_48">
+              <property name="text">
+               <string>Curve :</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBox"/>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButtonCustomCurve">
+           <widget class="QPushButton" name="pushButton">
             <property name="text">
-             <string>Custom</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBoxCustomOffset">
-            <property name="minimum">
-             <number>-1000000</number>
-            </property>
-            <property name="maximum">
-             <number>1000000</number>
+             <string>Proceed</string>
             </property>
            </widget>
           </item>
@@ -619,11 +858,17 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBoxTimeAbsis">
-          <property name="text">
-           <string>Time Absis</string>
+         <spacer name="verticalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-         </widget>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>
@@ -961,9 +1206,34 @@
          </layout>
         </item>
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_21">
+          <item>
+           <widget class="QCheckBox" name="checkBoxZeroNegativePoint">
+            <property name="text">
+             <string>Negative point to zéro</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBoxSBLNorm">
+            <property name="text">
+             <string>Normalised</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushButtonDelBaseLine">
           <property name="text">
-           <string>Sub Base Line</string>
+           <string>Proceed</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_36">
+          <property name="text">
+           <string>Info :</string>
           </property>
          </widget>
         </item>
@@ -1011,9 +1281,9 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>50</y>
+         <y>10</y>
          <width>231</width>
-         <height>337</height>
+         <height>368</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -1239,6 +1509,20 @@
          <widget class="QPushButton" name="pushButtonSaveAsJpeg">
           <property name="text">
            <string>Save as Jpeg</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_37">
+          <property name="text">
+           <string>Save active graph data</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonSaveGraph">
+          <property name="text">
+           <string>Save as Txt</string>
           </property>
          </widget>
         </item>

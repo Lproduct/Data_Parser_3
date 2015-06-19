@@ -13,7 +13,9 @@ SOURCES += \
     DataParser.cpp \
     MathFunction.cpp \
     overhauser.cpp \
-    reglin.cpp
+    reglin.cpp \
+    datasave.cpp \
+    tabdata.cpp
 
 HEADERS += \
     FenPrincipale.h \
@@ -25,12 +27,15 @@ HEADERS += \
     fftw-3.3.4-dll32/fftw3.h \
     overhauser.hpp \
     vec3.hpp \
-    reglin.h
+    reglin.h \
+    datasave.h \
+    tabdata.h
 
 RESOURCES += \
     data_parser_3.qrc
 
 FORMS += \
-    FenEnfantGraph.ui
+    FenEnfantGraph.ui \
+    tabdata.ui
 
 

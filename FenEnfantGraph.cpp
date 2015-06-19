@@ -2,12 +2,15 @@
 #include "MathFunction.h"
 #include "ui_FenEnfantGraph.h"
 #include <algorithm>
+#include "datasave.h"
+#include "tabdata.h"
 
 FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FenEnfantGraph)
 {
     ui->setupUi(this);
+    this->setWindowIcon(QIcon(":/images/charticon.png"));
 
     ui->customPlot->replot();
 
@@ -152,6 +155,14 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
         //Regression interaction
     connect(ui->pushButtonDelBaseLine, SIGNAL(clicked()), this, SLOT(delBaseLine()));
+
+    //Export data
+    connect(ui->pushButtonSaveGraph, SIGNAL(clicked()), this, SLOT(exportGraphData()));
+
+    //tab Custom interaction
+    ui->pushButtonTabCustom->setEnabled(false);
+    connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(graphTabManagement()));
+    connect(ui->pushButtonTabCustom, SIGNAL(clicked()), this, SLOT(graphTabShow()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -170,6 +181,7 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
     setGraph(header, tab);
 
     mathMethod = new MathFunction(tab);
+    m_fileInfo = fileInfo;
 
     defineAxis(header);
 
@@ -269,6 +281,7 @@ void FenEnfantGraph::contextMenuRequest(QPoint pos)
           contextMenu->addAction("Change curve thickness", this, SLOT(changeSelectedGraphThickness()));
           contextMenu->addAction("Change curve scatter", this, SLOT(changeSelectedGraphScatter()));
           contextMenu->addAction("Change curve style", this, SLOT(changeSelectedGraphStyle()));
+          contextMenu->addAction("Change curve line style", this, SLOT(changeSelectedGraphLineStyle()));
         }
         else
         {
@@ -467,6 +480,10 @@ void FenEnfantGraph::changeSelectedGraphScatter()
     {
         ui->customPlot->selectedGraphs().first()->setScatterStyle(QCPScatterStyle::ssDisc);
     }
+    else
+    {
+        ui->customPlot->selectedGraphs().first()->setScatterStyle(ui->customPlot->selectedGraphs().first()->scatterStyle());
+    }
 
     ui->customPlot->selectedGraphs().first()->setPen(newPen);
     ui->customPlot->replot();
@@ -513,8 +530,69 @@ void FenEnfantGraph::changeSelectedGraphStyle()
     {
         newPen.setStyle(Qt::DashDotDotLine);
     }
+    else
+    {
+        newPen.setStyle(pen.style());
+    }
 
     ui->customPlot->selectedGraphs().first()->setPen(newPen);
+    ui->customPlot->replot();
+}
+
+void FenEnfantGraph::changeSelectedGraphLineStyle()
+{
+    QPen newPen;
+
+    QPen pen(ui->customPlot->selectedGraphs().first()->pen());
+    newPen.setColor(pen.color());
+    newPen.setWidth(pen.width());
+    newPen.setWidth(pen.style());
+
+    QStringList item;
+    item.push_back("lsNone");
+    item.push_back("lsLine");
+    item.push_back("lsStepLeft");
+    item.push_back("lsStepRight");
+    item.push_back("lsStepCenter");
+    item.push_back("lsImpulse");
+    QString newItem = QInputDialog::getItem(this, "Data Parser", "New curve line style:",item, 0, false);
+
+    if (newItem == "lsNone")
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(QCPGraph::lsNone);
+    }
+    else if (newItem == "lsLine")
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(QCPGraph::lsLine);
+    }
+    else if (newItem == "lsStepLeft")
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(QCPGraph::lsStepLeft);
+    }
+    else if (newItem == "lsStepRight")
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(QCPGraph::lsStepRight);
+    }
+    else if (newItem == "lsStepCenter")
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(QCPGraph::lsStepCenter);
+    }
+    else if (newItem == "lsImpulse")
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(QCPGraph::lsImpulse);
+    }
+    else
+    {
+        ui->customPlot->selectedGraphs().first()->setPen(newPen);
+        ui->customPlot->selectedGraphs().first()->setLineStyle(ui->customPlot->selectedGraphs().first()->lineStyle());
+    }
+
     ui->customPlot->replot();
 }
 
@@ -2468,9 +2546,7 @@ void FenEnfantGraph::linkCursor2Z2Y(const double &value)
     }
 }
 
-//Generate interpolation
-
-
+//Del base line
 void FenEnfantGraph::addItemToComboboxInterpol()
 {
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
@@ -2540,22 +2616,26 @@ void FenEnfantGraph::delBaseLine()
 
     if (regFactor.size() == 2)
     {
-        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
-        textCC = tr("R^2 = %1 \n").arg(cc);
-        textBar = tr("Bar = %1 \n").arg(baricenter);
-        textSpacer = tr("\n\n");
-        textPoly = tr("f(x) = %1x + %2 \n").arg(regFactor.at(1))
+        textCurve = tr("Curve: %1 DBL: %2 -> %3 \n").arg(ui->comboBoxInterpolCurve->currentText())
+                                                    .arg(tabDelBaseLine.at(0).at(0))
+                                                    .arg(tabDelBaseLine.at(0).at(tabDelBaseLine.at(0).size()-1));
+        textCC = tr(" -> R^2 = %1 \n").arg(cc);
+        textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n");
+        textPoly = tr("Base Line : \n -> f(x) = %1x + %2 \n").arg(regFactor.at(1))
                                             .arg(regFactor.at(0));
         text += textCurve + textPoly + textCC + textBar + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 3)
     {
-        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
-        textCC = tr("R^2 = %1 \n").arg(cc);
-        textBar = tr("Bar = %1 \n").arg(baricenter);
-        textSpacer = tr("\n\n");
-        textPoly = tr("f(x) = %1x^2 + %2x + %3\n").arg(regFactor.at(2))
+        textCurve = tr("Curve: %1 DBL: %2 -> %3 \n").arg(ui->comboBoxInterpolCurve->currentText())
+                                                    .arg(tabDelBaseLine.at(0).at(0))
+                                                    .arg(tabDelBaseLine.at(0).at(tabDelBaseLine.at(0).size()-1));
+        textCC = tr(" -> R^2 = %1 \n").arg(cc);
+        textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n");
+        textPoly = tr("Base Line : \n -> f(x) = %1x^2 + %2x + %3\n").arg(regFactor.at(2))
                                                     .arg(regFactor.at(1))
                                                     .arg(regFactor.at(0));
         text += textCurve + textPoly + textCC + textBar + textSpacer;
@@ -2563,11 +2643,13 @@ void FenEnfantGraph::delBaseLine()
     }
     else if (regFactor.size() == 4)
     {
-        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
-        textCC = tr("R^2 = %1 \n").arg(cc);
-        textBar = tr("Bar = %1 \n").arg(baricenter);
-        textSpacer = tr("\n\n");
-        textPoly = tr("f(x) = %1x^3 + %2x^2 + %3x + %4\n").arg(regFactor.at(3))
+        textCurve = tr("Curve: %1 DBL: %2 -> %3 \n").arg(ui->comboBoxInterpolCurve->currentText())
+                                                    .arg(tabDelBaseLine.at(0).at(0))
+                                                    .arg(tabDelBaseLine.at(0).at(tabDelBaseLine.at(0).size()-1));
+        textCC = tr(" -> R^2 = %1 \n").arg(cc);
+        textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n");
+        textPoly = tr("Base Line : \n -> f(x) = %1x^3 + %2x^2 + %3x + %4\n").arg(regFactor.at(3))
                                                             .arg(regFactor.at(2))
                                                             .arg(regFactor.at(1))
                                                             .arg(regFactor.at(0));
@@ -2576,11 +2658,13 @@ void FenEnfantGraph::delBaseLine()
     }
     else if (regFactor.size() == 5)
     {
-        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
-        textCC = tr("R^2 = %1 \n").arg(cc);
-        textBar = tr("Bar = %1 \n").arg(baricenter);
-        textSpacer = tr("\n\n");
-        textPoly = textPoly = tr("f(x) = %1x^4 + %2x^3 + %3x^2 + %4x + %5\n").arg(regFactor.at(4))
+        textCurve = tr("Curve: %1 DBL: %2 -> %3 \n").arg(ui->comboBoxInterpolCurve->currentText())
+                                                    .arg(tabDelBaseLine.at(0).at(0))
+                                                    .arg(tabDelBaseLine.at(0).at(tabDelBaseLine.at(0).size()-1));
+        textCC = tr(" -> R^2 = %1 \n").arg(cc);
+        textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n");
+        textPoly = textPoly = tr("Base Line : \n -> f(x) = %1x^4 + %2x^3 + %3x^2 + %4x + %5\n").arg(regFactor.at(4))
                                                                                 .arg(regFactor.at(3))
                                                                                 .arg(regFactor.at(2))
                                                                                 .arg(regFactor.at(1))
@@ -2590,11 +2674,13 @@ void FenEnfantGraph::delBaseLine()
     }
     else if (regFactor.size() == 6)
     {
-        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
-        textCC = tr("R^2 = %1 \n").arg(cc);
-        textBar = tr("Bar = %1 \n").arg(baricenter);
-        textSpacer = tr("\n\n");
-        textPoly = textPoly = tr("f(x) = %1x^5 + %2x^4 + %3x^3 + %4x^2 + %5x + %6\n").arg(regFactor.at(5))
+        textCurve = tr("Curve: %1 DBL: %2 -> %3 \n").arg(ui->comboBoxInterpolCurve->currentText())
+                                                    .arg(tabDelBaseLine.at(0).at(0))
+                                                    .arg(tabDelBaseLine.at(0).at(tabDelBaseLine.at(0).size()-1));
+        textCC = tr(" -> R^2 = %1 \n").arg(cc);
+        textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n");
+        textPoly = textPoly = tr("Base Line : \n -> f(x) = %1x^5 + %2x^4 + %3x^3 + %4x^2 + %5x + %6\n").arg(regFactor.at(5))
                                                                                         .arg(regFactor.at(4))
                                                                                         .arg(regFactor.at(3))
                                                                                         .arg(regFactor.at(2))
@@ -2605,11 +2691,13 @@ void FenEnfantGraph::delBaseLine()
     }
     else if (regFactor.size() == 7)
     {
-        textCurve = tr("Curve: %1 \n").arg(ui->comboBoxInterpolCurve->currentText());
-        textCC = tr("R^2 = %1 \n").arg(cc);
-        textBar = tr("Bar = %1 \n").arg(baricenter);
-        textSpacer = tr("\n\n");
-        textPoly = textPoly = tr("f(x) = %1x^6 + %2x^5 + %3x^4 + %4x^3 + %5x^2 + %6x + %7\n").arg(regFactor.at(6))
+        textCurve = tr("Curve: %1 DBL: %2 -> %3 \n").arg(ui->comboBoxInterpolCurve->currentText())
+                                                    .arg(tabDelBaseLine.at(0).at(0))
+                                                    .arg(tabDelBaseLine.at(0).at(tabDelBaseLine.at(0).size()-1));
+        textCC = tr(" -> R^2 = %1 \n").arg(cc);
+        textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
+        textSpacer = tr("\n");
+        textPoly = textPoly = tr("Base Line : \n -> f(x) = %1x^6 + %2x^5 + %3x^4 + %4x^3 + %5x^2 + %6x + %7\n").arg(regFactor.at(6))
                                                                                                 .arg(regFactor.at(5))
                                                                                                 .arg(regFactor.at(4))
                                                                                                 .arg(regFactor.at(3))
@@ -2621,3 +2709,78 @@ void FenEnfantGraph::delBaseLine()
     }
 }
 //Del base line interaction end
+
+//Export Data
+void FenEnfantGraph::exportGraphData()
+{
+    QString outputDir = QFileDialog::getSaveFileName(this, "Enregistrer un fichier", QString(), "Texte (*.txt)");
+    QFile file(outputDir);
+
+    if (!file.open(QIODevice::WriteOnly|QFile::WriteOnly))
+          {
+              QMessageBox::warning(0,"Could not create Project File",
+                                         QObject::tr( "\n Could not create Project File on disk"));
+          }
+
+    QVector<QVector<QCPData> > graphData;
+    QVector<QString> graphName;
+    for (int i(0); i< ui->customPlot->graphCount(); i++)
+    {
+        if (ui->customPlot->graph(i)->visible() == true
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1 H"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1 H"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2 H"
+                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2 H"
+                && ui->customPlot->graph(i)->name() != "cursorNew 1"
+                && ui->customPlot->graph(i)->name() != "cursorNew 2")
+        {
+            //put curve name into a tab
+            QString name(ui->customPlot->graph(i)->name());
+            graphName.push_back(name);
+
+            //put cruve data into a tab
+            QVector<QCPData> valueList(ui->customPlot->graph(i)->data()->values().toVector());
+            graphData.push_back(valueList);
+        }
+    }
+
+    QVector<double> keyRange;
+    keyRange = ui->customPlot->graph(0)->data()->keys().toVector();
+
+    DataSave *datasave = new DataSave;
+    datasave->savedata(outputDir, graphName, m_fileInfo, graphData, keyRange);
+}
+//Export Data end
+
+//tab Custom
+void FenEnfantGraph::graphTabManagement()
+{
+    if (ui->customPlot->selectedGraphs().size() >0 )
+    {
+        ui->pushButtonTabCustom->setEnabled(true);
+    }
+    else
+    {
+        ui->pushButtonTabCustom->setEnabled(false);
+    }
+}
+
+void FenEnfantGraph::graphTabShow()
+{
+    TabData *tab = new TabData;
+    tab->setInfo(ui->customPlot->selectedGraphs().first()->name());
+    tab->setData(ui->customPlot->selectedGraphs().first()->data()->values().toVector());
+    tab->show();
+    connect(tab, SIGNAL(emitData(QVector<QVector<double> >)), this, SLOT(graphTabActualisation(QVector<QVector<double> >)));
+}
+
+void FenEnfantGraph::graphTabActualisation(QVector<QVector<double> > data)
+{
+    ui->customPlot->selectedGraphs().first()->setData(data.at(0), data.at(1));
+    ui->customPlot->replot();
+}
+//tab Custom end
