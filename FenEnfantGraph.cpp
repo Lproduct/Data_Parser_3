@@ -32,8 +32,13 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     //NewCursor end
 
     //Tab curve list
+        //connect checkbox to method for displaying curve
     signalMapper = new QSignalMapper(this);
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(curveDisplay(int)));
+
+        //connect push button to method for remove curve
+    signalMapperTabDelCurve = new QSignalMapper(this);
+    connect(signalMapperTabDelCurve, SIGNAL(mapped(int)), this, SLOT(delCurve(int)));
 
     //Zoom manager
     connect(ui->checkBoxZoomV, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
@@ -1255,16 +1260,57 @@ void FenEnfantGraph::keyReleaseEvent(QKeyEvent *event)
 void FenEnfantGraph::setTabCurve(const QString &nameCurve)
 {
     //Create a list of curve name that can be checked
-    ui->table->setColumnCount(1);
+    ui->table->setColumnCount(2);
     int nbRow(ui->table->rowCount());
     ui->table->setRowCount(nbRow+1);
+    ui->table->setColumnWidth(0, 205);
+    ui->table->setColumnWidth(1, 25);
 
+    //create check box for curve display
     QCheckBox *checkCurve = new QCheckBox;
     checkCurve->setChecked(true);
     checkCurve->setText(nameCurve);
+
+    QTableWidgetItem *item = new QTableWidgetItem("",QTableWidgetItem::Type);
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    item->setFlags(Qt::NoItemFlags);
+    ui->table->setItem( nbRow, 1, item);
+
+    //Put the check button in the tab
     ui->table->setCellWidget(nbRow, 0, checkCurve);
+
+    //put every signal from checkbox in a signal mapper
     connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(checkCurve, nbRow);
+}
+
+void FenEnfantGraph::setTabCurveMathFunction(const QString &nameCurve)
+{
+    //Create a list of curve name that can be checked
+    int nbRow(ui->table->rowCount());
+    ui->table->setRowCount(nbRow+1);
+
+    //create check box for curve display
+    QCheckBox *checkCurve = new QCheckBox;
+    checkCurve->setChecked(true);
+    checkCurve->setText(nameCurve);
+
+    //Create push button for curve delete
+    QPushButton *delPushButton = new QPushButton;
+    delPushButton->setIcon(QIcon(":/images/crossicon.png"));
+    delPushButton->setFlat(true);
+
+    //Put the two button in the tab
+    ui->table->setCellWidget(nbRow, 0, checkCurve);
+    ui->table->setCellWidget(nbRow, 1, delPushButton);
+
+    //put every signal from checkbox in a signal mapper
+    connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(checkCurve, nbRow);
+
+    //put every signal push button in a signal mapper
+    connect(delPushButton, SIGNAL(clicked()), signalMapperTabDelCurve, SLOT(map()));
+    signalMapperTabDelCurve->setMapping(delPushButton, nbRow);
 }
     //SLOT
 void FenEnfantGraph::curveDisplay(const int &nbCurve)
@@ -1284,6 +1330,89 @@ void FenEnfantGraph::curveDisplay(const int &nbCurve)
         ui->customPlot->replot();
     }
 }
+
+void FenEnfantGraph::delCurve(const int &nbCurve)
+{
+    int nbGraph(ui->customPlot->graphCount());
+
+    QVector<QString> graphName;
+    QVector<QVector<QCPData> > graphData;
+
+    if (nbCurve == nbGraph-1)
+    {
+        ui->customPlot->removeGraph(nbCurve);
+        ui->table->removeRow(nbCurve);
+    }
+    else
+    {
+        //Copy value and name of graph with higher index than grah to delete
+        for (int i(nbCurve + 1); i<nbGraph; i++)
+        {
+            graphName.push_back(ui->customPlot->graph(i)->name());
+            graphData.push_back(ui->customPlot->graph(i)->data()->values().toVector());
+        }
+
+        //convert QVector<QVector<QCPData> > in QVector<QVector<QVector<double> > >
+        QVector<QVector<QVector<double> > > graphDataVect(convertGraphDataIntoVect(graphData));
+
+        //Delelete graph and other garph with higher index
+            //delete graph to delete row and row above
+            //Signal mapper management
+        for (int i(nbGraph -1); i>=nbCurve; i--)
+        {
+            ui->customPlot->removeGraph(i);
+            ui->table->removeRow(i);
+            signalMapper->removeMappings(signalMapper->mapping(i));
+            signalMapperTabDelCurve->removeMappings(signalMapperTabDelCurve->mapping(i));
+        }
+
+        nbGraph = ui->customPlot->graphCount();
+
+        //Create tab witch shouldn't be delete
+        for (int i(0); i<graphData.size(); i++)
+        {
+            ui->customPlot->addGraph();
+            ui->customPlot->graph(i + nbGraph -1)->setPen(QPen(randomColor("normal")));
+            ui->customPlot->graph(i + nbGraph -1)->setName(graphName.at(i));
+            ui->customPlot->graph(i + nbGraph -1)->setData(graphDataVect.at(i).at(0), graphDataVect.at(i).at(1));
+            setTabCurveMathFunction(graphName.at(i));
+        }
+
+        //IndexGraph Management
+
+    }
+
+    ui->customPlot->replot();
+}
+
+QVector<QVector<QVector<double> > > FenEnfantGraph::convertGraphDataIntoVect(const QVector<QVector<QCPData> > &graphData)
+{
+    //convert QVector<QVector<QCPData> > in QVector<QVector<QVector<double> > >
+    QVector<QVector<QVector<double> > > graphDataVect;
+    QVector<QVector<double> > tab;
+    QVector<double> dataKey;
+    QVector<double> dataValue;
+
+    for (int i(0); i< graphData.size(); i++)
+    {
+        for (int j(0); j<graphData.at(i).size(); j++)
+        {
+            dataKey.push_back(graphData.at(i).at(j).key);
+            dataValue.push_back(graphData.at(i).at(j).value);
+        }
+        tab.push_back(dataKey);
+        tab.push_back(dataValue);
+
+        graphDataVect.push_back(tab);
+
+        tab.clear();
+        dataKey.clear();
+        dataValue.clear();
+    }
+
+    return graphDataVect;
+}
+
 //Tab Curve display end
 
 //Zoom manager
@@ -1323,7 +1452,6 @@ void FenEnfantGraph::ajustToscreen()
         ui->customPlot->replot();
     }
 }
-
 //Zoom manager end
 
 //Math curve display
@@ -1586,7 +1714,7 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
         ui->customPlot->graph(nbGraph)->setData(keysVector, valuesVector);
     }
 
-    setTabCurve(curveName(tab.at(2)));
+    setTabCurveMathFunction(curveName(tab.at(2)));
     indexGraph[curveName(tab.at(2))] = ui->customPlot->graphCount()-1;
 
     //if cursor previously exist set Cursor

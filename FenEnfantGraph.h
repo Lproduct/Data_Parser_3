@@ -27,6 +27,7 @@ public:
 public slots:
     //Tab curve
     void curveDisplay(const int &nbCurve);
+    void delCurve(const int &nbCurve);
     //Zoom management
     void zoom();
     void ajustToscreen();
@@ -99,6 +100,8 @@ private:
     void setGraphParameter();
     void defineAxis(const QStringList &header);
     void setTabCurve(const QString &nameCurve);
+    void setTabCurveMathFunction(const QString &nameCurve);
+    QVector<QVector<QVector<double> > > convertGraphDataIntoVect(const QVector<QVector<QCPData> > &graphData);
     QColor randomColor(const QString &colorType);
     QString strippedName(const QString &fullFileName);
     //new Cursor
@@ -134,6 +137,7 @@ private:
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;
     QSignalMapper *signalMapper;
+    QSignalMapper *signalMapperTabDelCurve;
     QSignalMapper *signalMapperCursorV;
     QSignalMapper *signalMapperCursorH;
     QString curFile;

@@ -278,9 +278,9 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>0</y>
+         <y>10</y>
          <width>233</width>
-         <height>540</height>
+         <height>491</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -347,8 +347,8 @@
          <widget class="QTableWidget" name="table">
           <property name="maximumSize">
            <size>
-            <width>200</width>
-            <height>200</height>
+            <width>250</width>
+            <height>150</height>
            </size>
           </property>
           <property name="autoScrollMargin">
@@ -752,6 +752,15 @@
               </property>
               <property name="text">
                <string>Proceed</string>
+              </property>
+              <property name="autoDefault">
+               <bool>false</bool>
+              </property>
+              <property name="default">
+               <bool>false</bool>
+              </property>
+              <property name="flat">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
