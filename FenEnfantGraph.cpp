@@ -1333,11 +1333,21 @@ void FenEnfantGraph::curveDisplay(const int &nbCurve)
 
 void FenEnfantGraph::delCurve(const int &nbCurve)
 {
+    //if cursor exist, Kill it
+    if(ui->checkBoxCurseurNew->checkState() == 2)
+    {
+        killCursorNew();
+    }
+
+    else if(ui->checkBoxBaseLineEnable->checkState() == 2)
+    {
+        killCursorInterpol();
+    }
+
+    //Check the number of curve
     int nbGraph(ui->customPlot->graphCount());
 
-    QVector<QString> graphName;
-    QVector<QVector<QCPData> > graphData;
-
+    //Stating the process of delete curve
     if (nbCurve == nbGraph-1)
     {
         ui->customPlot->removeGraph(nbCurve);
@@ -1345,25 +1355,31 @@ void FenEnfantGraph::delCurve(const int &nbCurve)
     }
     else
     {
-        //Copy value and name of graph with higher index than grah to delete
+        QVector<QString> graphName;
+        QVector<QVector<QCPData> > graphData;
+        QVector<QPen> graphPen;
+        QVector<QCPScatterStyle> graphScat;
+        QVector<QCPGraph::LineStyle> graphLS;
+
+        //Copy value, name, pen of graph with higher index than grah to delete
         for (int i(nbCurve + 1); i<nbGraph; i++)
         {
             graphName.push_back(ui->customPlot->graph(i)->name());
             graphData.push_back(ui->customPlot->graph(i)->data()->values().toVector());
+            graphPen.push_back(ui->customPlot->graph(i)->pen());
+            graphScat.push_back(ui->customPlot->graph(i)->scatterStyle());
+            graphLS.push_back(ui->customPlot->graph(i)->lineStyle());
         }
 
         //convert QVector<QVector<QCPData> > in QVector<QVector<QVector<double> > >
         QVector<QVector<QVector<double> > > graphDataVect(convertGraphDataIntoVect(graphData));
 
-        //Delelete graph and other garph with higher index
+        //Delelete graph and other graph with higher index
             //delete graph to delete row and row above
-            //Signal mapper management
         for (int i(nbGraph -1); i>=nbCurve; i--)
         {
             ui->customPlot->removeGraph(i);
             ui->table->removeRow(i);
-            signalMapper->removeMappings(signalMapper->mapping(i));
-            signalMapperTabDelCurve->removeMappings(signalMapperTabDelCurve->mapping(i));
         }
 
         nbGraph = ui->customPlot->graphCount();
@@ -1372,14 +1388,40 @@ void FenEnfantGraph::delCurve(const int &nbCurve)
         for (int i(0); i<graphData.size(); i++)
         {
             ui->customPlot->addGraph();
-            ui->customPlot->graph(i + nbGraph -1)->setPen(QPen(randomColor("normal")));
-            ui->customPlot->graph(i + nbGraph -1)->setName(graphName.at(i));
-            ui->customPlot->graph(i + nbGraph -1)->setData(graphDataVect.at(i).at(0), graphDataVect.at(i).at(1));
+            ui->customPlot->graph(i + nbGraph)->setPen(graphPen.at(i));
+            ui->customPlot->graph(i + nbGraph)->setScatterStyle(graphScat.at(i));
+            ui->customPlot->graph(i + nbGraph)->setLineStyle(graphLS.at(i));
+            ui->customPlot->graph(i + nbGraph)->setName(graphName.at(i));
+            ui->customPlot->graph(i + nbGraph)->setData(graphDataVect.at(i).at(0), graphDataVect.at(i).at(1));
             setTabCurveMathFunction(graphName.at(i));
         }
 
-        //IndexGraph Management
+        //IndexGraph update index graph
+        supressCurveFromIndex(nbCurve);
+    }
 
+    //if cursor previously exist set Cursor
+    if(ui->checkBoxCurseurNew->checkState() == 2)
+    {
+        setCursorVNew("cursorNew 1", ui->spinBoxCurseur1->value(), penCursor);
+        setCursorVNew("cursorNew 2", ui->spinBoxCurseur2->value(), penCursor);
+        createCursorNewConnection();
+    }
+
+    else if(ui->checkBoxBaseLineEnable->checkState() == 2)
+    {
+        //zone 1
+        setCursorV("cursorInterpol 1Z1", ui->doubleSpinBoxCursorSpline1X->value(), penCursorInterpolZ1);
+        setCursorV("cursorInterpol 2Z1", ui->doubleSpinBoxCursorSpline1X2->value(), penCursorInterpolZ1);
+        setCursorH("cursorInterpol 1Z1 H", ui->doubleSpinBoxCursorSpline1Y->value(), penCursorInterpolZ1);
+        setCursorH("cursorInterpol 2Z1 H", ui->doubleSpinBoxCursorSpline1Y2->value(), penCursorInterpolZ1);
+
+        //zone 2
+        setCursorV("cursorInterpol 1Z2", ui->doubleSpinBoxCursorSpline2X->value(), penCursorInterpolZ2);
+        setCursorV("cursorInterpol 2Z2", ui->doubleSpinBoxCursorSpline2X2->value(), penCursorInterpolZ2);
+        setCursorH("cursorInterpol 1Z2 H", ui->doubleSpinBoxCursorSpline2Y->value(), penCursorInterpolZ2);
+        setCursorH("cursorInterpol 2Z2 H", ui->doubleSpinBoxCursorSpline2Y2->value(), penCursorInterpolZ2);
+        createCursorInterpolConnection();
     }
 
     ui->customPlot->replot();
@@ -1413,6 +1455,27 @@ QVector<QVector<QVector<double> > > FenEnfantGraph::convertGraphDataIntoVect(con
     return graphDataVect;
 }
 
+void FenEnfantGraph::supressCurveFromIndex(const int &nbCurve)
+{
+        //remove graph from index
+    for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->second == nbCurve)
+        {
+            indexGraph.erase(it);
+            break;
+        }
+    }
+
+    //change index of graph with higher index
+    for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->second > nbCurve)
+        {
+            it->second --;
+        }
+    }
+}
 //Tab Curve display end
 
 //Zoom manager

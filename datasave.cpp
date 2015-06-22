@@ -90,7 +90,40 @@ QString DataSave::createGraphDataString(const QVector<QVector<QCPData> > &graphD
 {
     QString stringReturn;
 
+    QVector<QVector<QString> > tabString;
+    QVector<QString> tabShift(keyRange.size());
+    tabShift.fill("\t");
+    QVector<QString> tabLineFeed(keyRange.size());
+    tabLineFeed.fill("\r\n");
+
+    //Copy and convert to string data time value
+    QVector<QString> tabKey;
     for (int i(0); i<keyRange.size(); i++)
+    {
+        tabKey.push_back(QString::number(keyRange.at(i)));
+    }
+    tabString.push_back(tabKey);
+
+    for (int i(0); i<graphData.size(); i++)
+    {
+        QVector<QString> tabValue(keyRange.size());
+        tabValue.fill("0");
+        for (int j(0); j<keyRange.size(); j++)
+        {
+            if (graphData.at(i).at(j).key == keyRange.at(j))
+            {
+                tabValue[j] = QString::number(graphData.at(i).at(j).value);
+            }
+            else
+            {
+               tabValue[j] = "0";
+            }
+        }
+        tabString.push_back(tabValue);
+    }
+
+
+    /*for (int i(0); i<keyRange.size(); i++)
     {
         stringReturn += QString::number(keyRange.at(i));
         stringReturn += "\t";
@@ -112,7 +145,7 @@ QString DataSave::createGraphDataString(const QVector<QVector<QCPData> > &graphD
             {
                 if (j == graphData.size()-1)
                 {
-                    stringReturn += "";
+                    stringReturn += "0";
                 }
                 else
                 {
@@ -122,7 +155,7 @@ QString DataSave::createGraphDataString(const QVector<QVector<QCPData> > &graphD
         }
 
         stringReturn += "\r\n";
-    }
+    }*/
 
     return stringReturn;
 }

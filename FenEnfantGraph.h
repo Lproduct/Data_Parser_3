@@ -132,6 +132,7 @@ private:
     void sizeCursorH(const QString &name, QDoubleSpinBox *spinbox);
     void addItemToComboboxInterpol();
     void destroyItemFromCombobox();
+    void supressCurveFromIndex(const int &nbCurve);
 
 
     Ui::FenEnfantGraph *ui;

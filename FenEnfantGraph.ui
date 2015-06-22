@@ -1292,7 +1292,7 @@
          <x>10</x>
          <y>10</y>
          <width>231</width>
-         <height>368</height>
+         <height>391</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -1524,7 +1524,14 @@
         <item>
          <widget class="QLabel" name="label_37">
           <property name="text">
-           <string>Save active graph data</string>
+           <string>Save graph data</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxSaveDisplayGraph">
+          <property name="text">
+           <string>Displayed graph</string>
           </property>
          </widget>
         </item>
