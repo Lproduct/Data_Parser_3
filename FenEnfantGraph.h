@@ -94,7 +94,8 @@ public slots:
     //decay compensation
     void decayCompensationInteractionmanagement();
     void decayCompensation();
-
+    //operation on graph
+    void operationGraph();
 
 private:
     void setCurrentFile(const QString &fileName);
@@ -136,7 +137,7 @@ private:
     void addItemToComboboxInterpol();
     void destroyItemFromCombobox();
     void supressCurveFromIndex(const int &nbCurve);
-
+    void addItemToOpertoionCurve();
 
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;

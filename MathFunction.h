@@ -28,6 +28,7 @@ public:
     QVector<QVector<double> > zeroNegativePoint(QVector<QVector<double> > tabData);
     QVector<QVector<double> > delBaseLineNorm(QVector<QVector<double> > tabData);
     QVector<QVector<double> > decayCompensation(const QVector<double> &key, const QVector<QCPData> &value, const double &timeValue, const int &power, const QString &unit);
+    QVector<QVector<double> > opertionCurve(const QVector<double> &key, const QVector<QCPData> &curve1, const QVector<QCPData> &curve2, const QString &operation);
 
 private:
     /*** Average Value Filter ****/
@@ -57,6 +58,7 @@ private:
     /*** General Function ***/
     QVector<QVector<double> > createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab);
     long int returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type);
+    int returnIndexOfKey(const double &value, const QVector<double> &tabKey);
     /*** General Function end ***/
 
     /*** Reg Line ***/

@@ -210,6 +210,9 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->pushButtonDecayCorrection->setEnabled(false);
 
     connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(decayCompensationInteractionmanagement()));
+
+    //operation curve
+    connect(ui->pushButtonAddCurve, SIGNAL(clicked()), this, SLOT(operationGraph()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -294,6 +297,7 @@ void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<d
     }
     createCurveIntialisation();
     addItemToComboboxInterpol();
+    addItemToOpertoionCurve();
 }
 
 void FenEnfantGraph::defineAxis(const QStringList &header)
@@ -1334,16 +1338,21 @@ void FenEnfantGraph::setTabCurve(const QString &nameCurve)
     resizeButton->setMaximumHeight(25);
     resizeButton->setMinimumHeight(25);
 
-    //create an empty cell witch can't be seleted
-    QTableWidgetItem *item = new QTableWidgetItem("",QTableWidgetItem::Type);
+    //create a push button for clear customisation on curve
+    QPushButton *clearButton = new QPushButton;
+    clearButton->setIcon(QIcon(":/images/clear.png"));
+    clearButton->setFlat(true);
+    clearButton->setMaximumHeight(25);
+    clearButton->setMinimumHeight(25);
+    /*QTableWidgetItem *item = new QTableWidgetItem("",QTableWidgetItem::Type);
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-    item->setFlags(Qt::NoItemFlags);
+    item->setFlags(Qt::NoItemFlags);*/
 
     //Put the check button and resize button in the tab
     ui->table->setCellWidget(nbRow, 0, checkWidget);
     ui->table->setCellWidget(nbRow, 1, nameText);
     ui->table->setCellWidget(nbRow, 2, resizeButton);
-    ui->table->setItem( nbRow, 3, item);
+    ui->table->setCellWidget( nbRow, 3, clearButton);
 
     //put every signal from checkbox in a signal mapper
     connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
@@ -1742,6 +1751,24 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
                                                .arg(ui->spinBoxSampleTime->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
+        }
+    }
+
+    else if(opId == 9)
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("Operation_%1_%2_%3").arg(ui->comboBoxAddCurve1->currentText())
+                                        .arg((ui->comboBoxAddCurvOpration->currentText()))
+                                        .arg(ui->comboBoxAddCurve2->currentText());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("Operation_%1_%2_%3_%4->%5").arg(ui->comboBoxAddCurve1->currentText())
+                                            .arg((ui->comboBoxAddCurvOpration->currentText()))
+                                            .arg(ui->comboBoxAddCurve2->currentText())
+                                            .arg(ui->spinBoxCurseur1->value())
+                                            .arg(ui->spinBoxCurseur2->value());
         }
     }
 
@@ -3187,6 +3214,26 @@ void FenEnfantGraph::decayCompensation()
     ui->table->setCellWidget( nbGraph, 1, textTextEdit);
 
     ui->customPlot->replot();
-
 }
 //Decay compensation end
+
+//math opération on curve
+void FenEnfantGraph::addItemToOpertoionCurve()
+{
+    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    {
+        QString nameCurve(it->first);
+        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+        {
+            ui->comboBoxAddCurve1->addItem(nameCurve);
+            ui->comboBoxAddCurve2->addItem(nameCurve);
+        }
+    }
+}
+
+void FenEnfantGraph::operationGraph()
+{
+    displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(), ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(), ui->comboBoxAddCurvOpration->currentText()));
+    ui->customPlot->replot();
+}
+//math opération on curve end

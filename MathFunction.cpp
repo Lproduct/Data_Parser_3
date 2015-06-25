@@ -15,6 +15,7 @@
 #define DEL_BASE_LINE           6
 #define MOUVING_AVERAGE_FILTER  7
 #define MOUVING_MEDIAN_FILTER   8
+#define OPERATION_CURVE         9
 
 MathFunction::MathFunction(const QVector<QVector<double> > &tabData): m_tabData(tabData)
 {
@@ -1106,6 +1107,80 @@ double MathFunction::calculateHalfTime(const double &timeValue, const int &power
     return halfTime;
 }
 
+QVector<QVector<double> > MathFunction::opertionCurve(const QVector<double> &key, const QVector<QCPData> &curve1, const QVector<QCPData> &curve2, const QString &operation)
+{
+    //looking for a start value
+    int startValue(0);
+    if (curve1.at(0).key<=curve2.at(0).key)
+    {
+        startValue = returnIndexOfKey(curve2.at(0).key, key);
+    }
+    else if (curve1.at(0).key>curve2.at(0).key)
+    {
+        startValue = returnIndexOfKey(curve1.at(0).key, key);
+    }
+
+    //looking for an end value
+    int endValue(0);
+    if (curve1.at(curve1.size()-1).key<=curve2.at(curve2.size()-1).key)
+    {
+        endValue = returnIndexOfKey(curve2.at(curve2.size()-1).key, key);
+    }
+    else if (curve1.at(curve1.size()-1).key>curve2.at(curve2.size()-1).key)
+    {
+        endValue = returnIndexOfKey(curve1.at(curve1.size()-1).key, key);
+    }
+
+    QVector<double> keytab;
+    //create a tab key
+    for (int i(startValue); i<endValue; i++)
+    {
+        keytab.push_back(curve1.at(i).key);
+    }
+
+    //create curve 1 && curve 2
+    QVector<double> valueC1;
+    QVector<double> valueC2;
+    for (int i(startValue); i<endValue; i++)
+    {
+        valueC1.push_back(curve1.at(i).value);
+        valueC2.push_back(curve2.at(i).value);
+    }
+
+    //Proceed operation
+    QVector<double> newtab;
+    if (operation == "+")
+    {
+        for (int i(0); i< valueC1.size(); i++)
+        {
+            newtab.push_back( valueC1.at(i) + valueC2.at(i));
+        }
+    }
+    else if (operation == "-")
+    {
+        for (int i(0); i< valueC1.size(); i++)
+        {
+            newtab.push_back( valueC1.at(i) - valueC2.at(i));
+        }
+    }
+    else if (operation == "x")
+    {
+        for (int i(0); i< valueC1.size(); i++)
+        {
+            newtab.push_back( valueC1.at(i) * valueC2.at(i));
+        }
+    }
+    else if (operation == "/")
+    {
+        for (int i(0); i< valueC1.size(); i++)
+        {
+            newtab.push_back( valueC1.at(i) / valueC2.at(i));
+        }
+    }
+
+    return createTabReturn(OPERATION_CURVE, keytab, newtab);
+}
+
 /***  Math function other end ***/
 
 /*** General function ****/
@@ -1147,5 +1222,22 @@ QVector<QVector<double> > MathFunction::createTabReturn(const int &OpId, const Q
     dataReturn.push_back(tabOpId);
 
     return dataReturn;
+}
+
+int MathFunction::returnIndexOfKey(const double &value, const QVector<double> &tabKey)
+{
+    int ind(0);
+    for (int i(0); i<tabKey.size(); i++)
+    {
+        if (value == tabKey.at(i))
+        {
+            break;
+        }
+        else
+        {
+            ind++;
+        }
+    }
+    return ind;
 }
 /*** General function end ****/
