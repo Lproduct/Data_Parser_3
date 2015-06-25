@@ -28,9 +28,9 @@ public slots:
     //Tab curve
     void curveDisplay(const int &nbCurve);
     void delCurve(const int &nbCurve);
+    void resizeGraphCurve(const int &nbCurve);
     //Zoom management
     void zoom();
-    void ajustToscreen();
     //Math curve
     void createCurve();
     //graph skin
@@ -91,6 +91,9 @@ public slots:
     void graphTabManagement();
     void graphTabShow();
     void graphTabActualisation(QVector<QVector<double> > data);
+    //decay compensation
+    void decayCompensationInteractionmanagement();
+    void decayCompensation();
 
 
 private:
@@ -139,6 +142,7 @@ private:
     std::map<QString,int>  indexGraph;
     QSignalMapper *signalMapper;
     QSignalMapper *signalMapperTabDelCurve;
+    QSignalMapper *signalMapperTabResizeCurve;
     QSignalMapper *signalMapperCursorV;
     QSignalMapper *signalMapperCursorH;
     QString curFile;

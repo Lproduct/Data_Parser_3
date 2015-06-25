@@ -4,6 +4,7 @@
 #include "QtWidgets"
 #include <QtMath>
 #include "overhauser.hpp"
+#include "qcustomplot.h"
 
 class MathFunction
 {
@@ -24,6 +25,9 @@ public:
     void setPolyOrder(const int &order);
     double getRegCC();
     double baricenterCurve(const QVector<QVector<double> > &tabData);
+    QVector<QVector<double> > zeroNegativePoint(QVector<QVector<double> > tabData);
+    QVector<QVector<double> > delBaseLineNorm(QVector<QVector<double> > tabData);
+    QVector<QVector<double> > decayCompensation(const QVector<double> &key, const QVector<QCPData> &value, const double &timeValue, const int &power, const QString &unit);
 
 private:
     /*** Average Value Filter ****/
@@ -74,6 +78,10 @@ private:
     /*** Mouving Median Filter ****/
     QVector<QVector<double> > proceedMouvingMedianFilter(const int &nbTab, const int &sampleTime, const int &startValueInd, const int &endValueInd);
     /*** Mouving Median Filter end ****/
+
+    /*** Decay compensation function ****/
+    double calculateHalfTime(const double &timeValue, const int &power, const QString &unit);
+    /*** Decay compensation function end ****/
 
     QVector<QVector<double> > m_tabData;
     QVector<QVector<double> > m_tabPoint;

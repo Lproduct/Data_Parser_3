@@ -12,5 +12,7 @@
         <file>images/tabicon.png</file>
         <file>images/charticon.png</file>
         <file>images/crossicon.png</file>
+        <file>images/resize.png</file>
+        <file>images/clear.png</file>
     </qresource>
 </RCC>

@@ -4,6 +4,7 @@
 #include <QtMath>
 #include "overhauser.hpp"
 #include "reglin.h"
+#include "qcustomplot.h"
 
 //Id of math function
 #define AVERAGE_FILTER          0
@@ -1004,6 +1005,108 @@ QVector<QVector<double> > MathFunction::delBaseLine(const int &nbCurve, const QV
     return createTabReturn(DEL_BASE_LINE, xAxis, yAxis);
 }
 /*** del base line end***/
+
+/***  Math function other ***/
+QVector<QVector<double> > MathFunction::zeroNegativePoint(QVector<QVector<double> > tabData)
+{
+    QVector<QVector<double> > tabreturn;
+    for (int i(0); i<tabData.size(); i++)
+    {
+        for (int j(0); j<tabData.at(i).size(); j++)
+        {
+            if (tabData[i][j] < 0 )
+            {
+                tabData[i][j] = 0;
+            }
+        }
+    }
+    tabreturn = tabData;
+    return tabreturn;
+}
+
+QVector<QVector<double> > MathFunction::delBaseLineNorm(QVector<QVector<double> > tabData)
+{
+    //Calculate cuvre area
+    double area(0);
+    for(int i(0); i< tabData.at(0).size() -1; i++)
+    {
+        double absisSub(tabData.at(0).at(i+1)-tabData.at(0).at(i));
+        double ordSub(tabData.at(1).at(i) + tabData.at(1).at(i+1));
+        area += 0.5 * absisSub * ordSub;
+    }
+
+    QVector<QVector<double> > tabreturn;
+
+    for (int j(0); j<tabData.at(1).size(); j++)
+    {
+            tabData[1][j] /= area;
+    }
+
+    tabreturn = tabData;
+    return tabreturn;
+}
+
+QVector<QVector<double> > MathFunction::decayCompensation(const QVector<double> &key, const QVector<QCPData> &value, const double &timeValue, const int &power, const QString &unit)
+{
+    //firstly we parse half time information in second
+    double halfTime(calculateHalfTime(timeValue, power, unit));
+
+    //convert QCPData into vector tab value
+    QVector<QVector<double> > tabReturn;
+    QVector<double> tabValue;
+    for (int i(0); i<key.size(); i++)
+    {
+        tabValue.push_back(value.at(i).value);
+    }
+
+    //calculate the compensation of radioactive decay
+    for (int i(0); i<tabValue.size(); i++)
+    {
+        double factor(key.at(i)/halfTime);
+        tabValue[i] *= qPow(2, factor);
+    }
+
+    tabReturn.push_back(key);
+    tabReturn.push_back(tabValue);
+
+    return tabReturn;
+}
+
+double MathFunction::calculateHalfTime(const double &timeValue, const int &power, const QString &unit)
+{
+    double halfTime(0);
+    halfTime += timeValue;
+    halfTime *= qPow(10, power);
+
+    if (unit == "ms")
+    {
+        halfTime /= 1000;
+    }
+    else if (unit == "s")
+    {
+
+    }
+    else if (unit == "min")
+    {
+        halfTime *= 60;
+    }
+    else if (unit == "h")
+    {
+        halfTime *= 60*60;
+    }
+    else if (unit == "d")
+    {
+        halfTime *= 60*60*24;
+    }
+    else if (unit == "y")
+    {
+        halfTime *= 60*60*24*365.242199;
+    }
+
+    return halfTime;
+}
+
+/***  Math function other end ***/
 
 /*** General function ****/
 long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type)

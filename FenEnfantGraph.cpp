@@ -40,10 +40,13 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     signalMapperTabDelCurve = new QSignalMapper(this);
     connect(signalMapperTabDelCurve, SIGNAL(mapped(int)), this, SLOT(delCurve(int)));
 
+        //connect push button to method for resize curve
+    signalMapperTabResizeCurve = new QSignalMapper(this);
+    connect(signalMapperTabResizeCurve, SIGNAL(mapped(int)), this, SLOT(resizeGraphCurve(int)));
+
     //Zoom manager
     connect(ui->checkBoxZoomV, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
     connect(ui->checkBoxZoomH, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
-    connect(ui->pushButtonAjustToScreen, SIGNAL(clicked()), this, SLOT(ajustToscreen()));
 
     //Create Curve
     connect(ui->pushButtoncreateCurve, SIGNAL(clicked()), this,SLOT(createCurve()));
@@ -83,7 +86,23 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     //Custom curve
     ui->spinBoxCustomGain->setEnabled(false);
+    ui->spinBoxCustomGain->setMinimum(0);
+    ui->spinBoxCustomGain->setMaximum(1000000);
+    ui->spinBoxCustomGain->setValue(1);
+    ui->spinBoxCustomGain->setSingleStep(0.1);
+
     ui->spinBoxCustomOffset->setEnabled(false);
+    ui->spinBoxCustomOffset->setMinimum(-1000000);
+    ui->spinBoxCustomOffset->setMaximum(1000000);
+    ui->spinBoxCustomOffset->setValue(0);
+    ui->spinBoxCustomOffset->setSingleStep(0.1);
+
+    ui->spinBoxCustomOffsetY->setEnabled(false);
+    ui->spinBoxCustomOffsetY->setMinimum(-1000000);
+    ui->spinBoxCustomOffsetY->setMaximum(1000000);
+    ui->spinBoxCustomOffsetY->setValue(0);
+    ui->spinBoxCustomOffsetY->setSingleStep(0.1);
+
     ui->pushButtonCustomCurve->setEnabled(false);
     connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(customCurveManagement()));
 
@@ -123,6 +142,10 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     ui->textEditPolyOrder->setEnabled(false);
     ui->textEditPolyOrder->setReadOnly(true);
+
+    ui->checkBoxSBLNorm->setEnabled(false);
+
+    ui->checkBoxZeroNegativePoint->setEnabled(false);
 
     connect(ui->checkBoxBaseLineEnable, SIGNAL(stateChanged(int)), this, SLOT(interpolationInteraction(int)));
     connect(ui->checkBoxBaseLineEnable,SIGNAL(stateChanged(int)), this, SLOT(cursorMangementInterpol(int)));
@@ -168,6 +191,25 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->pushButtonTabCustom->setEnabled(false);
     connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(graphTabManagement()));
     connect(ui->pushButtonTabCustom, SIGNAL(clicked()), this, SLOT(graphTabShow()));
+
+    //Decay compensation
+    ui->doubleSpinBoxDecayCorrection->setEnabled(false);
+    ui->doubleSpinBoxDecayCorrection->setMinimum(-10);
+    ui->doubleSpinBoxDecayCorrection->setMaximum(10);
+    ui->doubleSpinBoxDecayCorrection->setValue(0);
+    ui->doubleSpinBoxDecayCorrection->setSingleStep(0.1);
+
+    ui->spinBoxPowerTimeDecay->setEnabled(false);
+    ui->spinBoxPowerTimeDecay->setMinimum(0);
+    ui->spinBoxPowerTimeDecay->setMaximum(99);
+    ui->spinBoxPowerTimeDecay->setValue(0);
+    ui->spinBoxPowerTimeDecay->setSingleStep(1);
+
+    ui->comboBoxDecayCorrection->setEnabled(false);
+
+    ui->pushButtonDecayCorrection->setEnabled(false);
+
+    connect(ui->customPlot, SIGNAL(selectionChangedByUser()), this, SLOT(decayCompensationInteractionmanagement()));
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -1259,29 +1301,57 @@ void FenEnfantGraph::keyReleaseEvent(QKeyEvent *event)
     //function
 void FenEnfantGraph::setTabCurve(const QString &nameCurve)
 {
-    //Create a list of curve name that can be checked
-    ui->table->setColumnCount(2);
+    //Initialise tab display parameter
+    ui->table->setColumnCount(4);
     int nbRow(ui->table->rowCount());
     ui->table->setRowCount(nbRow+1);
-    ui->table->setColumnWidth(0, 205);
-    ui->table->setColumnWidth(1, 25);
+    ui->table->setColumnWidth(0, 15);
+    ui->table->setColumnWidth(1, 165);
+    ui->table->setColumnWidth(2, 25);
+    ui->table->setColumnWidth(3, 25);
+    ui->table->setRowHeight(nbRow, 25);
 
     //create check box for curve display
     QCheckBox *checkCurve = new QCheckBox;
     checkCurve->setChecked(true);
-    checkCurve->setText(nameCurve);
+    QWidget *checkWidget = new QWidget();
+    QHBoxLayout *hcheckLayout = new QHBoxLayout(checkWidget);;
+    hcheckLayout->addWidget(checkCurve);
+    hcheckLayout->setAlignment(Qt::AlignTop);
+    hcheckLayout->setContentsMargins(1,5,0,0);
+    checkWidget->setLayout(hcheckLayout);
 
+    //create a plain text area
+    QTextEdit *nameText = new QTextEdit;
+    nameText->setText(nameCurve);
+    nameText->setReadOnly(true);
+    nameText->setFrameStyle(QFrame::NoFrame);
+
+    //create a push button to resize the graph to screen
+    QPushButton *resizeButton = new QPushButton;
+    resizeButton->setIcon(QIcon(":/images/resize.png"));
+    resizeButton->setFlat(true);
+    resizeButton->setMaximumHeight(25);
+    resizeButton->setMinimumHeight(25);
+
+    //create an empty cell witch can't be seleted
     QTableWidgetItem *item = new QTableWidgetItem("",QTableWidgetItem::Type);
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);
     item->setFlags(Qt::NoItemFlags);
-    ui->table->setItem( nbRow, 1, item);
 
-    //Put the check button in the tab
-    ui->table->setCellWidget(nbRow, 0, checkCurve);
+    //Put the check button and resize button in the tab
+    ui->table->setCellWidget(nbRow, 0, checkWidget);
+    ui->table->setCellWidget(nbRow, 1, nameText);
+    ui->table->setCellWidget(nbRow, 2, resizeButton);
+    ui->table->setItem( nbRow, 3, item);
 
     //put every signal from checkbox in a signal mapper
     connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(checkCurve, nbRow);
+
+    //put every signal from pushbutton resize in a signal mapper
+    connect(resizeButton, SIGNAL(clicked()), signalMapperTabResizeCurve, SLOT(map()));
+    signalMapperTabResizeCurve->setMapping(resizeButton, nbRow);
 }
 
 void FenEnfantGraph::setTabCurveMathFunction(const QString &nameCurve)
@@ -1293,7 +1363,19 @@ void FenEnfantGraph::setTabCurveMathFunction(const QString &nameCurve)
     //create check box for curve display
     QCheckBox *checkCurve = new QCheckBox;
     checkCurve->setChecked(true);
-    checkCurve->setText(nameCurve);
+
+    //create a plain text area
+    QTextEdit *nameText = new QTextEdit;
+    nameText->setText(nameCurve);
+    nameText->setReadOnly(true);
+    nameText->setFrameStyle(QFrame::NoFrame);
+
+    //create a push button to resize the graph to screen
+    QPushButton *resizeButton = new QPushButton;
+    resizeButton->setIcon(QIcon(":/images/resize.png"));
+    resizeButton->setFlat(true);
+    resizeButton->setMaximumHeight(25);
+    resizeButton->setMinimumHeight(25);
 
     //Create push button for curve delete
     QPushButton *delPushButton = new QPushButton;
@@ -1302,7 +1384,9 @@ void FenEnfantGraph::setTabCurveMathFunction(const QString &nameCurve)
 
     //Put the two button in the tab
     ui->table->setCellWidget(nbRow, 0, checkCurve);
-    ui->table->setCellWidget(nbRow, 1, delPushButton);
+    ui->table->setCellWidget(nbRow, 1, nameText);
+    ui->table->setCellWidget(nbRow, 2, resizeButton);
+    ui->table->setCellWidget(nbRow, 3, delPushButton);
 
     //put every signal from checkbox in a signal mapper
     connect(checkCurve, SIGNAL(clicked()), signalMapper, SLOT(map()));
@@ -1311,6 +1395,10 @@ void FenEnfantGraph::setTabCurveMathFunction(const QString &nameCurve)
     //put every signal push button in a signal mapper
     connect(delPushButton, SIGNAL(clicked()), signalMapperTabDelCurve, SLOT(map()));
     signalMapperTabDelCurve->setMapping(delPushButton, nbRow);
+
+    //put every signal from pushbutton resize in a signal mapper
+    connect(resizeButton, SIGNAL(clicked()), signalMapperTabResizeCurve, SLOT(map()));
+    signalMapperTabResizeCurve->setMapping(resizeButton, nbRow);
 }
     //SLOT
 void FenEnfantGraph::curveDisplay(const int &nbCurve)
@@ -1476,6 +1564,13 @@ void FenEnfantGraph::supressCurveFromIndex(const int &nbCurve)
         }
     }
 }
+
+void FenEnfantGraph::resizeGraphCurve(const int &nbCurve)
+{
+    ui->customPlot->graph(nbCurve)->rescaleAxes();
+    ui->customPlot->replot();
+}
+
 //Tab Curve display end
 
 //Zoom manager
@@ -1505,15 +1600,6 @@ void FenEnfantGraph::zoom()
         ui->customPlot->axisRect()->setRangeZoom(0);
     }
 
-}
-
-void FenEnfantGraph::ajustToscreen()
-{
-    if(ui->customPlot->selectedGraphs().size()!=0)
-    {
-        ui->customPlot->selectedGraphs().first()->rescaleAxes();
-        ui->customPlot->replot();
-    }
 }
 //Zoom manager end
 
@@ -1591,8 +1677,9 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     else if(opId == 2)
     {
         QString nameGraph(ui->customPlot->selectedGraphs().first()->name());
-            name = nameGraph + tr("_G:%1_Off:%2").arg(ui->spinBoxCustomGain->value())
-                                                 .arg(ui->spinBoxCustomOffset->value());
+            name = nameGraph + tr("_G:%1_OffX:%2_OffY:%3").arg(ui->spinBoxCustomGain->value())
+                                                          .arg(ui->spinBoxCustomOffset->value())
+                                                          .arg(ui->spinBoxCustomOffsetY->value());
     }
 
     else if(opId == 3)
@@ -1817,7 +1904,6 @@ void FenEnfantGraph::drawBetweenCursorState()
         ui->checkBoxDrawBetweenCursor->setChecked(false);
     }
 }
-
 //Math curve display end
 
 //Export picture of graph
@@ -2043,6 +2129,7 @@ void FenEnfantGraph::customCurveManagement()
     {
         ui->spinBoxCustomGain->setEnabled(true);
         ui->spinBoxCustomOffset->setEnabled(true);
+        ui->spinBoxCustomOffsetY->setEnabled(true);
         ui->pushButtonCustomCurve->setEnabled(true);
         connect(ui->pushButtonCustomCurve, SIGNAL(clicked()), this,SLOT(customCurve()));
     }
@@ -2050,6 +2137,7 @@ void FenEnfantGraph::customCurveManagement()
     {
         ui->spinBoxCustomGain->setEnabled(false);
         ui->spinBoxCustomOffset->setEnabled(false);
+        ui->spinBoxCustomOffsetY->setEnabled(false);
         ui->pushButtonCustomCurve->setEnabled(false);
         disconnect(ui->pushButtonCustomCurve, SIGNAL(clicked()), this,SLOT(customCurve()));
     }
@@ -2058,7 +2146,7 @@ void FenEnfantGraph::customCurveManagement()
 void FenEnfantGraph::customCurve()
 {
     double gain(ui->spinBoxCustomGain->value());
-    int offset(ui->spinBoxCustomOffset->value());
+    double offset(ui->spinBoxCustomOffset->value());
 
     //Change value of keys
     QList<double> keysList(ui->customPlot->selectedGraphs().first()->data()->keys());
@@ -2080,21 +2168,31 @@ void FenEnfantGraph::customCurve()
     }
 
     // extract values from QCPData and create a QVector of values
+    double offsetY(ui->spinBoxCustomOffsetY->value());
     QList<QCPData> valuesList(ui->customPlot->selectedGraphs().first()->data()->values());
     QVector<double> valuesVector;
     for (int i(0); i <= valuesList.size()-1; i++)
     {
-        valuesVector.push_back(valuesList.at(i).value*gain);
+        valuesVector.push_back(valuesList.at(i).value*gain + offsetY);
     }
 
-    QVector<double> tabId;
-    tabId.push_back(2);
-    QVector<QVector<double> > tab;
-    tab.push_back(keysVector);
-    tab.push_back(valuesVector);
-    tab.push_back(tabId);
+    ui->customPlot->selectedGraphs().first()->setData(keysVector, valuesVector);
 
-    displayMathFunctionCurve(tab);
+    //Actualise tab curve name
+    int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
+
+    QTextEdit *textTextEdit;
+    textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
+    QString newText(textTextEdit->toPlainText());
+    newText += "\n";
+    newText += tr("-> G:%1_OffX:%2_OffY:%3").arg(ui->spinBoxCustomGain->value())
+                                            .arg(ui->spinBoxCustomOffset->value())
+                                            .arg(ui->spinBoxCustomOffsetY->value());
+    textTextEdit->setText(newText);
+    textTextEdit->setReadOnly(true);
+    textTextEdit->setFrameStyle(QFrame::NoFrame);
+    ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 15);
+    ui->table->setCellWidget( nbGraph, 1, textTextEdit);
 
     ui->customPlot->replot();
 }
@@ -2193,6 +2291,10 @@ void FenEnfantGraph::interpolationInteraction(const int &state)
         ui->textEditPolyOrder->setEnabled(true);
 
         ui->comboBoxInterpolCurve->setEnabled(true);
+
+        ui->checkBoxSBLNorm->setEnabled(true);
+
+        ui->checkBoxZeroNegativePoint->setEnabled(true);
     }
 
     else if (state == 0)
@@ -2222,6 +2324,10 @@ void FenEnfantGraph::interpolationInteraction(const int &state)
         ui->textEditPolyOrder->setEnabled(false);
 
         ui->comboBoxInterpolCurve->setEnabled(false);
+
+        ui->checkBoxSBLNorm->setEnabled(false);
+
+        ui->checkBoxZeroNegativePoint->setEnabled(false);
     }
 }
 
@@ -2784,7 +2890,26 @@ void FenEnfantGraph::delBaseLine()
 
     QVector<QVector<double> > tabDelBaseLine;
     tabDelBaseLine = mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], tabReg);
-    displayMathFunctionCurve(tabDelBaseLine);
+
+    QVector<QVector<double> > tabDisplay;
+    if (ui->checkBoxZeroNegativePoint->isChecked() == true)
+    {
+        tabDisplay = mathMethod->zeroNegativePoint(tabDelBaseLine);
+    }
+    else if (ui->checkBoxZeroNegativePoint->isChecked() == false)
+    {
+        tabDisplay = tabDelBaseLine;
+    }
+    if (ui->checkBoxSBLNorm->isChecked() == true)
+    {
+        tabDisplay = mathMethod->delBaseLineNorm(tabDelBaseLine);
+    }
+    else if (ui->checkBoxZeroNegativePoint->isChecked() == false)
+    {
+        tabDisplay = tabDelBaseLine;
+    }
+
+    displayMathFunctionCurve(tabDisplay);
 
     //Get regression factor
     QVector<double> regFactor(mathMethod->getRegFactor());
@@ -2917,25 +3042,50 @@ void FenEnfantGraph::exportGraphData()
     QVector<QString> graphName;
     for (int i(0); i< ui->customPlot->graphCount(); i++)
     {
-        if (ui->customPlot->graph(i)->visible() == true
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1 H"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1 H"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2 H"
-                && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2 H"
-                && ui->customPlot->graph(i)->name() != "cursorNew 1"
-                && ui->customPlot->graph(i)->name() != "cursorNew 2")
+        if (ui->checkBoxSaveDisplayGraph->isChecked() == true)
         {
-            //put curve name into a tab
-            QString name(ui->customPlot->graph(i)->name());
-            graphName.push_back(name);
+            if (       ui->customPlot->graph(i)->visible() == true
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1 H"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1 H"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2 H"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2 H"
+                    && ui->customPlot->graph(i)->name() != "cursorNew 1"
+                    && ui->customPlot->graph(i)->name() != "cursorNew 2")
+            {
+                //put curve name into a tab
+                QString name(ui->customPlot->graph(i)->name());
+                graphName.push_back(name);
 
-            //put cruve data into a tab
-            QVector<QCPData> valueList(ui->customPlot->graph(i)->data()->values().toVector());
-            graphData.push_back(valueList);
+                //put cruve data into a tab
+                QVector<QCPData> valueList(ui->customPlot->graph(i)->data()->values().toVector());
+                graphData.push_back(valueList);
+            }
+        }
+        else if (ui->checkBoxSaveDisplayGraph->isChecked() == false)
+        {
+            if (       ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z1 H"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z1 H"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 1Z2 H"
+                    && ui->customPlot->graph(i)->name() != "cursorInterpol 2Z2 H"
+                    && ui->customPlot->graph(i)->name() != "cursorNew 1"
+                    && ui->customPlot->graph(i)->name() != "cursorNew 2")
+            {
+                //put curve name into a tab
+                QString name(ui->customPlot->graph(i)->name());
+                graphName.push_back(name);
+
+                //put cruve data into a tab
+                QVector<QCPData> valueList(ui->customPlot->graph(i)->data()->values().toVector());
+                graphData.push_back(valueList);
+            }
         }
     }
 
@@ -2943,7 +3093,7 @@ void FenEnfantGraph::exportGraphData()
     keyRange = ui->customPlot->graph(0)->data()->keys().toVector();
 
     DataSave *datasave = new DataSave;
-    datasave->savedata(outputDir, graphName, m_fileInfo, graphData, keyRange);
+    datasave->savedata(outputDir, graphName, m_fileInfo, graphData, keyRange, ui->checkBoxAddDBLInComment->isChecked(), ui->textEditPolyOrder->toPlainText());
 }
 //Export Data end
 
@@ -2972,6 +3122,71 @@ void FenEnfantGraph::graphTabShow()
 void FenEnfantGraph::graphTabActualisation(QVector<QVector<double> > data)
 {
     ui->customPlot->selectedGraphs().first()->setData(data.at(0), data.at(1));
+
+    int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
+
+    QTextEdit *textTextEdit;
+    textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
+    QString newText(textTextEdit->toPlainText());
+    newText += "\n";
+    newText += tr("-> Manual point modif");
+    textTextEdit->setText(newText);
+    textTextEdit->setReadOnly(true);
+    textTextEdit->setFrameStyle(QFrame::NoFrame);
+    ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 15);
+    ui->table->setCellWidget( nbGraph, 1, textTextEdit);
+
     ui->customPlot->replot();
 }
 //tab Custom end
+
+//Decay compensation
+void FenEnfantGraph::decayCompensationInteractionmanagement()
+{
+    if(ui->customPlot->selectedGraphs().size() > 0)
+    {
+        ui->doubleSpinBoxDecayCorrection->setEnabled(true);
+        ui->spinBoxPowerTimeDecay->setEnabled(true);
+        ui->comboBoxDecayCorrection->setEnabled(true);
+        ui->pushButtonDecayCorrection->setEnabled(true);
+        connect(ui->pushButtonDecayCorrection, SIGNAL(clicked()), this,SLOT(decayCompensation()));
+    }
+    else
+    {
+        ui->doubleSpinBoxDecayCorrection->setEnabled(false);
+        ui->spinBoxPowerTimeDecay->setEnabled(false);
+        ui->comboBoxDecayCorrection->setEnabled(false);
+        ui->pushButtonDecayCorrection->setEnabled(false);
+        disconnect(ui->pushButtonDecayCorrection, SIGNAL(clicked()), this,SLOT(decayCompensation()));
+    }
+}
+
+void FenEnfantGraph::decayCompensation()
+{
+    QVector<QCPData> dataValue(ui->customPlot->selectedGraphs().first()->data()->values().toVector());
+    QVector<double> dataKey(ui->customPlot->selectedGraphs().first()->data()->keys().toVector());
+
+    QVector<QVector<double> > dataReturn;
+    dataReturn = mathMethod->decayCompensation(dataKey, dataValue, ui->doubleSpinBoxDecayCorrection->value(), ui->spinBoxPowerTimeDecay->value(), ui->comboBoxDecayCorrection->currentText());
+
+    ui->customPlot->selectedGraphs().first()->setData(dataReturn.at(0), dataReturn.at(1));
+
+    int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
+
+    QTextEdit *textTextEdit;
+    textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
+    QString newText(textTextEdit->toPlainText());
+    newText += "\n";
+    newText += tr("-> Decay comp T1/2: %1*10^%2 %3 ").arg(ui->doubleSpinBoxDecayCorrection->value())
+                                                        .arg(ui->spinBoxPowerTimeDecay->value())
+                                                        .arg(ui->comboBoxDecayCorrection->currentText());
+    textTextEdit->setText(newText);
+    textTextEdit->setReadOnly(true);
+    textTextEdit->setFrameStyle(QFrame::NoFrame);
+    ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 15);
+    ui->table->setCellWidget( nbGraph, 1, textTextEdit);
+
+    ui->customPlot->replot();
+
+}
+//Decay compensation end

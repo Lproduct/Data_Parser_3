@@ -14,14 +14,14 @@ public:
     DataSave();
     ~DataSave();
 
-    void savedata(const QString &pathDirectory, const QVector<QString> &graphName, const QStringList &fileInfon, const QVector<QVector<QCPData> > &graphData, const QVector<double> &keyRange);
+    void savedata(const QString &pathDirectory, const QVector<QString> &graphName, const QStringList &fileInfon, const QVector<QVector<QCPData> > &graphData, const QVector<double> &keyRange, const bool &checkBoxDBLinfo, const QString &infoDBL);
 
 private:
-    QString createFileString(const QVector<QString> &graphName, const QStringList &fileInfon, const QVector<QVector<QCPData> > &graphData, const QVector<double> &keyRange);
-    QString createInfoString(const QStringList &fileInfon);
+    QString createFileString(const QVector<QString> &graphName, const QStringList &fileInfon, const QVector<QVector<QCPData> > &graphData, const QVector<double> &keyRange, const bool &checkBoxDBLinfo, const QString &infoDBL);
+    QString createInfoString(const QStringList &fileInfon, const bool &checkBoxDBLinfo, const QString &infoDBL);
     QString createGraphNameString(const QVector<QString> &graphName);
     QString createGraphDataString(const QVector<QVector<QCPData> > &graphData, const QVector<double> &keyRange);
-
+    int returnIndexOfKey(const double &value, const QVector<double> &tabKey);
 };
 
 #endif // DATASAVE_H
