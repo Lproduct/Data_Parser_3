@@ -29,6 +29,7 @@ public slots:
     void curveDisplay(const int &nbCurve);
     void delCurve(const int &nbCurve);
     void resizeGraphCurve(const int &nbCurve);
+    void clearCustom(const int &nbCurve);
     //Zoom management
     void zoom();
     //Math curve
@@ -98,6 +99,7 @@ public slots:
     void operationGraph();
 
 private:
+    void setToolBoxButtonColor(QToolBox* toolBox, int index, QColor color);
     void setCurrentFile(const QString &fileName);
     void setInfoData(const QStringList &fileInfo);
     void setGraph(const QStringList &header, const QVector<QVector<double> > &tab);
@@ -144,6 +146,7 @@ private:
     QSignalMapper *signalMapper;
     QSignalMapper *signalMapperTabDelCurve;
     QSignalMapper *signalMapperTabResizeCurve;
+    QSignalMapper *signalMapperTabClearCurve;
     QSignalMapper *signalMapperCursorV;
     QSignalMapper *signalMapperCursorH;
     QString curFile;
@@ -158,6 +161,7 @@ private:
     QPen penCursorInterpolZ2;
     MathFunction *mathMethod;
     QStringList m_fileInfo;
+    QVector<QVector<double> > m_tabData;
 };
 
 #endif // FENENFANTGRAPH_H

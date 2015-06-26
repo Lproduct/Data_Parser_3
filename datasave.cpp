@@ -91,9 +91,14 @@ QString DataSave::createGraphNameString(const QVector<QString> &graphName)
 
     for (int i(0); i< graphName.size() -1; i++)
     {
-        stringReturn += graphName.at(i) + "\t";
+        QString stringTemp(graphName.at(i));
+        stringTemp.replace(QRegExp("\n"), "");
+        stringReturn += stringTemp + "\t";
     }
-    stringReturn += graphName.at(graphName.size()-1) + "\r\n";
+
+    QString stringTemp(graphName.at(graphName.size()-1));
+    stringTemp.replace(QRegExp("\n"), "");
+    stringReturn += stringTemp + "\r\n";
 
     return stringReturn;
 }

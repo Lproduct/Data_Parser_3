@@ -22,8 +22,6 @@ private:
     QStringList infoFile;
     QStringList header;
     QVector<QVector<double> > tabNumericData;
-
-
 };
 
 #endif // DATAPARSER_H

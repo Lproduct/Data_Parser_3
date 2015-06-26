@@ -14,6 +14,15 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     ui->customPlot->replot();
 
+    QColor colorHeader;
+    colorHeader.setRgb(138, 199, 246);
+    setToolBoxButtonColor(ui->toolBox, 0, colorHeader);
+    setToolBoxButtonColor(ui->toolBox, 1, colorHeader);
+    setToolBoxButtonColor(ui->toolBox, 2, colorHeader);
+    setToolBoxButtonColor(ui->toolBox, 3, colorHeader);
+    setToolBoxButtonColor(ui->toolBox, 4, colorHeader);
+    setToolBoxButtonColor(ui->toolBox, 5, colorHeader);
+
     //NewCursor
     ui->checkBoxCurseurNew->setChecked(false);
     ui->spinBoxCurseur1->setEnabled(false);
@@ -43,6 +52,10 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
         //connect push button to method for resize curve
     signalMapperTabResizeCurve = new QSignalMapper(this);
     connect(signalMapperTabResizeCurve, SIGNAL(mapped(int)), this, SLOT(resizeGraphCurve(int)));
+
+        //connect push button to method for resize curve
+    signalMapperTabClearCurve = new QSignalMapper(this);
+    connect(signalMapperTabClearCurve, SIGNAL(mapped(int)), this, SLOT(clearCustom(int)));
 
     //Zoom manager
     connect(ui->checkBoxZoomV, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
@@ -194,9 +207,9 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     //Decay compensation
     ui->doubleSpinBoxDecayCorrection->setEnabled(false);
-    ui->doubleSpinBoxDecayCorrection->setMinimum(-10);
-    ui->doubleSpinBoxDecayCorrection->setMaximum(10);
-    ui->doubleSpinBoxDecayCorrection->setValue(0);
+    ui->doubleSpinBoxDecayCorrection->setMinimum(-100);
+    ui->doubleSpinBoxDecayCorrection->setMaximum(100);
+    ui->doubleSpinBoxDecayCorrection->setValue(1);
     ui->doubleSpinBoxDecayCorrection->setSingleStep(0.1);
 
     ui->spinBoxPowerTimeDecay->setEnabled(false);
@@ -220,6 +233,27 @@ FenEnfantGraph::~FenEnfantGraph()
     delete ui;
 }
 
+void FenEnfantGraph::setToolBoxButtonColor(QToolBox* toolBox, int index, QColor color)
+{
+    int i = 0;
+    foreach (QAbstractButton* button, toolBox->findChildren<QAbstractButton*>())
+    {
+        // make sure only toolbox button palettes are modified
+        if (button->metaObject()->className() == QString("QToolBoxButton"))
+        {
+            if (i == index)
+            {
+                // found correct button
+                QPalette p = button->palette();
+                p.setColor(QPalette::Button, color);
+                button->setPalette(p);
+                break;
+            }
+            i++;
+        }
+    }
+}
+
 //FenEnfantGraph parameters
 bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList &header,const QVector<QVector<double> > &tab )
 {
@@ -232,6 +266,7 @@ bool FenEnfantGraph::LoadTabData(const QStringList &fileInfo, const QStringList 
 
     mathMethod = new MathFunction(tab);
     m_fileInfo = fileInfo;
+    m_tabData = tab;
 
     defineAxis(header);
 
@@ -1344,9 +1379,6 @@ void FenEnfantGraph::setTabCurve(const QString &nameCurve)
     clearButton->setFlat(true);
     clearButton->setMaximumHeight(25);
     clearButton->setMinimumHeight(25);
-    /*QTableWidgetItem *item = new QTableWidgetItem("",QTableWidgetItem::Type);
-    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-    item->setFlags(Qt::NoItemFlags);*/
 
     //Put the check button and resize button in the tab
     ui->table->setCellWidget(nbRow, 0, checkWidget);
@@ -1361,6 +1393,10 @@ void FenEnfantGraph::setTabCurve(const QString &nameCurve)
     //put every signal from pushbutton resize in a signal mapper
     connect(resizeButton, SIGNAL(clicked()), signalMapperTabResizeCurve, SLOT(map()));
     signalMapperTabResizeCurve->setMapping(resizeButton, nbRow);
+
+    //put every signal from pushbutton clear in a signal mapper
+    connect(clearButton, SIGNAL(clicked()), signalMapperTabClearCurve, SLOT(map()));
+    signalMapperTabClearCurve->setMapping(clearButton, nbRow);
 }
 
 void FenEnfantGraph::setTabCurveMathFunction(const QString &nameCurve)
@@ -1577,6 +1613,26 @@ void FenEnfantGraph::supressCurveFromIndex(const int &nbCurve)
 void FenEnfantGraph::resizeGraphCurve(const int &nbCurve)
 {
     ui->customPlot->graph(nbCurve)->rescaleAxes();
+    ui->customPlot->replot();
+}
+
+void FenEnfantGraph::clearCustom(const int &nbCurve)
+{
+    //reset graph data
+    ui->customPlot->graph(nbCurve)->setData(m_tabData.at(0), m_tabData.at(nbCurve+1));
+
+    //reset graph name
+    ui->customPlot->graph(nbCurve)->setName(m_header.at(nbCurve+1));
+
+    //reset graph tab name
+    QTextEdit *textTextEdit;
+    textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbCurve, 1));
+    textTextEdit->setText(m_header.at(nbCurve+1));
+    textTextEdit->setReadOnly(true);
+    textTextEdit->setFrameStyle(QFrame::NoFrame);
+    ui->table->setRowHeight(nbCurve, 25);
+    ui->table->setCellWidget( nbCurve, 1, textTextEdit);
+
     ui->customPlot->replot();
 }
 
@@ -2204,6 +2260,13 @@ void FenEnfantGraph::customCurve()
     }
 
     ui->customPlot->selectedGraphs().first()->setData(keysVector, valuesVector);
+
+    //set up new graph name
+    QString graphName(ui->customPlot->selectedGraphs().first()->name());
+    graphName += tr("\n->G:%1_OffX:%2_OffY:%3 ").arg(ui->spinBoxCustomGain->value())
+                                                     .arg(ui->spinBoxCustomOffset->value())
+                                                     .arg(ui->spinBoxCustomOffsetY->value());
+    ui->customPlot->selectedGraphs().first()->setName(graphName);
 
     //Actualise tab curve name
     int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
@@ -3148,15 +3211,22 @@ void FenEnfantGraph::graphTabShow()
 
 void FenEnfantGraph::graphTabActualisation(QVector<QVector<double> > data)
 {
+    //set up new data
     ui->customPlot->selectedGraphs().first()->setData(data.at(0), data.at(1));
 
+    //set up new graph name
+    QString graphName(ui->customPlot->selectedGraphs().first()->name());
+    graphName += "\n->Manual point modif";
+    ui->customPlot->selectedGraphs().first()->setName(graphName);
+
+    //set up tab name
     int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
 
     QTextEdit *textTextEdit;
     textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
     QString newText(textTextEdit->toPlainText());
     newText += "\n";
-    newText += tr("-> Manual point modif");
+    newText += tr("->Manual point modif");
     textTextEdit->setText(newText);
     textTextEdit->setReadOnly(true);
     textTextEdit->setFrameStyle(QFrame::NoFrame);
@@ -3196,21 +3266,30 @@ void FenEnfantGraph::decayCompensation()
     QVector<QVector<double> > dataReturn;
     dataReturn = mathMethod->decayCompensation(dataKey, dataValue, ui->doubleSpinBoxDecayCorrection->value(), ui->spinBoxPowerTimeDecay->value(), ui->comboBoxDecayCorrection->currentText());
 
+    //set up new data
     ui->customPlot->selectedGraphs().first()->setData(dataReturn.at(0), dataReturn.at(1));
 
+    //set up new graph name
+    QString graphName(ui->customPlot->selectedGraphs().first()->name());
+    graphName += tr("\n->Decay comp T1/2: %1*10^%2 %3 ").arg(ui->doubleSpinBoxDecayCorrection->value())
+                                                     .arg(ui->spinBoxPowerTimeDecay->value())
+                                                     .arg(ui->comboBoxDecayCorrection->currentText());
+    ui->customPlot->selectedGraphs().first()->setName(graphName);
+
+    //set up tab name
     int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
 
     QTextEdit *textTextEdit;
     textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
     QString newText(textTextEdit->toPlainText());
     newText += "\n";
-    newText += tr("-> Decay comp T1/2: %1*10^%2 %3 ").arg(ui->doubleSpinBoxDecayCorrection->value())
+    newText += tr("->Decay comp T1/2: %1*10^%2 %3").arg(ui->doubleSpinBoxDecayCorrection->value())
                                                         .arg(ui->spinBoxPowerTimeDecay->value())
                                                         .arg(ui->comboBoxDecayCorrection->currentText());
     textTextEdit->setText(newText);
     textTextEdit->setReadOnly(true);
     textTextEdit->setFrameStyle(QFrame::NoFrame);
-    ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 15);
+    ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 30);
     ui->table->setCellWidget( nbGraph, 1, textTextEdit);
 
     ui->customPlot->replot();
