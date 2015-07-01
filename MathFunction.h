@@ -44,7 +44,7 @@ private:
     void createTabDataNew(const QVector<QCPData> &tabData, int startValue, int endValue);
     void proceedFFT();
     void filteringFFT(const double &percentFiltering);
-    QVector<QVector<double> > tabReturnFFT(int mode, const int &startValue, const int &endValue);
+    QVector<QVector<double> > tabReturnFFT(const QVector<QCPData> &value, int mode, const int &startValue, const int &endValue);
     void endFFT();    
     /*** FFT Function end ***/
 

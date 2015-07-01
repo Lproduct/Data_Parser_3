@@ -220,6 +220,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->spinBoxPowerTimeDecay->setSingleStep(1);
 
     ui->comboBoxDecayCorrection->setEnabled(false);
+    ui->comboBoxDecayCorrection->setCurrentIndex(5);
 
     ui->pushButtonDecayCorrection->setEnabled(false);
 
@@ -1361,7 +1362,7 @@ void FenEnfantGraph::setTabCurve(const QString &nameCurve)
     int nbRow(ui->table->rowCount());
     ui->table->setRowCount(nbRow+1);
     ui->table->setColumnWidth(0, 15);
-    ui->table->setColumnWidth(1, 165);
+    ui->table->setColumnWidth(1, 184);
     ui->table->setColumnWidth(2, 25);
     ui->table->setColumnWidth(3, 25);
     ui->table->setRowHeight(nbRow, 25);
@@ -1549,6 +1550,12 @@ void FenEnfantGraph::delCurve(const int &nbCurve)
         supressCurveFromIndex(nbCurve);
     }
 
+    //remove curve from combobox
+    ui->ComboBoxCurveName_2->removeItem(nbCurve);
+    ui->comboBoxAddCurve1->removeItem(nbCurve);
+    ui->comboBoxAddCurve2->removeItem(nbCurve);
+    ui->comboBoxInterpolCurve->removeItem(nbCurve);
+
     //if cursor previously exist set Cursor
     if(ui->checkBoxCurseurNew->checkState() == 2)
     {
@@ -1648,6 +1655,16 @@ void FenEnfantGraph::clearCustom(const int &nbCurve)
     textTextEdit->setFrameStyle(QFrame::NoFrame);
     ui->table->setRowHeight(nbCurve, 25);
     ui->table->setCellWidget( nbCurve, 1, textTextEdit);
+
+    for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->second == nbCurve)
+        {
+            indexGraph[m_header.at(nbCurve+1)] = nbCurve;
+            indexGraph.erase(it);
+            break;
+        }
+    }
 
     ui->customPlot->replot();
 }
@@ -1783,12 +1800,12 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("middle_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Average_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
                                         .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Average_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
                                                .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
@@ -1800,12 +1817,12 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("average_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Median_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
                                 .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("average_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Median_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
                                                .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
@@ -1855,12 +1872,12 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("mouving_middle_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Mouving_average_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
                                         .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("mouving_middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Mouving_average_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
                                                .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
@@ -1871,12 +1888,12 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("mouving_median_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Mouving_median_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
                                         .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("mouving_median_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+            name = tr("Mouving_median_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
                                                .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
@@ -1907,9 +1924,10 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
 void FenEnfantGraph::createCurveNew()
 {
     int indOp(ui->comboBoxCurveType_2->currentIndex());
-    QString curveselected(ui->ComboBoxCurveName_2->currentText());
+    int curveselected(ui->ComboBoxCurveName_2->currentIndex());
+    //QString curveselected(ui->ComboBoxCurveName_2->currentText());
     double sampleTime(ui->spinBoxSampleTime_2->value());
-    QVector<QCPData> graphData(ui->customPlot->graph(indexGraph[curveselected])->data()->values().toVector());
+    QVector<QCPData> graphData(ui->customPlot->graph(curveselected)->data()->values().toVector());//indexGraph[curveselected])->data()->values().toVector()
     double cursor1(ui->spinBoxCurseur1->value());
     double cursor2(ui->spinBoxCurseur2->value());
 
@@ -1993,12 +2011,13 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
     //insert curve
     int nbGraph(ui->customPlot->graphCount());
     ui->customPlot->addGraph();
-    ui->customPlot->graph(nbGraph)->setPen(QPen(randomColor("normal")));
+    ui->customPlot->graph(nbGraph)->setPen(QPen(randomColor("all")));
     ui->customPlot->graph(nbGraph)->setName(curveName(tab.at(2)));
     ui->customPlot->graph(nbGraph)->setData(tab.at(0), tab.at(1));
 
+
     //rescale curve if time offset is on
-    if(ui->checkBoxTimeAbsis->checkState() == 2)
+    /*if(ui->checkBoxTimeAbsis->checkState() == 2)
     {
         //Check time unit
         double unit(timeUnit());
@@ -2021,10 +2040,17 @@ void FenEnfantGraph::displayMathFunctionCurve(const QVector<QVector<double> > &t
         }
 
         ui->customPlot->graph(nbGraph)->setData(keysVector, valuesVector);
-    }
+    }*/
 
+    //Publish curve name and index into indextab
     setTabCurveMathFunction(curveName(tab.at(2)));
     indexGraph[curveName(tab.at(2))] = ui->customPlot->graphCount()-1;
+
+    //Publish new curve in combobox
+    ui->ComboBoxCurveName_2->addItem(curveName(tab.at(2)));
+    ui->comboBoxAddCurve1->addItem(curveName(tab.at(2)));
+    ui->comboBoxAddCurve2->addItem(curveName(tab.at(2)));
+    ui->comboBoxInterpolCurve->addItem(curveName(tab.at(2)));
 
     //if cursor previously exist set Cursor
     if(ui->checkBoxCurseurNew->checkState() == 2)
@@ -2337,21 +2363,13 @@ void FenEnfantGraph::customCurve()
 
     ui->customPlot->selectedGraphs().first()->setData(keysVector, valuesVector);
 
-    //set up new graph name
-    QString graphName(ui->customPlot->selectedGraphs().first()->name());
-    graphName += tr("\n->G:%1_OffX:%2_OffY:%3 ").arg(ui->spinBoxCustomGain->value())
-                                                     .arg(ui->spinBoxCustomOffset->value())
-                                                     .arg(ui->spinBoxCustomOffsetY->value());
-    ui->customPlot->selectedGraphs().first()->setName(graphName);
-
     //Actualise tab curve name
     int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
 
     QTextEdit *textTextEdit;
     textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
     QString newText(textTextEdit->toPlainText());
-    newText += "\n";
-    newText += tr("-> G:%1_OffX:%2_OffY:%3").arg(ui->spinBoxCustomGain->value())
+    newText += tr("\n->G:%1_OffX:%2_OffY:%3").arg(ui->spinBoxCustomGain->value())
                                             .arg(ui->spinBoxCustomOffset->value())
                                             .arg(ui->spinBoxCustomOffsetY->value());
     textTextEdit->setText(newText);
@@ -2359,6 +2377,24 @@ void FenEnfantGraph::customCurve()
     textTextEdit->setFrameStyle(QFrame::NoFrame);
     ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 15);
     ui->table->setCellWidget( nbGraph, 1, textTextEdit);
+
+    //set up new graph name
+    QString graphName(ui->customPlot->selectedGraphs().first()->name());
+    graphName += tr("\n->G:%1_OffX:%2_OffY:%3").arg(ui->spinBoxCustomGain->value())
+                                                     .arg(ui->spinBoxCustomOffset->value())
+                                                     .arg(ui->spinBoxCustomOffsetY->value());
+    ui->customPlot->selectedGraphs().first()->setName(graphName);
+
+    //setup indexGraph name
+    for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->second == nbGraph)
+        {
+            indexGraph[newText] = nbGraph;
+            indexGraph.erase(it);
+            break;
+        }
+    }
 
     ui->customPlot->replot();
 }
@@ -3235,24 +3271,34 @@ void FenEnfantGraph::graphTabActualisation(QVector<QVector<double> > data)
     //set up new data
     ui->customPlot->selectedGraphs().first()->setData(data.at(0), data.at(1));
 
-    //set up new graph name
-    QString graphName(ui->customPlot->selectedGraphs().first()->name());
-    graphName += "\n->Manual point modif";
-    ui->customPlot->selectedGraphs().first()->setName(graphName);
-
     //set up tab name
     int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
 
     QTextEdit *textTextEdit;
     textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
     QString newText(textTextEdit->toPlainText());
-    newText += "\n";
-    newText += tr("->Manual point modif");
+    newText += tr("\n->Manual point modif");
     textTextEdit->setText(newText);
     textTextEdit->setReadOnly(true);
     textTextEdit->setFrameStyle(QFrame::NoFrame);
     ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 15);
     ui->table->setCellWidget( nbGraph, 1, textTextEdit);
+
+    //set up new graph name
+    QString graphName(ui->customPlot->selectedGraphs().first()->name());
+    graphName += "\n->Manual point modif";
+    ui->customPlot->selectedGraphs().first()->setName(graphName);
+
+    //setup indexGraph name
+    for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->second == nbGraph)
+        {
+            indexGraph[newText] = nbGraph;
+            indexGraph.erase(it);
+            break;
+        }
+    }
 
     ui->customPlot->replot();
 }
@@ -3290,21 +3336,13 @@ void FenEnfantGraph::decayCompensation()
     //set up new data
     ui->customPlot->selectedGraphs().first()->setData(dataReturn.at(0), dataReturn.at(1));
 
-    //set up new graph name
-    QString graphName(ui->customPlot->selectedGraphs().first()->name());
-    graphName += tr("\n->Decay comp T1/2: %1*10^%2 %3 ").arg(ui->doubleSpinBoxDecayCorrection->value())
-                                                     .arg(ui->spinBoxPowerTimeDecay->value())
-                                                     .arg(ui->comboBoxDecayCorrection->currentText());
-    ui->customPlot->selectedGraphs().first()->setName(graphName);
-
     //set up tab name
     int nbGraph(indexGraph[ui->customPlot->selectedGraphs().first()->name()]);
 
     QTextEdit *textTextEdit;
     textTextEdit = qobject_cast<QTextEdit*>(ui->table->cellWidget(nbGraph, 1));
     QString newText(textTextEdit->toPlainText());
-    newText += "\n";
-    newText += tr("->Decay comp T1/2: %1*10^%2 %3").arg(ui->doubleSpinBoxDecayCorrection->value())
+    newText += tr("\n->Decay comp T1/2: %1*10^%2 %3").arg(ui->doubleSpinBoxDecayCorrection->value())
                                                         .arg(ui->spinBoxPowerTimeDecay->value())
                                                         .arg(ui->comboBoxDecayCorrection->currentText());
     textTextEdit->setText(newText);
@@ -3312,6 +3350,24 @@ void FenEnfantGraph::decayCompensation()
     textTextEdit->setFrameStyle(QFrame::NoFrame);
     ui->table->setRowHeight(nbGraph, ui->table->rowHeight(nbGraph) + 30);
     ui->table->setCellWidget( nbGraph, 1, textTextEdit);
+
+    //set up new graph name
+    QString graphName(ui->customPlot->selectedGraphs().first()->name());
+    graphName += tr("\n->Decay comp T1/2: %1*10^%2 %3").arg(ui->doubleSpinBoxDecayCorrection->value())
+                                                     .arg(ui->spinBoxPowerTimeDecay->value())
+                                                     .arg(ui->comboBoxDecayCorrection->currentText());
+    ui->customPlot->selectedGraphs().first()->setName(graphName);
+
+    //setup indexGraph name
+    for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
+    {
+        if (it->second == nbGraph)
+        {
+            indexGraph[newText] = nbGraph;
+            indexGraph.erase(it);
+            break;
+        }
+    }
 
     ui->customPlot->replot();
 }

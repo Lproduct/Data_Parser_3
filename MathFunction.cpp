@@ -77,7 +77,7 @@ QVector<QVector<double> > MathFunction::averageValueCurve(const QVector<QCPData>
 
     if(startValue == -1 && endValue ==-1)
     {
-        dataReturn = proceedAverageFilterNew(data, sampleTime, tabData.at(0).key, tabData.at(tabData.size()-1).key);
+        dataReturn = proceedAverageFilterNew(data, sampleTime, 0, data.at(0).size()-1);
     }
     else
     {
@@ -134,7 +134,7 @@ QVector<QVector<double> > MathFunction::mouvingAverageValueCurveNew(const QVecto
 
     if(startValue == -1 && endValue ==-1)
     {
-        dataReturn = proceedMouvingAverageFilterNew(data, sampleTimeModif, data.at(0).at(0), data.at(0).at(data.at(0).size() - 1));
+        dataReturn = proceedMouvingAverageFilterNew(data, sampleTimeModif, 0, data.at(0).size()-1);
     }
     else
     {
@@ -193,7 +193,7 @@ QVector<QVector<double> > MathFunction::middleValueCurveFilter(const QVector<QCP
 
     if(startValue == -1 && endValue ==-1)
     {
-        dataReturn = proceedMidFilterNew(data, sampleTimeModif, data.at(0).at(0), data.at(0).at(data.at(0).size()-1));
+        dataReturn = proceedMidFilterNew(data, sampleTimeModif, 0, data.at(0).size()-1);
     }
     else
     {
@@ -254,7 +254,7 @@ QVector<QVector<double> > MathFunction::mouvingMedianValueCurveNew(const QVector
 
     if(startValue == -1 && endValue ==-1)
     {
-        dataReturn = proceedMouvingMedianFilterNew(data, sampleTimeModif, data.at(0).at(0), data.at(0).at(data.at(0).size()-1));
+        dataReturn = proceedMouvingMedianFilterNew(data, sampleTimeModif, 0, data.at(0).size()-1);
     }
     else
     {
@@ -318,7 +318,7 @@ QVector<QVector<double> > MathFunction::fftFilterNew(const QVector<QCPData> &tab
     proceedFFT();
 
     /******** Tab Data Return **********/
-    QVector<QVector<double> > data(tabReturnFFT(mode, startValue, endValue));
+    QVector<QVector<double> > data(tabReturnFFT(tabData, mode, startValue, endValue));
     QVector<double>xAxis(data.at(0));
     QVector<double>yAxis(data.at(1));
 
@@ -348,7 +348,7 @@ void MathFunction::createTabDataNew(const QVector<QCPData> &tabData, int startVa
     }
     else
     {
-        long int N(m_tabData.at(0).size());
+        long int N(data.at(0).size());
         for (long int i(0); i <= N-1; i++)
         {
             m_dataFFT.push_back(data.at(1).at(i));
@@ -412,9 +412,10 @@ void MathFunction::filteringFFT(const double &percentFiltering)
     }
 }
 
-QVector<QVector<double> > MathFunction::tabReturnFFT(int mode, const int &startValue, const int &endValue)
+QVector<QVector<double> > MathFunction::tabReturnFFT(const QVector<QCPData> &tabData, int mode, const int &startValue, const int &endValue)
 {
-    long int N(m_dataFFT.size());
+    QVector<QVector<double> > data(convertQCPDataInQVector(tabData));
+    long int N(data.at(0).size());
 
     QVector<QVector<double> > dataReturn;
 
@@ -428,14 +429,14 @@ QVector<QVector<double> > MathFunction::tabReturnFFT(int mode, const int &startV
         long int N(endValueInd - startValueInd);
         for (long int i(0); i <= N-1; i++)
         {
-            xAxis.push_back(m_tabData.at(0).at(i + startValueInd));
+            xAxis.push_back(data.at(0).at(i + startValueInd));
         }
     }
     else
     {
         for (int i(0); i<= N-1; i++)
         {
-            xAxis.push_back(m_tabData.at(0).at(i));
+            xAxis.push_back(data.at(0).at(i));
         }
     }
 

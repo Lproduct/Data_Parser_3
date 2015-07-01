@@ -61,7 +61,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -71,8 +71,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>100</width>
-        <height>30</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -369,8 +369,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>100</width>
-        <height>30</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -385,7 +385,7 @@
         <rect>
          <x>9</x>
          <y>9</y>
-         <width>231</width>
+         <width>251</width>
          <height>371</height>
         </rect>
        </property>
@@ -436,7 +436,7 @@
           <property name="maximumSize">
            <size>
             <width>250</width>
-            <height>400</height>
+            <height>300</height>
            </size>
           </property>
           <property name="autoScrollMargin">
@@ -476,19 +476,6 @@
            <bool>false</bool>
           </attribute>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_10">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>
@@ -755,8 +742,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>100</width>
-        <height>30</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1108,8 +1095,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>100</width>
-        <height>30</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1519,8 +1506,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>100</width>
-        <height>30</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
