@@ -62,7 +62,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->checkBoxZoomH, SIGNAL(stateChanged(int)), this, SLOT(zoom()));
 
     //Create Curve
-    connect(ui->pushButtoncreateCurve, SIGNAL(clicked()), this,SLOT(createCurve()));
+    connect(ui->pushButtoncreateCurve_2, SIGNAL(clicked()), this, SLOT(createCurveNew()));
     connect(ui->checkBoxCurseurNew, SIGNAL(clicked()), this, SLOT(drawBetweenCursorState()));
 
     // setup policy and connect slot for context menu popup:
@@ -167,10 +167,11 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     connect(ui->pushButtonLinkZone1, SIGNAL(clicked(bool)), this, SLOT(linkCursorZ2(bool)));
 
         //cursor spinbox interaction
-    ui->spinBoxSampleTime->setVisible(false);
+    ui->spinBoxSampleTime_2->setVisible(false);
     ui->label_percent->setVisible(false);
-    ui->label_sampleTime->setVisible(false);
-    connect(ui->comboBoxCurveType, SIGNAL(activated(QString)), this, SLOT(cursorSpinBoxInt(QString)));
+    ui->label_sample_time->setVisible(false);
+    ui->checkBoxDrawBetweenCursor->setEnabled(false);
+    connect(ui->comboBoxCurveType_2, SIGNAL(activated(int)), this, SLOT(cursorSpinBoxInt(int)));
 
         //link vetical cursor to signal mapper
     signalMapperCursorV->setMapping(ui->doubleSpinBoxCursorSpline1X, 2);
@@ -226,6 +227,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     //operation curve
     connect(ui->pushButtonAddCurve, SIGNAL(clicked()), this, SLOT(operationGraph()));
+
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -330,7 +332,9 @@ void FenEnfantGraph::setGraph(const QStringList &header, const QVector<QVector<d
         setTabCurve(header.at(i+1));
         indexGraph[header.at(i+1)] = i;        
     }
-    createCurveIntialisation();
+
+    //fill comboBox with item
+    addItemToComboboxCreateCurve();
     addItemToComboboxInterpol();
     addItemToOpertoionCurve();
 }
@@ -1006,6 +1010,18 @@ void FenEnfantGraph::moveCursorV(const int &id)
         valuesVector.push_back(valuesList.at(i).value);
     }
 
+    //Spinbox cursor management
+    ui->spinBoxCurseur1->setMaximum(ui->spinBoxCurseur2->value());
+    ui->spinBoxCurseur2->setMinimum(ui->spinBoxCurseur1->value());
+
+    ui->doubleSpinBoxCursorSpline1X->setMaximum(ui->doubleSpinBoxCursorSpline1X2->value());
+    ui->doubleSpinBoxCursorSpline1X2->setMinimum(ui->doubleSpinBoxCursorSpline1X->value());
+    ui->doubleSpinBoxCursorSpline2X->setMaximum(ui->doubleSpinBoxCursorSpline2X2->value());
+    ui->doubleSpinBoxCursorSpline2X2->setMinimum(ui->doubleSpinBoxCursorSpline2X->value());
+
+    ui->doubleSpinBoxCursorSpline1X2->setMaximum(ui->doubleSpinBoxCursorSpline2X->value());
+    ui->doubleSpinBoxCursorSpline2X->setMinimum(ui->doubleSpinBoxCursorSpline1X2->value());
+
     ui->customPlot->graph(indexGraph[name])->setData(keysVector, valuesVector);
     ui->customPlot->replot();
 }
@@ -1670,35 +1686,92 @@ void FenEnfantGraph::zoom()
 
 //Math curve display
     //function
-void FenEnfantGraph::createCurveIntialisation()
+void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
 {
-    ui->comboBoxCurveType->setEnabled(true);
-    ui->comboBoxCurveType->setEditable(false);
-    ui->comboBoxCurveType->clear();
-    ui->comboBoxCurveType->addItem("None");
-    ui->comboBoxCurveType->addItem("Moyenne");
-    ui->comboBoxCurveType->addItem("Mouving Average");
-    ui->comboBoxCurveType->addItem("Filtre médian");
-    ui->comboBoxCurveType->addItem("Mouving Median");
-    ui->comboBoxCurveType->addItem("FFT Filter");
-    ui->ComboBoxCurveName->setEnabled(true);
+    QVector<double> dataInfo = mathMethod->dataInfo();
+    if(ind == 0)
+    {
+        ui->spinBoxSampleTime_2->setVisible(false);
+        ui->label_sample_time->setVisible(false);
+        ui->label_percent->setVisible(false);
+    }
+    else if(ind == 1)
+    {
+        ui->label_sample_time->setVisible(true);
+        ui->label_percent->setVisible(false);
 
+        ui->spinBoxSampleTime_2->setVisible(true);
+        ui->spinBoxSampleTime_2->setMinimum(1);
+        ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
+        ui->spinBoxSampleTime_2->setValue(1);
+
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(1);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+    }
+    else if(ind == 2)
+    {
+        ui->label_sample_time->setVisible(true);
+        ui->label_percent->setVisible(false);
+
+        ui->spinBoxSampleTime_2->setVisible(true);
+        ui->spinBoxSampleTime_2->setMinimum(1);
+        ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
+        ui->spinBoxSampleTime_2->setValue(1);
+
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+    }
+    else if(ind == 3)
+    {
+        ui->label_sample_time->setVisible(true);
+        ui->label_percent->setVisible(false);
+
+        ui->spinBoxSampleTime_2->setVisible(true);
+        ui->spinBoxSampleTime_2->setMinimum(1);
+        ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
+        ui->spinBoxSampleTime_2->setValue(1);
+
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+    }
+    else if(ind == 4)
+    {
+        ui->label_sample_time->setVisible(true);
+        ui->label_percent->setVisible(false);
+
+        ui->spinBoxSampleTime_2->setVisible(true);
+        ui->spinBoxSampleTime_2->setMinimum(1);
+        ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
+        ui->spinBoxSampleTime_2->setValue(1);
+
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+    }
+    else if(ind == 5)
+    {
+        ui->label_sample_time->setVisible(false);
+        ui->label_percent->setVisible(true);
+
+        ui->spinBoxSampleTime_2->setVisible(true);
+        ui->spinBoxSampleTime_2->setMinimum(0);
+        ui->spinBoxSampleTime_2->setMaximum(100);
+        ui->spinBoxSampleTime_2->setValue(80);
+
+        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(0.1);
+        ui->doubleSpinBoxCursorSpline1Y->setValue(0);
+    }
+}
+
+void FenEnfantGraph::addItemToComboboxCreateCurve()
+{
     for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
     {
         QString nameCurve(it->first);
-        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2")
+        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
         {
-            ui->ComboBoxCurveName->addItem(nameCurve);
+            ui->ComboBoxCurveName_2->addItem(nameCurve);
         }
     }
-
-    ui->spinBoxSampleTime->setEnabled(true);
-
-    ui->pushButtoncreateCurve->setEnabled(true);
-
-    ui->checkBoxDrawBetweenCursor->setCheckable(true);
-    ui->checkBoxDrawBetweenCursor->setEnabled(false);
-    ui->checkBoxDrawBetweenCursor->setChecked(false);
 }
 
 QString FenEnfantGraph::curveName(const QVector<double> &tabId)
@@ -1710,13 +1783,13 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("middle_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
-                                        .arg(ui->spinBoxSampleTime->value());
+            name = tr("middle_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+                                        .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
-                                               .arg(ui->spinBoxSampleTime->value())
+            name = tr("middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+                                               .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
         }
@@ -1727,13 +1800,13 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("average_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
-                                .arg(ui->spinBoxSampleTime->value());
+            name = tr("average_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+                                .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("average_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
-                                               .arg(ui->spinBoxSampleTime->value())
+            name = tr("average_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+                                               .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
         }
@@ -1751,13 +1824,13 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("FFT_Filt_%1_%2%").arg(ui->ComboBoxCurveName->currentText())
-                                .arg(ui->spinBoxSampleTime->value());
+            name = tr("FFT_Filt_%1_%2%").arg(ui->ComboBoxCurveName_2->currentText())
+                                .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("FFT_Filt_%1_%2%_%3->%4").arg(ui->ComboBoxCurveName->currentText())
-                                               .arg(ui->spinBoxSampleTime->value())
+            name = tr("FFT_Filt_%1_%2%_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+                                               .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
         }
@@ -1782,13 +1855,13 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("mouving_middle_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
-                                        .arg(ui->spinBoxSampleTime->value());
+            name = tr("mouving_middle_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+                                        .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("mouving_middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
-                                               .arg(ui->spinBoxSampleTime->value())
+            name = tr("mouving_middle_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+                                               .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
         }
@@ -1798,13 +1871,13 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            name = tr("mouving_median_%1_ST:%2").arg(ui->ComboBoxCurveName->currentText())
-                                        .arg(ui->spinBoxSampleTime->value());
+            name = tr("mouving_median_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+                                        .arg(ui->spinBoxSampleTime_2->value());
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            name = tr("mouving_median_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName->currentText())
-                                               .arg(ui->spinBoxSampleTime->value())
+            name = tr("mouving_median_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+                                               .arg(ui->spinBoxSampleTime_2->value())
                                                .arg(ui->spinBoxCurseur1->value())
                                                .arg(ui->spinBoxCurseur2->value());
         }
@@ -1831,70 +1904,73 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
     return name;
 }
     //SLOT
-void FenEnfantGraph::createCurve()
+void FenEnfantGraph::createCurveNew()
 {
-    QString curveType(ui->comboBoxCurveType->currentText());
-    QString curveselected(ui->ComboBoxCurveName->currentText());
-    double sampleTime(ui->spinBoxSampleTime->value());
+    int indOp(ui->comboBoxCurveType_2->currentIndex());
+    QString curveselected(ui->ComboBoxCurveName_2->currentText());
+    double sampleTime(ui->spinBoxSampleTime_2->value());
+    QVector<QCPData> graphData(ui->customPlot->graph(indexGraph[curveselected])->data()->values().toVector());
+    double cursor1(ui->spinBoxCurseur1->value());
+    double cursor2(ui->spinBoxCurseur2->value());
 
-    if(curveType == "Moyenne")
+    if(indOp == 1)
     {
        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
        {
-           displayMathFunctionCurve(mathMethod->averageValueCurveNew(indexGraph[curveselected]+1, sampleTime));
+           displayMathFunctionCurve(mathMethod->averageValueCurve(graphData, sampleTime));
        }
        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
        {
-           displayMathFunctionCurve(mathMethod->averageValueCurveNew(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+           displayMathFunctionCurve(mathMethod->averageValueCurve(graphData, sampleTime, cursor1, cursor2));
        }
     }
 
-    else if(curveType == "Mouving Average")
+    else if(indOp == 2)
     {
        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
        {
-           displayMathFunctionCurve(mathMethod->mouvingAverageValueCurve(indexGraph[curveselected]+1, sampleTime));
+           displayMathFunctionCurve(mathMethod->mouvingAverageValueCurveNew(graphData,sampleTime));
        }
        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
        {
-           displayMathFunctionCurve(mathMethod->mouvingAverageValueCurve(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+           displayMathFunctionCurve(mathMethod->mouvingAverageValueCurveNew(graphData, sampleTime, cursor1, cursor2));
        }
     }
 
-    else if(curveType == "Filtre médian")
+    else if(indOp == 3)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            displayMathFunctionCurve(mathMethod->middleValueCurveFilterNew(indexGraph[curveselected]+1, sampleTime));
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(graphData, sampleTime));
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            displayMathFunctionCurve(mathMethod->middleValueCurveFilterNew(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+            displayMathFunctionCurve(mathMethod->middleValueCurveFilter(graphData, sampleTime, cursor1, cursor2));
         }
     }
 
 
-    else if(curveType == "Mouving Median")
+    else if(indOp == 4)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            displayMathFunctionCurve(mathMethod->mouvingMedianValueCurve(indexGraph[curveselected]+1, sampleTime));
+            displayMathFunctionCurve(mathMethod->mouvingMedianValueCurveNew(graphData, sampleTime));
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            displayMathFunctionCurve(mathMethod->mouvingMedianValueCurve(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+            displayMathFunctionCurve(mathMethod->mouvingMedianValueCurveNew(graphData, sampleTime, cursor1, cursor2));
         }
     }
 
-    else if(curveType == "FFT Filter")
+    else if(indOp == 5)
     {
         if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
         {
-            displayMathFunctionCurve(mathMethod->fftFilter(indexGraph[curveselected]+1, sampleTime));
+            displayMathFunctionCurve(mathMethod->fftFilterNew(graphData, sampleTime));
         }
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
-            displayMathFunctionCurve(mathMethod->fftFilter(indexGraph[curveselected]+1, sampleTime, ui->spinBoxCurseur1->value(), ui->spinBoxCurseur2->value()));
+            displayMathFunctionCurve(mathMethod->fftFilterNew(graphData, sampleTime, cursor1, cursor2));
         }
     }
 
@@ -2288,69 +2364,6 @@ void FenEnfantGraph::customCurve()
 }
 //Custom Curve end
 
-//cursor spinbox interaction
-void FenEnfantGraph::cursorSpinBoxInt(const QString &choice)
-{
-    QVector<double> dataInfo = mathMethod->dataInfo();
-    if(choice == "None")
-    {
-        ui->spinBoxSampleTime->setVisible(false);
-        ui->label_sampleTime->setVisible(false);
-        ui->label_percent->setVisible(false);
-    }
-    else if(choice == "Moyenne")
-    {
-        ui->spinBoxSampleTime->setVisible(true);
-        ui->label_sampleTime->setVisible(true);
-        ui->label_percent->setVisible(false);
-        ui->spinBoxSampleTime->setMinimum(1);
-        ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(1);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
-    }
-    else if(choice == "Filtre médian")
-    {
-        ui->spinBoxSampleTime->setVisible(true);
-        ui->label_sampleTime->setVisible(true);
-        ui->label_percent->setVisible(false);
-        ui->spinBoxSampleTime->setMinimum(1);
-        ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
-    }
-    else if(choice == "FFT Filter")
-    {
-        ui->spinBoxSampleTime->setVisible(true);
-        ui->label_sampleTime->setVisible(false);
-        ui->label_percent->setVisible(true);
-        ui->spinBoxSampleTime->setMinimum(0);
-        ui->spinBoxSampleTime->setMaximum(100);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(0.1);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(0);
-    }
-    else if(choice == "Mouving Average")
-    {
-        ui->spinBoxSampleTime->setVisible(true);
-        ui->label_sampleTime->setVisible(true);
-        ui->label_percent->setVisible(false);
-        ui->spinBoxSampleTime->setMinimum(1);
-        ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
-    }
-    else if(choice == "Mouving Median")
-    {
-        ui->spinBoxSampleTime->setVisible(true);
-        ui->label_sampleTime->setVisible(true);
-        ui->label_percent->setVisible(false);
-        ui->spinBoxSampleTime->setMinimum(1);
-        ui->spinBoxSampleTime->setMaximum(dataInfo.at(3)/2);
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
-    }
-}
-//cursor spinbox interaction end
-
 //Del base line interaction
 void FenEnfantGraph::interpolationInteraction(const int &state)
 {
@@ -2692,11 +2705,6 @@ void FenEnfantGraph::moveCursorH(const int &id)
     QList<double> keysList(ui->customPlot->graph(indexGraph[name])->data()->keys());
     QVector<double> keysVector;
 
-    /*for (int i(0); i <= keysList.size()-1; i++)
-    {
-        keysVector.push_back(keysList.at(i));
-    }*/
-
     if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
         for (int i(0); i <= keysList.size()-1; i++)
@@ -2721,6 +2729,12 @@ void FenEnfantGraph::moveCursorH(const int &id)
     {
         valuesVector.push_back(value);
     }
+
+    //cursor management
+    ui->doubleSpinBoxCursorSpline1Y->setMaximum(ui->doubleSpinBoxCursorSpline1Y2->value());
+    ui->doubleSpinBoxCursorSpline1Y2->setMinimum(ui->doubleSpinBoxCursorSpline1Y->value());
+    ui->doubleSpinBoxCursorSpline2Y->setMaximum(ui->doubleSpinBoxCursorSpline2Y2->value());
+    ui->doubleSpinBoxCursorSpline2Y2->setMinimum(ui->doubleSpinBoxCursorSpline2Y->value());
 
     ui->customPlot->graph(indexGraph[name])->setData(keysVector, valuesVector);
     ui->customPlot->replot();
@@ -2976,28 +2990,35 @@ void FenEnfantGraph::delBaseLine()
 
     mathMethod->setPolyOrder(3);
     QVector<QVector<double> > tabReg;
-    tabReg = mathMethod->generatePoint(indexGraph[ui->comboBoxInterpolCurve->currentText()], dataReturn);
+    QVector<QCPData> graphData(ui->customPlot->graph(indexGraph[ui->comboBoxInterpolCurve->currentText()])->data()->values().toVector());
+    tabReg = mathMethod->generatePoint( graphData, dataReturn);
 
     QVector<QVector<double> > tabDelBaseLine;
-    tabDelBaseLine = mathMethod->delBaseLine( indexGraph[ui->comboBoxInterpolCurve->currentText()], tabReg);
+    tabDelBaseLine = mathMethod->delBaseLine( graphData, tabReg);
 
-    QVector<QVector<double> > tabDisplay;
-    if (ui->checkBoxZeroNegativePoint->isChecked() == true)
-    {
-        tabDisplay = mathMethod->zeroNegativePoint(tabDelBaseLine);
-    }
-    else if (ui->checkBoxZeroNegativePoint->isChecked() == false)
-    {
-        tabDisplay = tabDelBaseLine;
-    }
+    QVector<QVector<double> > tabTempNorm;
+    //Norm del base line curve
     if (ui->checkBoxSBLNorm->isChecked() == true)
     {
-        tabDisplay = mathMethod->delBaseLineNorm(tabDelBaseLine);
+        tabTempNorm = mathMethod->delBaseLineNorm(tabDelBaseLine);
+    }
+    else if (ui->checkBoxSBLNorm->isChecked() == false)
+    {
+        tabTempNorm = tabDelBaseLine;
+    }
+
+    QVector<QVector<double> > tabTempNeg;
+    //negativ point to zero
+    if (ui->checkBoxZeroNegativePoint->isChecked() == true)
+    {
+        tabTempNeg = mathMethod->zeroNegativePoint(tabTempNorm);
     }
     else if (ui->checkBoxZeroNegativePoint->isChecked() == false)
     {
-        tabDisplay = tabDelBaseLine;
+        tabTempNeg = tabTempNorm;
     }
+
+    QVector<QVector<double> > tabDisplay(tabTempNeg);
 
     displayMathFunctionCurve(tabDisplay);
 
@@ -3312,7 +3333,23 @@ void FenEnfantGraph::addItemToOpertoionCurve()
 
 void FenEnfantGraph::operationGraph()
 {
-    displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(), ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(), ui->comboBoxAddCurvOpration->currentText()));
+    if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+    {
+        displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
+                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
+                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
+                                                           ui->comboBoxAddCurvOpration->currentText()));
+    }
+    else if(ui->checkBoxDrawBetweenCursor->checkState() == 2)
+    {
+        displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
+                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
+                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
+                                                           ui->comboBoxAddCurvOpration->currentText(),
+                                                           ui->spinBoxCurseur1->value(),
+                                                           ui->spinBoxCurseur2->value()));
+    }
+
     ui->customPlot->replot();
 }
 //math opération on curve end

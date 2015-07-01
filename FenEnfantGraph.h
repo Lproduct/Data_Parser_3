@@ -33,7 +33,7 @@ public slots:
     //Zoom management
     void zoom();
     //Math curve
-    void createCurve();
+    void createCurveNew();
     //graph skin
     void contextMenuRequest(QPoint pos);    
     void moveLegend();
@@ -69,7 +69,7 @@ public slots:
     void customCurveManagement();
     void customCurve();
     //Cursor spinbox interaction
-    void cursorSpinBoxInt(const QString &choice);
+    void cursorSpinBoxInt(const int &ind);
     //Interpolation interaction
     void interpolationInteraction(const int &state);
     void cursorMangementInterpol(const int &state);
@@ -98,6 +98,7 @@ public slots:
     //operation on graph
     void operationGraph();
 
+
 private:
     void setToolBoxButtonColor(QToolBox* toolBox, int index, QColor color);
     void setCurrentFile(const QString &fileName);
@@ -121,7 +122,8 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     //new cursor end
-    void createCurveIntialisation();
+    //Curve creation method
+    void addItemToComboboxCreateCurve();
     void displayMathFunctionCurve(const QVector<QVector<double> > &tab);
     QString curveName(const QVector<double> &tabId);
     void calculateOffsetTime(const QStringList &fileInfo);
@@ -140,6 +142,8 @@ private:
     void destroyItemFromCombobox();
     void supressCurveFromIndex(const int &nbCurve);
     void addItemToOpertoionCurve();
+
+
 
     Ui::FenEnfantGraph *ui;
     std::map<QString,int>  indexGraph;

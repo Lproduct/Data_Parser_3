@@ -14,5 +14,11 @@
         <file>images/crossicon.png</file>
         <file>images/resize.png</file>
         <file>images/clear.png</file>
+        <file>images/custom.png</file>
+        <file>images/info.png</file>
+        <file>images/minus.png</file>
+        <file>images/plot.png</file>
+        <file>images/export.png</file>
+        <file>images/Plot_draw.png</file>
     </qresource>
 </RCC>

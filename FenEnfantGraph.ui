@@ -54,8 +54,14 @@
      <property name="styleSheet">
       <string notr="true"/>
      </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -65,10 +71,14 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>406</height>
+        <width>100</width>
+        <height>30</height>
        </rect>
       </property>
+      <attribute name="icon">
+       <iconset resource="data_parser_3.qrc">
+        <normaloff>:/images/info.png</normaloff>:/images/info.png</iconset>
+      </attribute>
       <attribute name="label">
        <string>Info file</string>
       </attribute>
@@ -78,24 +88,17 @@
          <x>10</x>
          <y>10</y>
          <width>241</width>
-         <height>391</height>
+         <height>371</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_14">
           <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Title :</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QTextBrowser" name="title">
             <property name="maximumSize">
              <size>
-              <width>150</width>
+              <width>300</width>
               <height>23</height>
              </size>
             </property>
@@ -294,7 +297,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item alignment="Qt::AlignRight">
            <widget class="QLabel" name="label_25">
             <property name="maximumSize">
              <size>
@@ -309,6 +312,12 @@
           </item>
           <item>
            <widget class="QSpinBox" name="spinBoxTimeUnit">
+            <property name="maximumSize">
+             <size>
+              <width>50</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
@@ -360,10 +369,14 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>406</height>
+        <width>100</width>
+        <height>30</height>
        </rect>
       </property>
+      <attribute name="icon">
+       <iconset resource="data_parser_3.qrc">
+        <normaloff>:/images/charticon.png</normaloff>:/images/charticon.png</iconset>
+      </attribute>
       <attribute name="label">
        <string>Curve Management</string>
       </attribute>
@@ -485,20 +498,24 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
+      <attribute name="icon">
+       <iconset resource="data_parser_3.qrc">
+        <normaloff>:/images/Plot_draw.png</normaloff>:/images/Plot_draw.png</iconset>
+      </attribute>
       <attribute name="label">
        <string>Create Curve</string>
       </attribute>
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>20</x>
          <y>10</y>
-         <width>233</width>
-         <height>381</height>
+         <width>231</width>
+         <height>371</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -568,6 +585,13 @@
          </layout>
         </item>
         <item>
+         <widget class="QCheckBox" name="checkBoxDrawBetweenCursor">
+          <property name="text">
+           <string>Draw between cursor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="Line" name="line_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -575,75 +599,61 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_15">
-          <property name="text">
-           <string>Create curve:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item alignment="Qt::AlignLeft">
-           <widget class="QLabel" name="label_11">
-            <property name="maximumSize">
-             <size>
-              <width>120</width>
-              <height>20</height>
-             </size>
-            </property>
+          <item>
+           <widget class="QLabel" name="label_15">
             <property name="text">
-             <string>Operation :</string>
+             <string>Create curve:</string>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLabel" name="label_sampleTime">
-            <property name="maximumSize">
-             <size>
-              <width>90</width>
-              <height>20</height>
-             </size>
-            </property>
+          <item alignment="Qt::AlignRight">
+           <widget class="QLabel" name="label_sample_time">
             <property name="text">
-             <string>Sampling Time :</string>
+             <string>SampleTime</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <layout class="QHBoxLayout" name="horizontalLayout_34">
           <item>
-           <widget class="QComboBox" name="comboBoxCurveType">
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="editable">
-             <bool>false</bool>
-            </property>
-            <property name="currentText">
-             <string/>
-            </property>
+           <widget class="QComboBox" name="comboBoxCurveType_2">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Average</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Mouving Average</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Median filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Mouving Median Filter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FFT</string>
+             </property>
+            </item>
            </widget>
           </item>
-          <item>
-           <widget class="QSpinBox" name="spinBoxSampleTime">
-            <property name="maximumSize">
-             <size>
-              <width>50</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-           </widget>
+          <item alignment="Qt::AlignRight">
+           <widget class="QSpinBox" name="spinBoxSampleTime_2"/>
           </item>
           <item>
            <widget class="QLabel" name="label_percent">
@@ -661,31 +671,10 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>Curve :</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="ComboBoxCurveName">
-          <property name="editable">
-           <bool>false</bool>
-          </property>
-          <property name="currentText">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="checkBoxDrawBetweenCursor">
-          <property name="text">
-           <string>Draw between cursor</string>
-          </property>
-         </widget>
+         <widget class="QComboBox" name="ComboBoxCurveName_2"/>
         </item>
         <item alignment="Qt::AlignHCenter">
-         <widget class="QPushButton" name="pushButtoncreateCurve">
+         <widget class="QPushButton" name="pushButtoncreateCurve_2">
           <property name="text">
            <string>Proceed</string>
           </property>
@@ -745,6 +734,19 @@
           </property>
          </widget>
         </item>
+        <item>
+         <spacer name="verticalSpacer_11">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -753,10 +755,14 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>100</width>
+        <height>30</height>
        </rect>
       </property>
+      <attribute name="icon">
+       <iconset resource="data_parser_3.qrc">
+        <normaloff>:/images/custom.png</normaloff>:/images/custom.png</iconset>
+      </attribute>
       <attribute name="label">
        <string>Custom Curve</string>
       </attribute>
@@ -898,6 +904,9 @@
               <width>50</width>
               <height>50</height>
              </size>
+            </property>
+            <property name="locale">
+             <locale language="English" country="UnitedStates"/>
             </property>
             <property name="text">
              <string>Proceed</string>
@@ -1099,10 +1108,14 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>100</width>
+        <height>30</height>
        </rect>
       </property>
+      <attribute name="icon">
+       <iconset resource="data_parser_3.qrc">
+        <normaloff>:/images/minus.png</normaloff>:/images/minus.png</iconset>
+      </attribute>
       <attribute name="label">
        <string>Delete Base Line</string>
       </attribute>
@@ -1506,10 +1519,14 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>100</width>
+        <height>30</height>
        </rect>
       </property>
+      <attribute name="icon">
+       <iconset resource="data_parser_3.qrc">
+        <normaloff>:/images/export.png</normaloff>:/images/export.png</iconset>
+      </attribute>
       <attribute name="label">
        <string>Export Curve</string>
       </attribute>
@@ -1824,6 +1841,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="data_parser_3.qrc"/>
+ </resources>
  <connections/>
 </ui>
