@@ -61,7 +61,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -71,8 +71,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -256,7 +256,7 @@
           <property name="maximumSize">
            <size>
             <width>250</width>
-            <height>300</height>
+            <height>350</height>
            </size>
           </property>
           <property name="font">
@@ -268,6 +268,19 @@
            <bool>true</bool>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_10">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <spacer name="verticalSpacer_7">
@@ -285,6 +298,13 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Time key:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="checkBoxTimeAbsis">
             <property name="maximumSize">
              <size>
@@ -296,6 +316,19 @@
              <string/>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item alignment="Qt::AlignRight">
            <widget class="QLabel" name="label_25">
@@ -742,8 +775,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1095,8 +1128,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1506,8 +1539,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">

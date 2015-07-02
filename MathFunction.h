@@ -30,6 +30,7 @@ public:
     QVector<QVector<double> > delBaseLineNorm(QVector<QVector<double> > tabData);
     QVector<QVector<double> > decayCompensation(const QVector<double> &key, const QVector<QCPData> &value, const double &timeValue, const int &power, const QString &unit);
     QVector<QVector<double> > opertionCurve(const QVector<double> &key, const QVector<QCPData> &curve1, const QVector<QCPData> &curve2, const QString &operation, const double &startValue = -1, const double &endValue = -1);
+    QVector<double> getMinMaxKeyCurve(const QVector<QCPData> &graphData);
 
 private:
     /*** Average Value Filter ****/

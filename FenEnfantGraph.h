@@ -34,6 +34,7 @@ public slots:
     void zoom();
     //Math curve
     void createCurveNew();
+    void comboboxCurveNameInteraction(const int &nbGraph);
     //graph skin
     void contextMenuRequest(QPoint pos);    
     void moveLegend();

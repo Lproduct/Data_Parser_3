@@ -229,6 +229,8 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     //operation curve
     connect(ui->pushButtonAddCurve, SIGNAL(clicked()), this, SLOT(operationGraph()));
 
+    connect(ui->ComboBoxCurveName_2, SIGNAL(currentIndexChanged(int)), this, SLOT(comboboxCurveNameInteraction(int)));
+
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -1642,7 +1644,19 @@ void FenEnfantGraph::resizeGraphCurve(const int &nbCurve)
 void FenEnfantGraph::clearCustom(const int &nbCurve)
 {
     //reset graph data
-    ui->customPlot->graph(nbCurve)->setData(m_tabData.at(0), m_tabData.at(nbCurve+1));
+    if (ui->checkBoxTimeAbsis->checkState() == 0)
+    {
+        ui->customPlot->graph(nbCurve)->setData(m_tabData.at(0), m_tabData.at(nbCurve+1));
+    }
+    else if (ui->checkBoxTimeAbsis->checkState() == 2)
+    {
+        QVector<double> keyTime(m_tabData.at(0));
+        for (int i(0); i<keyTime.size(); i++)
+        {
+            keyTime[i] += offsetTime;
+        }
+        ui->customPlot->graph(nbCurve)->setData(keyTime, m_tabData.at(nbCurve+1));
+    }
 
     //reset graph name
     ui->customPlot->graph(nbCurve)->setName(m_header.at(nbCurve+1));
@@ -1656,6 +1670,7 @@ void FenEnfantGraph::clearCustom(const int &nbCurve)
     ui->table->setRowHeight(nbCurve, 25);
     ui->table->setCellWidget( nbCurve, 1, textTextEdit);
 
+    //update index graph
     for (std::map<QString, int>::iterator it(indexGraph.begin()); it != indexGraph.end(); it++)
     {
         if (it->second == nbCurve)
@@ -2089,6 +2104,14 @@ void FenEnfantGraph::drawBetweenCursorState()
         ui->checkBoxDrawBetweenCursor->setChecked(false);
     }
 }
+
+void FenEnfantGraph::comboboxCurveNameInteraction(const int &nbGraph)
+{
+    QVector<double> data(mathMethod->getMinMaxKeyCurve(ui->customPlot->graph(nbGraph)->data()->values().toVector()));
+    ui->spinBoxCurseur1->setMinimum(data.at(0));
+    ui->spinBoxCurseur2->setMaximum(data.at(1));
+}
+
 //Math curve display end
 
 //Export picture of graph
@@ -2337,19 +2360,9 @@ void FenEnfantGraph::customCurve()
     QList<double> keysList(ui->customPlot->selectedGraphs().first()->data()->keys());
     QVector<double> keysVector;
 
-    if(ui->checkBoxTimeAbsis->checkState() == 2)
+    for (int i(0); i <= keysList.size()-1; i++)
     {
-        for (int i(0); i <= keysList.size()-1; i++)
-        {
-            keysVector.push_back(keysList.at(i)*timeUnit() + offset*timeUnit() - offsetTime);
-        }
-    }
-    else if(ui->checkBoxTimeAbsis->checkState() == 0)
-    {
-        for (int i(0); i <= keysList.size()-1; i++)
-        {
-            keysVector.push_back(keysList.at(i) + offset);
-        }
+        keysVector.push_back(keysList.at(i) + offset);
     }
 
     // extract values from QCPData and create a QVector of values
@@ -2399,6 +2412,7 @@ void FenEnfantGraph::customCurve()
     ui->customPlot->replot();
 }
 //Custom Curve end
+
 
 //Del base line interaction
 void FenEnfantGraph::interpolationInteraction(const int &state)
@@ -2927,7 +2941,7 @@ void FenEnfantGraph::linkCursor2Z1Y(const double &value)
         ui->doubleSpinBoxCursorSpline1Y->setValue(value -incrementV);
     }
 }
-    //link cursor Zone 2
+  //link cursor Zone 2
 void FenEnfantGraph::linkCursorZ2(const bool &state)
 {
     if (state == true)
@@ -3239,6 +3253,23 @@ void FenEnfantGraph::exportGraphData()
     QVector<double> keyRange;
     keyRange = ui->customPlot->graph(0)->data()->keys().toVector();
 
+    //if time absis activate remove offset from key
+    if (ui->checkBoxTimeAbsis->checkState() == 2)
+    {
+        for(int i(0); i<keyRange.size(); i++)
+        {
+            keyRange[i] -= offsetTime;
+        }
+
+        for(int i(0); i<graphData.size(); i++)
+        {
+            for (int j(0); j<graphData.at(i).size(); j++)
+            {
+                graphData[i][j].key -= offsetTime;
+            }
+        }
+    }
+
     DataSave *datasave = new DataSave;
     datasave->savedata(outputDir, graphName, m_fileInfo, graphData, keyRange, ui->checkBoxAddDBLInComment->isChecked(), ui->textEditPolyOrder->toPlainText());
 }
@@ -3259,9 +3290,17 @@ void FenEnfantGraph::graphTabManagement()
 
 void FenEnfantGraph::graphTabShow()
 {
+    double unit(ui->spinBoxTimeUnit->value());
+    if (ui->comboBoxTimeUnit->currentIndex() == 1)
+    {
+        unit /= 1000;
+    }
+
     TabData *tab = new TabData;
     tab->setInfo(ui->customPlot->selectedGraphs().first()->name());
-    tab->setData(ui->customPlot->selectedGraphs().first()->data()->values().toVector());
+    tab->setData(ui->customPlot->selectedGraphs().first()->data()->values().toVector(),
+                 ui->checkBoxTimeAbsis->checkState(),
+                 unit);
     tab->show();
     connect(tab, SIGNAL(emitData(QVector<QVector<double> >)), this, SLOT(graphTabActualisation(QVector<QVector<double> >)));
 }
@@ -3389,22 +3428,45 @@ void FenEnfantGraph::addItemToOpertoionCurve()
 
 void FenEnfantGraph::operationGraph()
 {
-    if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+    if (ui->checkBoxTimeAbsis->checkState() == 0)
     {
-        displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
-                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
-                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
-                                                           ui->comboBoxAddCurvOpration->currentText()));
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
+                                                               ui->comboBoxAddCurvOpration->currentText()));
+        }
+        else if(ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
+                                                               ui->comboBoxAddCurvOpration->currentText(),
+                                                               ui->spinBoxCurseur1->value(),
+                                                               ui->spinBoxCurseur2->value()));
+        }
     }
-    else if(ui->checkBoxDrawBetweenCursor->checkState() == 2)
+    else if (ui->checkBoxTimeAbsis->checkState() == 2)
     {
-        displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
-                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
-                                                           ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
-                                                           ui->comboBoxAddCurvOpration->currentText(),
-                                                           ui->spinBoxCurseur1->value(),
-                                                           ui->spinBoxCurseur2->value()));
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
+                                                               ui->comboBoxAddCurvOpration->currentText()));
+        }
+        else if(ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            displayMathFunctionCurve(mathMethod->opertionCurve(ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->keys().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve1->currentText()])->data()->values().toVector(),
+                                                               ui->customPlot->graph(indexGraph[ui->comboBoxAddCurve2->currentText()])->data()->values().toVector(),
+                                                               ui->comboBoxAddCurvOpration->currentText(),
+                                                               ui->spinBoxCurseur1->value() + offsetTime,
+                                                               ui->spinBoxCurseur2->value()+ offsetTime));
+        }
     }
+
 
     ui->customPlot->replot();
 }

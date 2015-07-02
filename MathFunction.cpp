@@ -341,7 +341,7 @@ void MathFunction::createTabDataNew(const QVector<QCPData> &tabData, int startVa
         long int endValueInd(returnIndOfValueAbs(endValue, 1, 1));
 
         long int N(endValueInd - startValueInd);
-        for (long int i(0); i <= N-1; i++)
+        for (long int i(0); i < N; i++)
         {
             m_dataFFT.push_back(data.at(1).at(i + startValueInd));
         }
@@ -349,7 +349,7 @@ void MathFunction::createTabDataNew(const QVector<QCPData> &tabData, int startVa
     else
     {
         long int N(data.at(0).size());
-        for (long int i(0); i <= N-1; i++)
+        for (long int i(0); i < N; i++)
         {
             m_dataFFT.push_back(data.at(1).at(i));
         }
@@ -426,37 +426,60 @@ QVector<QVector<double> > MathFunction::tabReturnFFT(const QVector<QCPData> &tab
         long int startValueInd(returnIndOfValueAbs(startValue, 1, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, 1, 1));
 
-        long int N(endValueInd - startValueInd);
-        for (long int i(0); i <= N-1; i++)
+        for (long int i(startValueInd); i <= endValueInd; i++)
         {
-            xAxis.push_back(data.at(0).at(i + startValueInd));
+            xAxis.push_back(data.at(0).at(i));
         }
     }
     else
     {
-        for (int i(0); i<= N-1; i++)
+        for (int i(0); i< N; i++)
         {
             xAxis.push_back(data.at(0).at(i));
         }
     }
 
     QVector<double> yAxis;
-    for (int i(0); i<= N-1; i++)
+    if (startValue != -1 && endValue != -1)
     {
-        switch(mode)
+        for (int i(0); i<m_dataFFT.size(); i++)
         {
-            case 0:
+            switch(mode)
             {
-                yAxis.push_back(m_dataFFT.at(i) / (2*(N-1)));
-                break;
-            }
-            case 1:
-            {
-                yAxis.push_back(qSqrt(m_testFFT.at(i)*m_testFFT.at(i)));
-                break;
+                case 0:
+                {
+                    long int N2(m_dataFFT.size());
+                    yAxis.push_back(m_dataFFT.at(i) / (2*(N2-1)));
+                    break;
+                }
+                case 1:
+                {
+                    yAxis.push_back(qSqrt(m_testFFT.at(i)*m_testFFT.at(i)));
+                    break;
+                }
             }
         }
     }
+    else
+    {
+        for (int i(0); i< N; i++)
+        {
+            switch(mode)
+            {
+                case 0:
+                {
+                    yAxis.push_back(m_dataFFT.at(i) / (2*(N-1)));
+                    break;
+                }
+                case 1:
+                {
+                    yAxis.push_back(qSqrt(m_testFFT.at(i)*m_testFFT.at(i)));
+                    break;
+                }
+            }
+        }
+    }
+
 
     dataReturn.push_back(xAxis);
     dataReturn.push_back(yAxis);
@@ -1050,7 +1073,7 @@ QVector<QVector<double> > MathFunction::decayCompensation(const QVector<double> 
     //calculate the compensation of radioactive decay
     for (int i(0); i<tabValue.size(); i++)
     {
-        double factor(key.at(i)/halfTime);
+        double factor((key.at(i)-key.at(0))/halfTime);
         tabValue[i] *= qPow(2, factor);
     }
 
@@ -1185,6 +1208,14 @@ QVector<QVector<double> > MathFunction::opertionCurve(const QVector<double> &key
     }
 
     return createTabReturn(OPERATION_CURVE, keytab, newtab);
+}
+
+QVector<double> MathFunction::getMinMaxKeyCurve(const QVector<QCPData> &graphData)
+{
+    QVector<double> dataReturn;
+    dataReturn.push_back(graphData.at(0).key);
+    dataReturn.push_back(graphData.at(graphData.size()-1).key);
+    return dataReturn;
 }
 
 /***  Math function other end ***/
