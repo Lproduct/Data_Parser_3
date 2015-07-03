@@ -532,9 +532,9 @@
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <property name="geometry">
         <rect>
-         <x>20</x>
+         <x>10</x>
          <y>10</y>
-         <width>231</width>
+         <width>251</width>
          <height>371</height>
         </rect>
        </property>
@@ -791,7 +791,7 @@
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>231</width>
+         <width>251</width>
          <height>381</height>
         </rect>
        </property>
@@ -1144,8 +1144,8 @@
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>231</width>
-         <height>434</height>
+         <width>251</width>
+         <height>501</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1486,11 +1486,32 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_36">
-          <property name="text">
-           <string>Info :</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_36">
+            <property name="text">
+             <string>Info :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonClearTxtDelBaseLine">
+            <property name="maximumSize">
+             <size>
+              <width>25</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="data_parser_3.qrc">
+              <normaloff>:/images/clear.png</normaloff>:/images/clear.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QTextEdit" name="textEditPolyOrder">
@@ -1504,19 +1525,6 @@
            <enum>QFrame::Sunken</enum>
           </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_8">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
         <item>
          <spacer name="verticalSpacer_3">
@@ -1554,8 +1562,8 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>0</y>
-         <width>236</width>
+         <y>10</y>
+         <width>251</width>
          <height>429</height>
         </rect>
        </property>

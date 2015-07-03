@@ -98,6 +98,7 @@ public slots:
     void decayCompensation();
     //operation on graph
     void operationGraph();
+    void clearTextFromPolyOrder();
 
 
 private:
@@ -137,7 +138,7 @@ private:
     void killCursorInterpol();
     void killCursorInterpolConnection();
     void setCursorV(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset = 0);
-    void setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen);
+    void setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset = 0);
     void sizeCursorH(const QString &name, QDoubleSpinBox *spinbox);
     void addItemToComboboxInterpol();
     void destroyItemFromCombobox();
