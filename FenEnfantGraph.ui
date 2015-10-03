@@ -61,7 +61,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -71,8 +71,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -402,8 +402,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -533,19 +533,12 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>10</y>
+         <y>0</y>
          <width>251</width>
-         <height>371</height>
+         <height>437</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="Line" name="line_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QCheckBox" name="checkBoxCurseurNew">
           <property name="text">
@@ -691,19 +684,30 @@
          </layout>
         </item>
         <item>
-         <widget class="QComboBox" name="ComboBoxCurveName_2"/>
-        </item>
-        <item alignment="Qt::AlignHCenter">
-         <widget class="QPushButton" name="pushButtoncreateCurve_2">
-          <property name="text">
-           <string>Proceed</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_38">
+          <item>
+           <widget class="QComboBox" name="ComboBoxCurveName_2"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtoncreateCurve_2">
+            <property name="text">
+             <string>Proceed</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="Line" name="line_12">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Operation</string>
           </property>
          </widget>
         </item>
@@ -755,6 +759,68 @@
          </widget>
         </item>
         <item>
+         <widget class="Line" name="line_8">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_36">
+          <item>
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Exponential regression</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignRight">
+           <widget class="QLabel" name="label_43">
+            <property name="text">
+             <string>number of point</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_35">
+          <item>
+           <widget class="QComboBox" name="comboBoxRegExp"/>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBoxRegExp">
+            <property name="maximumSize">
+             <size>
+              <width>80</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="maximum">
+             <number>1000000</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_37">
+          <item alignment="Qt::AlignRight">
+           <widget class="QPushButton" name="pushButtonRegExp">
+            <property name="text">
+             <string>Proceed</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="textEditRegExp"/>
+        </item>
+        <item>
          <spacer name="verticalSpacer_11">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -775,8 +841,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1142,17 +1208,17 @@
       <widget class="QWidget" name="verticalLayoutWidget_4">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>251</width>
-         <height>501</height>
+         <x>0</x>
+         <y>0</y>
+         <width>261</width>
+         <height>464</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QCheckBox" name="checkBoxBaseLineEnable">
           <property name="text">
-           <string>Supr Base Line enable</string>
+           <string>Del Base Line enable</string>
           </property>
          </widget>
         </item>
@@ -1415,7 +1481,7 @@
           <item>
            <widget class="QLabel" name="label_38">
             <property name="text">
-             <string>Sub Base Line </string>
+             <string>Del Base Line </string>
             </property>
            </widget>
           </item>
@@ -1477,6 +1543,13 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxDisplayRegCurve">
+          <property name="text">
+           <string>Display regression Curve</string>
+          </property>
+         </widget>
         </item>
         <item alignment="Qt::AlignHCenter">
          <widget class="QPushButton" name="pushButtonDelBaseLine">
@@ -1547,8 +1620,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">

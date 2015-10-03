@@ -125,7 +125,7 @@ QString DataSave::createGraphDataString(const QVector<QVector<QCPData> > &graphD
         QVector<QString> tabValue(keyRange.size());
         tabValue.fill("0");
         int startKey(returnIndexOfKey(graphData.at(i).at(0).key, keyRange));
-        int endKey(returnIndexOfKey(graphData.at(i).at(graphData.at(i).size()-1).key, keyRange));
+        int endKey = startKey + graphData.at(i).size() -1;//(returnIndexOfKey(graphData.at(i).at(graphData.at(i).size()-1).key, keyRange));
 
         for (int j(startKey); j<=endKey; j++)
         {
@@ -158,19 +158,13 @@ QString DataSave::createGraphDataString(const QVector<QVector<QCPData> > &graphD
 
 int DataSave::returnIndexOfKey(const double &value, const QVector<double> &tabKey)
 {
-    int ind(0);
     for (int i(0); i<tabKey.size(); i++)
     {
-        if (value == tabKey.at(i))
+        if (tabKey.at(i) == value)
         {
-            break;
-        }
-        else
-        {
-            ind++;
+            return i;
         }
     }
-    return ind;
 }
 
 

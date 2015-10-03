@@ -99,6 +99,9 @@ public slots:
     //operation on graph
     void operationGraph();
     void clearTextFromPolyOrder();
+    //Reg exp
+    void regExpInterManagement(const int &state);
+    void regExp();
 
 
 private:
@@ -144,6 +147,7 @@ private:
     void destroyItemFromCombobox();
     void supressCurveFromIndex(const int &nbCurve);
     void addItemToOpertoionCurve();
+    void additemToRegExpComboBox();
 
 
 

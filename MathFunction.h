@@ -31,6 +31,9 @@ public:
     QVector<QVector<double> > decayCompensation(const QVector<double> &key, const QVector<QCPData> &value, const double &timeValue, const int &power, const QString &unit);
     QVector<QVector<double> > opertionCurve(const QVector<double> &key, const QVector<QCPData> &curve1, const QVector<QCPData> &curve2, const QString &operation, const double &startValue = -1, const double &endValue = -1);
     QVector<double> getMinMaxKeyCurve(const QVector<QCPData> &graphData);
+    QVector<QVector<double> > createRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData, const int &endPercent);
+
+    static QVector<QVector<double> > convertQCPDataInQVector(const QVector<QCPData> &dataTab);
 
 private:
     /*** Average Value Filter ****/
@@ -60,8 +63,8 @@ private:
     /*** General Function ***/
     QVector<QVector<double> > createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab);
     long int returnIndOfValueAbs(const int &value, const int &sampleTime, const int &type);
+    long int returnIndOfValueKey(const int &value, const QVector<double> &keyTab, const int &sampleTime, const bool &start);
     int returnIndexOfKey(const double &value, const QVector<double> &tabKey);
-    QVector<QVector<double> > convertQCPDataInQVector(const QVector<QCPData> &dataTab);
     /*** General Function end ***/
 
     /*** Reg Line ***/
@@ -88,12 +91,17 @@ private:
     double calculateHalfTime(const double &timeValue, const int &power, const QString &unit);
     /*** Decay compensation function end ****/
 
+    QVector<QVector<double> > createTabForRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData);
+    QVector<QVector<double> > returnTabForRegExp(const QVector<QVector<double> > &data, const int &nbPoint, const QVector<QCPData> &graphData);
+
+
     QVector<QVector<double> > m_tabData;
     QVector<QVector<double> > m_tabPoint;
     QVector<double> m_dataFFT;
     QVector<double> m_testFFT;
     int m_polyOrder;
     QVector<double> m_regFactor;
+    QVector<double> m_regFactor_Reg_Exp;
     double m_rSquare;
 };
 

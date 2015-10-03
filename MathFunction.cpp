@@ -10,12 +10,13 @@
 #define AVERAGE_FILTER          0
 #define MEDIAN_FILTER           1
 #define FFT_FILTER              3
-#define POINT                   4
+#define REG                     4
 #define SPLINE                  5
 #define DEL_BASE_LINE           6
 #define MOUVING_AVERAGE_FILTER  7
 #define MOUVING_MEDIAN_FILTER   8
 #define OPERATION_CURVE         9
+#define REG_EXP                 10
 
 MathFunction::MathFunction(const QVector<QVector<double> > &tabData): m_tabData(tabData)
 {
@@ -83,6 +84,8 @@ QVector<QVector<double> > MathFunction::averageValueCurve(const QVector<QCPData>
     {
         long int startValueInd(returnIndOfValueAbs(startValue, sampleTime, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, sampleTime, 1));
+        //long int startValueInd(returnIndOfValueKey(startValue, data.at(0), sampleTime, true));
+        //long int endValueInd(returnIndOfValueKey(endValue, data.at(0), sampleTime, false));
 
         dataReturn = proceedAverageFilterNew(data, sampleTime, startValueInd, endValueInd);
     }
@@ -140,6 +143,8 @@ QVector<QVector<double> > MathFunction::mouvingAverageValueCurveNew(const QVecto
     {
         long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
+        //long int startValueInd(returnIndOfValueKey(startValue, data.at(0), sampleTimeModif, true));
+        //long int endValueInd(returnIndOfValueKey(endValue, data.at(0), sampleTimeModif, false));
 
         dataReturn = proceedMouvingAverageFilterNew(data, sampleTimeModif, startValueInd, endValueInd);
     }
@@ -260,6 +265,8 @@ QVector<QVector<double> > MathFunction::mouvingMedianValueCurveNew(const QVector
     {
         long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
+        //long int startValueInd(returnIndOfValueKey(startValue, data.at(0), sampleTimeModif, true));
+        //long int endValueInd(returnIndOfValueKey(endValue, data.at(0), sampleTimeModif, false));
 
         dataReturn = proceedMouvingMedianFilterNew(data, sampleTimeModif, startValueInd, endValueInd);
     }
@@ -339,6 +346,8 @@ void MathFunction::createTabDataNew(const QVector<QCPData> &tabData, int startVa
     {
         long int startValueInd(returnIndOfValueAbs(startValue, 1, 0));
         long int endValueInd(returnIndOfValueAbs(endValue, 1, 1));
+        //long int startValueInd(returnIndOfValueKey(startValue, data.at(0), 1, true));
+        //long int endValueInd(returnIndOfValueKey(endValue, data.at(0), 1, false));
 
         long int N(endValueInd - startValueInd);
         for (long int i(0); i < N; i++)
@@ -553,7 +562,7 @@ QVector<QVector<double> > MathFunction::generatePoint(const QVector<QCPData> &gr
 
     tabPoint = regPoly(tabDataZone, m_polyOrder);
 
-    return createTabReturn(POINT, tabPoint.at(0), tabPoint.at(1));
+    return createTabReturn(REG, tabPoint.at(0), tabPoint.at(1));
 }
 
 QVector<QVector<double> > MathFunction::regLine(QVector<QVector<double> > tabData)
@@ -946,13 +955,13 @@ double MathFunction::coeffReg(const QVector<QVector<double> > &tabData, const QV
         SSres += qPow(y.at(i) - f.at(i), 2);
     }
 
-    double SStot;
+    double SStot(0.001);
     for (int i(0); i<y.size(); i++)
     {
         SStot += qPow(y.at(i) - yBar, 2);
     }
 
-    double rSquare;
+    double rSquare(0);
     rSquare = 1-(SSres/SStot);
 
     m_rSquare = rSquare;
@@ -975,6 +984,85 @@ void MathFunction::setPolyOrder(const int &order)
 }
 /*** Reg & Interpol Function end***/
 
+/*** Reg exponential Function ***/
+QVector<QVector<double> > MathFunction::createRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData, const int &nbPoint)
+{
+    m_regFactor_Reg_Exp.clear();
+
+    QVector<QVector<double> > dataIn;
+    dataIn = createTabForRegExp(graphData, CursorData);
+
+    //Generate a matrix of regression
+    QVector<QVector<double> > M;
+    M = matrixReg(dataIn, 1);
+
+    //Solve the matrix and return factor for the polynomial function
+    m_regFactor_Reg_Exp = gaussPivot(M);
+
+    QVector<QVector<double> > dataOut;
+    dataOut = returnTabForRegExp(dataIn, nbPoint, graphData);
+
+    return createTabReturn(REG_EXP, dataOut.at(0), dataOut.at(1));
+}
+
+QVector<QVector<double> > MathFunction::createTabForRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData)
+{
+    QVector<QVector<double> > data(convertQCPDataInQVector(graphData));
+
+    long int startInd(returnIndOfValueAbs(CursorData.at(0),1,0));
+    long int endInd(returnIndOfValueAbs(CursorData.at(1),1,0));
+
+    QVector<double> xTab;
+    QVector<double> yTab;
+    for (int i(startInd); i<=endInd; i++)
+    {
+        xTab.push_back(data.at(0).at(i));
+        yTab.push_back(qLn(data.at(1).at(i)));
+    }
+
+    QVector<QVector<double> > regExpTab;
+    regExpTab.push_back(xTab);
+    regExpTab.push_back(yTab);
+
+    return regExpTab;
+}
+
+QVector<QVector<double> > MathFunction::returnTabForRegExp(const QVector<QVector<double> > &data, const int &nbPoint, const QVector<QCPData> &graphData)
+{
+    double deltaT(data.at(0).at(1) - data.at(0).at(0));
+
+    //Get coeff for the equation y=a*exp(b)
+    double a(qExp(m_regFactor_Reg_Exp.at(0)));
+    double b(m_regFactor_Reg_Exp.at(1));
+
+    QVector<double> xTab;
+    QVector<double> yTab;
+
+    QVector<QVector<double> > dataGraph(convertQCPDataInQVector(graphData));
+    long int endInd(returnIndOfValueAbs(data.at(0).at(data.at(0).size() -1),1,0));
+
+    for (int i(0); i<endInd; i++)
+    {
+        xTab.push_back(dataGraph.at(0).at(i));
+        yTab.push_back(dataGraph.at(1).at(i));
+    }
+
+    for (int i(0); i<nbPoint; i++)
+    {
+        double x(data.at(0).at(data.at(0).size()-1) + i*deltaT);
+        xTab.push_back(x);
+        yTab.push_back(a*qExp(b*x));
+    }
+
+    QVector<QVector<double> >dataReturn;
+    dataReturn.push_back(xTab);
+    dataReturn.push_back(yTab);
+
+    return dataReturn;
+}
+
+/*** Reg exponential Function end ***/
+
 /*** Baricenter Function ***/
 double MathFunction::baricenterCurve(const QVector<QVector<double> > &tabData)
 {
@@ -984,7 +1072,7 @@ double MathFunction::baricenterCurve(const QVector<QVector<double> > &tabData)
         num += tabData.at(0).at(i) * tabData.at(1).at(i);
     }
 
-    double den;
+    double den(0);
     for (int i(0); i<tabData.at(0).size(); i++)
     {
         den += tabData.at(1).at(i);
@@ -1237,6 +1325,33 @@ long int MathFunction::returnIndOfValueAbs(const int &value, const int &sampleTi
     }
 
     if (type == 0)
+    {
+        if(indice %  sampleTime !=0 )
+        {
+            double test((int)(indice/sampleTime) + 1);
+            indice = sampleTime*test;
+        }
+    }
+
+    return indice;
+}
+
+long int MathFunction::returnIndOfValueKey(const int &value, const QVector<double> &keyTab, const int &sampleTime, const bool &start)
+{
+    /****************************************************************
+     * This function permit to found witch indice correspond a value
+     * *************************************************************/
+    long int indice(0);
+    for(long int i(0); i<= keyTab.size()-1; i++)
+    {
+        if(keyTab.at(i) == (double) value)
+        {
+            indice = i;
+            break;
+        }
+    }
+
+    if (start == true)
     {
         if(indice %  sampleTime !=0 )
         {
