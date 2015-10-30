@@ -65,7 +65,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -302,7 +302,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_1">
             <property name="text">
              <string>Time key:</string>
             </property>
@@ -406,8 +406,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -536,10 +536,10 @@
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>0</x>
          <y>0</y>
-         <width>251</width>
-         <height>450</height>
+         <width>261</width>
+         <height>441</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -667,6 +667,11 @@
               <string>FFT</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>Aggregate data</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item alignment="Qt::AlignRight">
@@ -683,6 +688,31 @@
             <property name="text">
              <string>%</string>
             </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBoxDataAgreg">
+            <property name="maximumSize">
+             <size>
+              <width>47</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string>Mid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Left</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Right</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -842,8 +872,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1195,8 +1225,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -1621,8 +1651,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>267</width>
-        <height>388</height>
+        <width>98</width>
+        <height>28</height>
        </rect>
       </property>
       <attribute name="icon">

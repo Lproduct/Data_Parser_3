@@ -246,6 +246,8 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
 
     connect(ui->checkBoxCurseurNew, SIGNAL(stateChanged(int)), this, SLOT(regExpInterManagement(int)));
     connect(ui->pushButtonRegExp, SIGNAL(clicked()), this, SLOT(regExp()));
+
+    ui->comboBoxDataAgreg->setVisible(false);
 }
 
 FenEnfantGraph::~FenEnfantGraph()
@@ -1769,6 +1771,7 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
         ui->spinBoxSampleTime_2->setVisible(false);
         ui->label_sample_time->setVisible(false);
         ui->label_percent->setVisible(false);
+        ui->comboBoxDataAgreg->setVisible(false);
     }
     else if(ind == 1)
     {
@@ -1780,8 +1783,7 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
         ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
         ui->spinBoxSampleTime_2->setValue(1);
 
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(1);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+        ui->comboBoxDataAgreg->setVisible(false);
     }
     else if(ind == 2)
     {
@@ -1793,8 +1795,7 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
         ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
         ui->spinBoxSampleTime_2->setValue(1);
 
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+        ui->comboBoxDataAgreg->setVisible(false);
     }
     else if(ind == 3)
     {
@@ -1805,9 +1806,9 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
         ui->spinBoxSampleTime_2->setMinimum(1);
         ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
         ui->spinBoxSampleTime_2->setValue(1);
+        ui->spinBoxSampleTime_2->setSingleStep(2);
 
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+        ui->comboBoxDataAgreg->setVisible(false);
     }
     else if(ind == 4)
     {
@@ -1818,9 +1819,9 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
         ui->spinBoxSampleTime_2->setMinimum(1);
         ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
         ui->spinBoxSampleTime_2->setValue(1);
+        ui->spinBoxSampleTime_2->setSingleStep(2);
 
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(2);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(1);
+        ui->comboBoxDataAgreg->setVisible(false);
     }
     else if(ind == 5)
     {
@@ -1832,8 +1833,20 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
         ui->spinBoxSampleTime_2->setMaximum(100);
         ui->spinBoxSampleTime_2->setValue(80);
 
-        ui->doubleSpinBoxCursorSpline1Y->setSingleStep(0.1);
-        ui->doubleSpinBoxCursorSpline1Y->setValue(0);
+        ui->comboBoxDataAgreg->setVisible(false);
+    }
+    else if(ind ==6)
+    {
+        ui->label_sample_time->setVisible(true);
+        ui->label_percent->setVisible(false);
+        ui->spinBoxSampleTime_2->setVisible(true);
+
+        ui->spinBoxSampleTime_2->setMinimum(1);
+        ui->spinBoxSampleTime_2->setMaximum(dataInfo.at(3)/2);
+        ui->spinBoxSampleTime_2->setValue(1);
+        ui->spinBoxSampleTime_2->setSingleStep(1);
+
+        ui->comboBoxDataAgreg->setVisible(true);
     }
 }
 
@@ -2008,6 +2021,22 @@ QString FenEnfantGraph::curveName(const QVector<double> &tabId)
         name = tr("Reg_exp_%1").arg(ui->comboBoxInterpolCurve->currentText());
     }
 
+    else if(opId == 11)
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            name = tr("Aggreg_Data_%1_ST:%2").arg(ui->ComboBoxCurveName_2->currentText())
+                                        .arg(ui->spinBoxSampleTime_2->value());
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            name = tr("Aggreg_Data_%1_ST:%2_%3->%4").arg(ui->ComboBoxCurveName_2->currentText())
+                                               .arg(ui->spinBoxSampleTime_2->value())
+                                               .arg(ui->spinBoxCurseur1->value())
+                                               .arg(ui->spinBoxCurseur2->value());
+        }
+    }
+
 
     return name;
 }
@@ -2080,6 +2109,18 @@ void FenEnfantGraph::createCurveNew()
         else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
         {
             displayMathFunctionCurve(mathMethod->fftFilterNew(graphData, sampleTime, cursor1, cursor2));
+        }
+    }
+
+    else if(indOp == 6)
+    {
+        if (ui->checkBoxDrawBetweenCursor->checkState() == 0)
+        {
+            displayMathFunctionCurve(mathMethod->aggregateData(graphData,sampleTime,ui->comboBoxDataAgreg->currentIndex()));
+        }
+        else if (ui->checkBoxDrawBetweenCursor->checkState() == 2)
+        {
+            displayMathFunctionCurve(mathMethod->aggregateData(graphData,sampleTime,ui->comboBoxDataAgreg->currentIndex(), cursor1, cursor2));
         }
     }
 
@@ -2295,6 +2336,11 @@ void FenEnfantGraph::setGraphAbsisTime()
 
         ui->spinBoxTimeUnit->setEnabled(false);
         ui->comboBoxTimeUnit->setEnabled(false);
+
+        ui->page_2->setEnabled(false);
+        ui->page_3->setEnabled(false);
+        ui->page_4->setEnabled(false);
+        ui->page_5->setEnabled(false);
     }
     else if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
@@ -2305,6 +2351,11 @@ void FenEnfantGraph::setGraphAbsisTime()
 
         ui->spinBoxTimeUnit->setEnabled(true);
         ui->comboBoxTimeUnit->setEnabled(true);
+
+        ui->page_2->setEnabled(true);
+        ui->page_3->setEnabled(true);
+        ui->page_4->setEnabled(true);
+        ui->page_5->setEnabled(true);
     }
 }
 

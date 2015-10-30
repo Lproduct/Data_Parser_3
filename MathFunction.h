@@ -32,6 +32,7 @@ public:
     QVector<QVector<double> > opertionCurve(const QVector<double> &key, const QVector<QCPData> &curve1, const QVector<QCPData> &curve2, const QString &operation, const double &startValue = -1, const double &endValue = -1);
     QVector<double> getMinMaxKeyCurve(const QVector<QCPData> &graphData);
     QVector<QVector<double> > createRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData, const int &endPercent);
+    QVector<QVector<double> > aggregateData(const QVector<QCPData> &tabData, const int &sampleTime, const int& position , int startValue = -1, int endValue = -1);
 
     static QVector<QVector<double> > convertQCPDataInQVector(const QVector<QCPData> &dataTab);
     double getCurveArea();
@@ -91,6 +92,10 @@ private:
     /*** Decay compensation function ****/
     double calculateHalfTime(const double &timeValue, const int &power, const QString &unit);
     /*** Decay compensation function end ****/
+
+    /*** Aggregate data ***/
+    QVector<QVector<double> > proceedAggregateData(const QVector<QVector<double> > &tabData, const int &sampleTime, const int &position,const int &startValueInd, const int &endValueInd);
+    /*** Aggregate data end ***/
 
     QVector<QVector<double> > createTabForRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData);
     QVector<QVector<double> > returnTabForRegExp(const QVector<QVector<double> > &data, const int &nbPoint, const QVector<QCPData> &graphData);
