@@ -74,7 +74,6 @@ private:
     QAction *previousAct;
     QAction *separatorAct;
     QAction *aboutAct;
-    QAction *aboutQtAct;
 
 };
 

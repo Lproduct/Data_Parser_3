@@ -8,6 +8,10 @@ TabData::TabData(QWidget *parent) : QDialog(parent), ui(new Ui::TabData)
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/tabicon.png"));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(emitSignal()));
+
+    ui->pushButtonChangeSelectedVal->setEnabled(false);
+    connect(ui->tableWidget, SIGNAL(cellClicked(int,int)), this, SLOT(selectChangePBManagementOn()));
+    connect(ui->pushButtonChangeSelectedVal, SIGNAL(pressed()), this, SLOT(changeSelectedValue()));
 }
 
 TabData::~TabData()
@@ -96,5 +100,34 @@ void TabData::emitSignal()
 void emitData(QVector<QVector<double> > data)
 {
     emit data;
+}
+
+void TabData::selectChangePBManagementOn()
+{
+    ui->pushButtonChangeSelectedVal->setEnabled(true);
+}
+
+void TabData::selectChangePBManagementOff()
+{
+    ui->pushButtonChangeSelectedVal->setEnabled(false);
+}
+
+void TabData::changeSelectedValue()
+{
+    double value = QInputDialog::getDouble(this, "Value to set in selected cells", "Value :");
+
+    QVector<int> rowTab;
+    QModelIndexList select = ui->tableWidget->selectionModel()->selection().indexes();
+
+    for(int i(0); i< select.size(); i++)
+    {
+        QModelIndex index = select.at(i);
+        rowTab.push_back(index.row());
+    }
+
+    for(int i(0); i < rowTab.size(); i++)
+    {
+        ui->tableWidget->item(rowTab.at(i),1)->setText(QString::number(value));
+    }
 }
 

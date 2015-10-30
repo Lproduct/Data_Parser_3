@@ -34,6 +34,7 @@ public:
     QVector<QVector<double> > createRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData, const int &endPercent);
 
     static QVector<QVector<double> > convertQCPDataInQVector(const QVector<QCPData> &dataTab);
+    double getCurveArea();
 
 private:
     /*** Average Value Filter ****/
@@ -94,6 +95,7 @@ private:
     QVector<QVector<double> > createTabForRegExp(const QVector<QCPData> &graphData, const QVector<double> &CursorData);
     QVector<QVector<double> > returnTabForRegExp(const QVector<QVector<double> > &data, const int &nbPoint, const QVector<QCPData> &graphData);
 
+    long int returnIndOfValueAbsNew(const double &value, const QVector<double> &keyTab);
 
     QVector<QVector<double> > m_tabData;
     QVector<QVector<double> > m_tabPoint;
@@ -103,6 +105,7 @@ private:
     QVector<double> m_regFactor;
     QVector<double> m_regFactor_Reg_Exp;
     double m_rSquare;
+    double curveArea;
 };
 
 #endif // MATHFUNCTION_H

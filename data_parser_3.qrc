@@ -20,5 +20,6 @@
         <file>images/plot.png</file>
         <file>images/export.png</file>
         <file>images/Plot_draw.png</file>
+        <file>images/plot2.png</file>
     </qresource>
 </RCC>

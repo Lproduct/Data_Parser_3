@@ -82,10 +82,8 @@ QVector<QVector<double> > MathFunction::averageValueCurve(const QVector<QCPData>
     }
     else
     {
-        long int startValueInd(returnIndOfValueAbs(startValue, sampleTime, 0));
-        long int endValueInd(returnIndOfValueAbs(endValue, sampleTime, 1));
-        //long int startValueInd(returnIndOfValueKey(startValue, data.at(0), sampleTime, true));
-        //long int endValueInd(returnIndOfValueKey(endValue, data.at(0), sampleTime, false));
+        long int startValueInd(returnIndOfValueAbsNew(startValue, data.at(0)));
+        long int endValueInd(returnIndOfValueAbsNew(endValue, data.at(0)));
 
         dataReturn = proceedAverageFilterNew(data, sampleTime, startValueInd, endValueInd);
     }
@@ -103,17 +101,20 @@ QVector<QVector<double> > MathFunction::proceedAverageFilterNew(const QVector<QV
     double sumAbs(0);
     double sumOrd(0);
 
-    for(long int i(1 + startValueInd); i<= endValueInd+1 ; i++)
+    long j(0);
+    for(long int i(startValueInd); i <= endValueInd ; i++)
     {
-        sumAbs += tabData.at(0).at(i-1);
-        sumOrd += tabData.at(1).at(i-1);
+        sumAbs += tabData.at(0).at(i);
+        sumOrd += tabData.at(1).at(i);
+        j++;
 
-        if ( i % sampleTime   == 0)
+        if ( j % sampleTime   == 0)
         {
             absTab.push_back(sumAbs/sampleTime);
             ordTab.push_back(sumOrd/sampleTime);
             sumAbs = 0;
             sumOrd = 0;
+            j = 0;
         }
     }
 
@@ -141,8 +142,10 @@ QVector<QVector<double> > MathFunction::mouvingAverageValueCurveNew(const QVecto
     }
     else
     {
-        long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
-        long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
+        long int startValueInd(returnIndOfValueAbsNew(startValue, data.at(0)));
+        long int endValueInd(returnIndOfValueAbsNew(endValue, data.at(0)));
+        //long int startValueInd(returnIndOfValueAbs(startValue, sampleTimeModif, 0));
+        //long int endValueInd(returnIndOfValueAbs(endValue, sampleTimeModif, 1));
         //long int startValueInd(returnIndOfValueKey(startValue, data.at(0), sampleTimeModif, true));
         //long int endValueInd(returnIndOfValueKey(endValue, data.at(0), sampleTimeModif, false));
 
@@ -154,14 +157,17 @@ QVector<QVector<double> > MathFunction::mouvingAverageValueCurveNew(const QVecto
 
 QVector<QVector<double> > MathFunction::proceedMouvingAverageFilterNew(const QVector<QVector<double> > &tabData, const int &sampleTime, const int &startValueInd, const int &endValueInd)
 {
-    QVector<QVector<double> > tabDataReturn;
+    //format start and stop ind
+    long int startValNew(startValueInd + (int)(((double) sampleTime)/2));
+    long int endValNew(endValueInd - (int)(((double) sampleTime)/2));
 
+    QVector<QVector<double> > tabDataReturn;
     QVector<double> ordTab;
 
     double sumOrd(0);
-    for(long int i(1 + startValueInd); i <= (endValueInd+1 - sampleTime); i++)
+    for(long int i(startValNew); i <= endValNew; i++)
     {
-        for (int j(0 + i); j< (sampleTime + i); j++)
+        for (int j(i - (int)(((double) sampleTime)/2)); j< ( i + sampleTime ); j++)
         {
             sumOrd += tabData.at(1).at(j-1);
         }
@@ -172,7 +178,7 @@ QVector<QVector<double> > MathFunction::proceedMouvingAverageFilterNew(const QVe
     }
 
     QVector<double> absTab;
-    for (long int i(startValueInd + (int)((double)sampleTime/2)); i <= (endValueInd +1 - sampleTime); i++)
+    for (long int i(startValNew); i <= endValNew; i++)
     {
         absTab.push_back(tabData.at(0).at(i));
     }
@@ -508,10 +514,10 @@ QVector<QVector<double> > MathFunction::generatePoint(const QVector<QCPData> &gr
 {
     QVector<QVector<double> > data(convertQCPDataInQVector(graphData));
     //extract data from tabData
-    long int startZone1(returnIndOfValueAbs(tabInd.at(0),1,0));
-    long int endZone1(returnIndOfValueAbs(tabInd.at(1),1,0));
-    long int startZone2(returnIndOfValueAbs(tabInd.at(4),1,0));
-    long int endZone2(returnIndOfValueAbs(tabInd.at(5),1,0));
+    long int startZone1(returnIndOfValueAbsNew(tabInd.at(0), data.at(0)));
+    long int endZone1(returnIndOfValueAbsNew(tabInd.at(1), data.at(0)));
+    long int startZone2(returnIndOfValueAbsNew(tabInd.at(4), data.at(0)));
+    long int endZone2(returnIndOfValueAbsNew(tabInd.at(5), data.at(0)));
 
     QVector<double> dataZone1;
     QVector<double> keyZone1;
@@ -1009,8 +1015,10 @@ QVector<QVector<double> > MathFunction::createTabForRegExp(const QVector<QCPData
 {
     QVector<QVector<double> > data(convertQCPDataInQVector(graphData));
 
-    long int startInd(returnIndOfValueAbs(CursorData.at(0),1,0));
-    long int endInd(returnIndOfValueAbs(CursorData.at(1),1,0));
+    long int startInd(returnIndOfValueAbsNew(CursorData.at(0), data.at(0)));
+    long int endInd(returnIndOfValueAbsNew(CursorData.at(1), data.at(0)));
+    //long int startInd(returnIndOfValueAbs(CursorData.at(0),1,0));
+    //long int endInd(returnIndOfValueAbs(CursorData.at(1),1,0));
 
     QVector<double> xTab;
     QVector<double> yTab;
@@ -1126,23 +1134,28 @@ QVector<QVector<double> > MathFunction::zeroNegativePoint(QVector<QVector<double
 QVector<QVector<double> > MathFunction::delBaseLineNorm(QVector<QVector<double> > tabData)
 {
     //Calculate cuvre area
-    double area(0);
+    curveArea = 0;
     for(int i(0); i< tabData.at(0).size() -1; i++)
     {
         double absisSub(tabData.at(0).at(i+1)-tabData.at(0).at(i));
         double ordSub(tabData.at(1).at(i) + tabData.at(1).at(i+1));
-        area += 0.5 * absisSub * ordSub;
+        curveArea += 0.5 * absisSub * ordSub;
     }
 
     QVector<QVector<double> > tabreturn;
 
     for (int j(0); j<tabData.at(1).size(); j++)
     {
-            tabData[1][j] /= area;
+            tabData[1][j] /= curveArea;
     }
 
     tabreturn = tabData;
     return tabreturn;
+}
+
+double MathFunction::getCurveArea()
+{
+    return curveArea;
 }
 
 QVector<QVector<double> > MathFunction::decayCompensation(const QVector<double> &key, const QVector<QCPData> &value, const double &timeValue, const int &power, const QString &unit)
@@ -1362,6 +1375,47 @@ long int MathFunction::returnIndOfValueKey(const int &value, const QVector<doubl
 
     return indice;
 }
+
+long int MathFunction::returnIndOfValueAbsNew(const double &value, const QVector<double> &keyTab)
+{
+    /*****************************************************************
+     * This function permit to found witch indice correspond a value *
+     * ***************************************************************/
+    long int keyUp(0);
+    for(int i(0); i < keyTab.size(); i++)
+    {
+        if (keyTab.at(i) >= value)
+        {
+            keyUp = i;
+            break;
+        }
+    }
+
+    long int keyDown(0);
+    for(int i(keyTab.size()-1); i >= 0; i--)
+    {
+        if (keyTab.at(i) <= value)
+        {
+            keyDown = i;
+            break;
+        }
+    }
+
+    long int indice(0);
+    double a(keyTab.at(keyUp) - value);
+    double b(value - keyTab.at(keyDown));
+    if (a >= b)
+    {
+        indice = keyDown;
+    }
+    else if (a < b)
+    {
+        indice = keyUp;
+    }
+
+    return indice;
+}
+
 
 QVector<QVector<double> > MathFunction::createTabReturn(const int &OpId, const QVector<double> &absTab, const QVector<double> &ordTab)
 {

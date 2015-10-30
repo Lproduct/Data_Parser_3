@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="data_parser_3.qrc">
+    <normaloff>:/images/plot2.png</normaloff>:/images/plot2.png</iconset>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
     <number>6</number>
@@ -61,7 +65,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>3</number>
      </property>
      <property name="tabSpacing">
       <number>0</number>
@@ -71,8 +75,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -402,8 +406,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -535,7 +539,7 @@
          <x>10</x>
          <y>0</y>
          <width>251</width>
-         <height>437</height>
+         <height>450</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -616,7 +620,7 @@
           <item>
            <widget class="QLabel" name="label_15">
             <property name="text">
-             <string>Create curve:</string>
+             <string>Smoothing :</string>
             </property>
            </widget>
           </item>
@@ -770,7 +774,7 @@
           <item>
            <widget class="QLabel" name="label_12">
             <property name="text">
-             <string>Exponential regression</string>
+             <string>Data extrapolation</string>
             </property>
            </widget>
           </item>
@@ -818,9 +822,6 @@
          </layout>
         </item>
         <item>
-         <widget class="QTextEdit" name="textEditRegExp"/>
-        </item>
-        <item>
          <spacer name="verticalSpacer_11">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -841,8 +842,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">
@@ -865,7 +866,7 @@
         <item>
          <widget class="QLabel" name="label_42">
           <property name="text">
-           <string>Custom the selected curve:</string>
+           <string>Amplification &amp; Offsets:</string>
           </property>
          </widget>
         </item>
@@ -1203,7 +1204,7 @@
         <normaloff>:/images/minus.png</normaloff>:/images/minus.png</iconset>
       </attribute>
       <attribute name="label">
-       <string>Delete Base Line</string>
+       <string>Subs Base Line</string>
       </attribute>
       <widget class="QWidget" name="verticalLayoutWidget_4">
        <property name="geometry">
@@ -1218,7 +1219,7 @@
         <item>
          <widget class="QCheckBox" name="checkBoxBaseLineEnable">
           <property name="text">
-           <string>Del Base Line enable</string>
+           <string>Subs Base Line enable</string>
           </property>
          </widget>
         </item>
@@ -1481,7 +1482,7 @@
           <item>
            <widget class="QLabel" name="label_38">
             <property name="text">
-             <string>Del Base Line </string>
+             <string>Subs Base Line </string>
             </property>
            </widget>
           </item>
@@ -1620,8 +1621,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>98</width>
-        <height>28</height>
+        <width>267</width>
+        <height>388</height>
        </rect>
       </property>
       <attribute name="icon">

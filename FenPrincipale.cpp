@@ -23,8 +23,8 @@ FenPrincipale::FenPrincipale()
 
     readSettings();
 
-    setWindowTitle(tr("Data Parser"));
-    setWindowIcon(QIcon(":/images/data_parser_icon.png"));
+    setWindowTitle(tr("So_ART"));
+    setWindowIcon(QIcon(":/images/plot.png"));
     setMinimumSize(500, 350);
     setUnifiedTitleAndToolBarOnMac(true);
 }
@@ -80,7 +80,7 @@ void FenPrincipale::open()
 void FenPrincipale::about()
 {
    QMessageBox::about(this, tr("About Data Parser"),
-            tr("Data Parser is devellop by LProduct\n\nContact: Lvil.180@gmail.com"));
+            tr("So_ART \n\n Autor: Adrien CHAMBELLAN\n\nContact: chambellan.adrien@gmail.com"));
 }
 
 void FenPrincipale::updateMenus()
@@ -194,10 +194,6 @@ void FenPrincipale::createActions()
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-
-    aboutQtAct = new QAction(tr("About &Qt"), this);
-    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 }
 
 void FenPrincipale::createMenus()
@@ -214,7 +210,7 @@ void FenPrincipale::createMenus()
 
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
+    //helpMenu->addAction(aboutQtAct);
 }
 
 void FenPrincipale::createToolBars()

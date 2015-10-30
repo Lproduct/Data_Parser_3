@@ -148,6 +148,7 @@ private:
     void supressCurveFromIndex(const int &nbCurve);
     void addItemToOpertoionCurve();
     void additemToRegExpComboBox();
+    void sortMap();
 
 
 

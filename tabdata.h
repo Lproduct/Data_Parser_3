@@ -21,6 +21,11 @@ public:
 public slots:
     void emitSignal();
 
+private slots:
+    void changeSelectedValue();
+    void selectChangePBManagementOn();
+    void selectChangePBManagementOff();
+
 signals:
     void emitData(QVector<QVector<double> > data);
 

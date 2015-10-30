@@ -10,7 +10,6 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui(new Ui::FenEnfantGraph)
 {
     ui->setupUi(this);
-    this->setWindowIcon(QIcon(":/images/charticon.png"));
 
     ui->customPlot->replot();
 
@@ -243,7 +242,7 @@ FenEnfantGraph::FenEnfantGraph(QWidget *parent) :
     ui->comboBoxRegExp->setEnabled(false);
     ui->spinBoxRegExp->setEnabled(false);
     ui->pushButtonRegExp->setEnabled(false);
-    ui->textEditRegExp->setEnabled(false);
+    //ui->textEditRegExp->setEnabled(false);
 
     connect(ui->checkBoxCurseurNew, SIGNAL(stateChanged(int)), this, SLOT(regExpInterManagement(int)));
     connect(ui->pushButtonRegExp, SIGNAL(clicked()), this, SLOT(regExp()));
@@ -1064,7 +1063,8 @@ void FenEnfantGraph::resizeCursorMouse(const QMouseEvent* &event)
 
 void FenEnfantGraph::sizeCursorV(const QString &name, QDoubleSpinBox *spinbox)
 {
-    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    //double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    double incrementV = (ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100;
     double value(0);
     if (ui->checkBoxTimeAbsis->checkState() == 0)
     {
@@ -1573,6 +1573,7 @@ void FenEnfantGraph::delCurve(const int &nbCurve)
     ui->comboBoxAddCurve1->removeItem(nbCurve);
     ui->comboBoxAddCurve2->removeItem(nbCurve);
     ui->comboBoxInterpolCurve->removeItem(nbCurve);
+    ui->comboBoxRegExp->removeItem(nbCurve);
 
     //if cursor previously exist set Cursor
     if(ui->checkBoxCurseurNew->checkState() == 2)
@@ -1838,14 +1839,41 @@ void FenEnfantGraph::cursorSpinBoxInt(const int &ind)
 
 void FenEnfantGraph::addItemToComboboxCreateCurve()
 {
-    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    for(int i(0); i < indexGraph.size(); i++)
     {
-        QString nameCurve(it->first);
-        if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
         {
-            ui->ComboBoxCurveName_2->addItem(nameCurve);
+            QString nameCurve(it->first);
+            if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+            {
+                if( i == it->second)
+                {
+                    ui->ComboBoxCurveName_2->addItem(nameCurve);
+                }
+            }
         }
     }
+}
+
+void FenEnfantGraph::sortMap()
+{
+    std::map<QString, int> tmpMap;
+    for(int i(0); i < indexGraph.size(); i++)
+    {
+        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+        {
+            QString nameCurve(it->first);
+            if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+            {
+                if( i == it->second)
+                {
+                    tmpMap[it->first] = it->second;
+                }
+            }
+        }
+    }
+    indexGraph.clear();
+    indexGraph = tmpMap;
 }
 
 QString FenEnfantGraph::curveName(const QVector<double> &tabId)
@@ -2595,8 +2623,11 @@ void FenEnfantGraph::createCursorInterpol()
     double viewRightH(ui->customPlot->xAxis->range().upper);
     double viewCenterH ((viewRightH + viewLeftH)/2);
 
-    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
-    double incrementH((mathMethod->dataInfo().at(1))/100);
+    double incrementV = (ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100;
+    double incrementH = (ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower)/100;
+
+    //double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    //double incrementH((mathMethod->dataInfo().at(1))/100);
 
     if(ui->checkBoxTimeAbsis->checkState() == 0)
     {
@@ -2665,7 +2696,8 @@ void FenEnfantGraph::createCursorInterpol()
 
 void FenEnfantGraph::setCursorV(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset)
 {
-    double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    //double incrementV((mathMethod->dataInfo().at(6)-mathMethod->dataInfo().at(5))/100);
+    double incrementV = (ui->customPlot->yAxis->range().upper - ui->customPlot->yAxis->range().lower)/100;
     QVector<double> absTab;
     for(int i(0); i <= 1; i++)
     {
@@ -2763,7 +2795,8 @@ void FenEnfantGraph::resizeCursorSpinboxInterpolV(const int &id)
     //Create horisontal cursor
 void FenEnfantGraph::setCursorH(const QString &cursorName, const double &posCursor, const QPen &pen, const double &offset)
 {
-    double incrementH((mathMethod->dataInfo().at(1))/100);
+    //double incrementH((mathMethod->dataInfo().at(1))/100);
+    double incrementH = (ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower)/100;
     QVector<double> absTab;
 
     if(cursorName == "cursorInterpol 1Z1 H")
@@ -2878,7 +2911,8 @@ void FenEnfantGraph::resizeCursorSpinboxInterpolH(const int &id)
 
 void FenEnfantGraph::sizeCursorH(const QString &name, QDoubleSpinBox *spinbox)
 {
-    double incrementH((mathMethod->dataInfo().at(1))/100);
+    double incrementH = (ui->customPlot->xAxis->range().upper - ui->customPlot->xAxis->range().lower)/100;
+    //double incrementH((mathMethod->dataInfo().at(1))/100);
     double value(0);
     value = spinbox->value();
 
@@ -3067,12 +3101,26 @@ void FenEnfantGraph::linkCursor2Z2Y(const double &value)
 //Del base line
 void FenEnfantGraph::addItemToComboboxInterpol()
 {
-    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    /*for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
     {
         QString nameCurve(it->first);
         if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
         {
             ui->comboBoxInterpolCurve->addItem(nameCurve);
+        }
+    }*/
+    for(int i(0); i < indexGraph.size(); i++)
+    {
+        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+        {
+            QString nameCurve(it->first);
+            if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+            {
+                if( i == it->second)
+                {
+                    ui->comboBoxInterpolCurve->addItem(nameCurve);
+                }
+            }
         }
     }
 }
@@ -3128,9 +3176,11 @@ void FenEnfantGraph::delBaseLine()
 
     QVector<QVector<double> > tabTempNorm;
     //Norm del base line curve
+    QString strCureveArea;
     if (ui->checkBoxSBLNorm->isChecked() == true)
     {
         tabTempNorm = mathMethod->delBaseLineNorm(tabDelBaseLine);
+        strCureveArea = "Curve area \n -> A = " + QString::number(mathMethod->getCurveArea()) + " pulses"+ "\n";
     }
     else if (ui->checkBoxSBLNorm->isChecked() == false)
     {
@@ -3189,7 +3239,7 @@ void FenEnfantGraph::delBaseLine()
         textSpacer = tr("\n");
         textPoly = tr("Base Line : \n -> f(x) = %1x + %2 \n").arg(regFactor.at(1))
                                             .arg(regFactor.at(0));
-        text += textCurve + textPoly + textCC + textBar + textSpacer;
+        text += textCurve + textPoly + textCC + textBar + strCureveArea + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 3)
@@ -3203,7 +3253,7 @@ void FenEnfantGraph::delBaseLine()
         textPoly = tr("Base Line : \n -> f(x) = %1x^2 + %2x + %3\n").arg(regFactor.at(2))
                                                     .arg(regFactor.at(1))
                                                     .arg(regFactor.at(0));
-        text += textCurve + textPoly + textCC + textBar + textSpacer;
+        text += textCurve + textPoly + textCC + textBar + strCureveArea + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 4)
@@ -3218,7 +3268,7 @@ void FenEnfantGraph::delBaseLine()
                                                             .arg(regFactor.at(2))
                                                             .arg(regFactor.at(1))
                                                             .arg(regFactor.at(0));
-        text += textCurve + textPoly + textCC + textBar + textSpacer;
+        text += textCurve + textPoly + textCC + textBar + strCureveArea + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 5)
@@ -3234,7 +3284,7 @@ void FenEnfantGraph::delBaseLine()
                                                                                 .arg(regFactor.at(2))
                                                                                 .arg(regFactor.at(1))
                                                                                 .arg(regFactor.at(0));
-        text += textCurve + textPoly + textCC + textBar + textSpacer;
+        text += textCurve + textPoly + textCC + textBar + strCureveArea + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 6)
@@ -3251,7 +3301,7 @@ void FenEnfantGraph::delBaseLine()
                                                                                         .arg(regFactor.at(2))
                                                                                         .arg(regFactor.at(1))
                                                                                         .arg(regFactor.at(0));
-        text += textCurve + textPoly + textCC + textBar + textSpacer;
+        text += textCurve + textPoly + textCC + textBar + strCureveArea + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
     else if (regFactor.size() == 7)
@@ -3263,13 +3313,8 @@ void FenEnfantGraph::delBaseLine()
         textBar = tr("Barycenter : \n -> Bar = %1 \n").arg(baricenter);
         textSpacer = tr("\n");
         textPoly = textPoly = tr("Base Line : \n -> f(x) = %1x^6 + %2x^5 + %3x^4 + %4x^3 + %5x^2 + %6x + %7\n").arg(regFactor.at(6))
-                                                                                                .arg(regFactor.at(5))
-                                                                                                .arg(regFactor.at(4))
-                                                                                                .arg(regFactor.at(3))
-                                                                                                .arg(regFactor.at(2))
-                                                                                                .arg(regFactor.at(1))
-                                                                                                .arg(regFactor.at(0));
-        text += textCurve + textPoly + textCC + textBar + textSpacer;
+                                                                          .arg(regFactor.at(0));
+        text += textCurve + textPoly + textCC + textBar + strCureveArea + textSpacer;
         ui->textEditPolyOrder->setText(text);
     }
 }
@@ -3523,13 +3568,28 @@ void FenEnfantGraph::decayCompensation()
 //math opération on curve
 void FenEnfantGraph::addItemToOpertoionCurve()
 {
-    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    /*for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
     {
         QString nameCurve(it->first);
         if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
         {
             ui->comboBoxAddCurve1->addItem(nameCurve);
             ui->comboBoxAddCurve2->addItem(nameCurve);
+        }
+    }*/
+    for(int i(0); i < indexGraph.size(); i++)
+    {
+        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+        {
+            QString nameCurve(it->first);
+            if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+            {
+                if( i == it->second)
+                {
+                    ui->comboBoxAddCurve1->addItem(nameCurve);
+                    ui->comboBoxAddCurve2->addItem(nameCurve);
+                }
+            }
         }
     }
 }
@@ -3587,7 +3647,7 @@ void FenEnfantGraph::regExpInterManagement(const int &state)
     {
         ui->comboBoxRegExp->setEnabled(true);
         ui->pushButtonRegExp->setEnabled(true);
-        ui->textEditRegExp->setEnabled(true);
+        //ui->textEditRegExp->setEnabled(true);
 
         ui->spinBoxRegExp->setEnabled(true);
         ui->spinBoxRegExp->setMinimum(0);
@@ -3600,18 +3660,32 @@ void FenEnfantGraph::regExpInterManagement(const int &state)
         ui->comboBoxRegExp->setEnabled(false);
         ui->spinBoxRegExp->setEnabled(false);
         ui->pushButtonRegExp->setEnabled(false);
-        ui->textEditRegExp->setEnabled(false);
+        //ui->textEditRegExp->setEnabled(false);
     }
 }
 
 void FenEnfantGraph::additemToRegExpComboBox()
 {
-    for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+    /*for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
     {
         QString nameCurve(it->first);
         if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
         {
             ui->comboBoxRegExp->addItem(nameCurve);
+        }
+    }*/
+    for(int i(0); i < indexGraph.size(); i++)
+    {
+        for(std::map<QString,int>::iterator it(indexGraph.begin()); it!= indexGraph.end(); it++)
+        {
+            QString nameCurve(it->first);
+            if (nameCurve != "cursorNew 1" || nameCurve != "cursorNew 2" || nameCurve != "cursorInterpol 1Z1" || nameCurve != "cursorInterpol 2Z1" || nameCurve != "cursorInterpol 1Z2" || nameCurve != "cursorInterpol 2Z2" || nameCurve != "cursorInterpol 1Z1 H" || nameCurve != "cursorInterpol 2Z1 H" || nameCurve != "cursorInterpol 1Z2 H" || nameCurve != "cursorInterpol 2Z2 H")
+            {
+                if( i == it->second)
+                {
+                    ui->comboBoxRegExp->addItem(nameCurve);
+                }
+            }
         }
     }
 }
