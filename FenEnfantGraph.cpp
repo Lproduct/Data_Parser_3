@@ -300,6 +300,14 @@ void FenEnfantGraph::setInfoData(const QStringList &fileInfo)
     ui->title->setText(fileInfo.at(1));
     ui->date->setText(fileInfo.at(2));
     ui->heure->setText(fileInfo.at(3));
+    if(fileInfo.at(2) == "" || fileInfo.at(3) == "")
+    {
+        ui->checkBoxTimeAbsis->setEnabled(false);
+        ui->spinBoxTimeUnit->setEnabled(false);
+        ui->comboBoxTimeUnit->setEnabled(false);
+        ui->label_1->setEnabled(false);
+        ui->label_25->setEnabled(false);
+    }
     ui->nomOperateur->setText(fileInfo.at(4));
     ui->nomSite->setText(fileInfo.at(5));
     ui->nomEssai->setText(fileInfo.at(6));
@@ -2337,7 +2345,6 @@ void FenEnfantGraph::setGraphAbsisTime()
         ui->spinBoxTimeUnit->setEnabled(false);
         ui->comboBoxTimeUnit->setEnabled(false);
 
-        ui->page_2->setEnabled(false);
         ui->page_3->setEnabled(false);
         ui->page_4->setEnabled(false);
         ui->page_5->setEnabled(false);
@@ -2352,7 +2359,6 @@ void FenEnfantGraph::setGraphAbsisTime()
         ui->spinBoxTimeUnit->setEnabled(true);
         ui->comboBoxTimeUnit->setEnabled(true);
 
-        ui->page_2->setEnabled(true);
         ui->page_3->setEnabled(true);
         ui->page_4->setEnabled(true);
         ui->page_5->setEnabled(true);

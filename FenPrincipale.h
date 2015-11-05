@@ -23,6 +23,10 @@ class FenPrincipale : public QMainWindow
 public:
     FenPrincipale();
 
+public slots:
+    void errorFileReadD(QString str);
+    void errorFileReadSate(bool state);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -75,6 +79,7 @@ private:
     QAction *separatorAct;
     QAction *aboutAct;
 
+    bool FileReadSate;
 };
 
 #endif // FENPRINCIPALE_H

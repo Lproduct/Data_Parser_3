@@ -27,6 +27,8 @@ FenPrincipale::FenPrincipale()
     setWindowIcon(QIcon(":/images/plot.png"));
     setMinimumSize(500, 350);
     setUnifiedTitleAndToolBarOnMac(true);
+
+    FileReadSate = false;
 }
 
 void FenPrincipale::closeEvent(QCloseEvent *event)
@@ -45,7 +47,7 @@ void FenPrincipale::closeEvent(QCloseEvent *event)
 
 void FenPrincipale::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
+    QString fileName = QFileDialog::getOpenFileName(this, "Open data file", "C:/Users/Lvil/Lvil/Work/AIEA_DataViewer/Data files/Fichiers experimentaux", "Data File (*.txt)");
     if (!fileName.isEmpty())
     {
         //Check if the file is already open
@@ -59,20 +61,44 @@ void FenPrincipale::open()
 
         //Parsing data
         DataParser *parserData = new DataParser(fileName);
-        QStringList infoFile(parserData->getInfoFile());
-        QStringList header(parserData->getHeader());
-        QVector<QVector<double> > tab(parserData->getTab());
+        //QObject::connect(parserData, SIGNAL(errorFileRead(QString)), this, SLOT(errorFileReadD(QString)));
 
-        FenEnfantGraph *childGraph = createGraphMdiChild();
-        if (childGraph->LoadTabData(infoFile, header, tab))
+        if(parserData->getReadFileStatus() == true)
         {
-            statusBar()->showMessage(tr("File loaded"), 2000);
-            childGraph->show();
+            QVector<QVector<double> > tab(parserData->getTab());
+
+            if(parserData->getTabParsingStatus() == false)
+            {
+                QMessageBox::warning(this, "Error : Parsing file ", "Error happend while parsing file \n Wrong tab identifier");
+            }
+            else if (parserData->getTabParsingStatus() == true)
+            {
+                QStringList header(parserData->getHeader());
+
+                QStringList infoFile(parserData->getInfoFile());
+                if(parserData->getInfoFileStatus() == true)
+                {
+                    QMessageBox::information(this, "Information missing", "Information missing :\n" + parserData->getInfoFileMessage());
+                }
+
+                FenEnfantGraph *childGraph = createGraphMdiChild();
+                if (childGraph->LoadTabData(infoFile, header, tab))
+                {
+                    statusBar()->showMessage(tr("File loaded"), 2000);
+                    childGraph->show();
+                }
+                else
+                {
+                    childGraph->close();
+                }
+            }
         }
-        else
+        else if(parserData->getReadFileStatus() == false)
         {
-            childGraph->close();
+            QMessageBox::warning(this, "Error append when openning file", parserData->getReadFileErrorMessage());
         }
+
+        //disconnect(parserData, SIGNAL(errorFileRead(QString)), this, SLOT(errorFileRead(QString)));
     }
 }
 
@@ -270,3 +296,12 @@ void FenPrincipale::setActiveSubWindow(QWidget *window)
     mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
 }
 
+void FenPrincipale::errorFileReadD(QString str)
+{
+    QMessageBox::warning(this, "So_ART", str);
+}
+
+void FenPrincipale::errorFileReadSate(bool state)
+{
+    FileReadSate = state;
+}
